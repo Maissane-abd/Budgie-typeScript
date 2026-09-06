@@ -1,0 +1,21 @@
+# Dockerfile pour le backend Node.js
+# Utilise une image Node officielle
+FROM node:20-alpine
+
+# Crée un dossier de travail
+WORKDIR /app
+
+# Copie les fichiers de config d'abord (meilleur cache pour Docker)
+COPY package*.json ./
+
+# Installe les dépendances
+RUN npm install
+
+# Copie tout le code source
+COPY . .
+
+# Expose le port du backend
+EXPOSE 5001
+
+# Commande pour lancer le serveur
+CMD ["npm", "start"]

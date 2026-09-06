@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:15
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: budgie
+      POSTGRES_PASSWORD: budgie_password
+      POSTGRES_DB: budgie_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/seed.sql:ro 
+
+  backend:
+    build: ./backend
+    env_file:
+      - .env
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    ports:
+      - "5001:5001"
+    depends_on:
+      - db
+
+  frontend:
+    build: 
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+  stripe-cli:
+    image: stripe/stripe-cli:latest
+    container_name: stripe_cli
+    depends_on:
+      - backend
+    command: listen --forward-to http://backend:5001/api/payments/webhook
+    environment:
+      - STRIPE_API_KEY=${STRIPE_SECRET_KEY}
+    restart: unless-stopped
+
+volumes:
+  db_data:
