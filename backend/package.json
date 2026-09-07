@@ -4,7 +4,8 @@
   "main": "/src/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/app.js"
+    "start": "node src/app.ts",
+    "dev": "npx tsx src/app.ts"
   },
   "keywords": [],
   "author": "",
@@ -20,5 +21,19 @@
     "stripe": "^20.0.0",
     "uuid": "^13.0.0"
   },
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "@tsconfig/node22": "^22.0.6",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.19",
+    "@types/dotenv": "^6.1.1",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^26.4.1",
+    "@types/pg": "^8.23.1",
+    "@types/stripe": "^8.0.416",
+    "@types/uuid": "^10.0.0",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2"
+  }
 }
