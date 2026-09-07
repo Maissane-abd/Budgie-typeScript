@@ -4,7 +4,7 @@ import type { Express, Request, Response } from "express";
 import cors from "cors";
 
 import revenusRoutes from "./routes/revenus.js";
-import paymentRoutes from "./routes/payments.routes.js";
+import paymentRoutes from "./routes/payments.routes.s";
 import webhookRoute from "./routes/webhook.js";
 import authRoutes from "./routes/auth.js";
 import accountsRoutes from "./routes/accounts.js";

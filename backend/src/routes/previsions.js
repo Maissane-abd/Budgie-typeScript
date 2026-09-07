@@ -1,4 +1,5 @@
 // backend/src/routes/previsions.js
+// Routes et contrôleurs pour le calcul des prévisions financières
 import express from "express";
 import db from "../models/db.js";
 import { requireAuth } from "./auth.js";

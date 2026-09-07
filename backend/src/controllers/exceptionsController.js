@@ -1,7 +1,7 @@
 const db = require('../models/db');
 
 // Créer une exception pour un revenu (transaction income)
-exports.create = async (req, res) => {
+export const create = async (req, res) => {
   const {
     transaction_id,
     exception_name,
@@ -43,7 +43,7 @@ exports.create = async (req, res) => {
 };
 
 // Récupérer toutes les exceptions d’un revenu (transaction income)
-exports.getByTransaction = async (req, res) => {
+export const getByTransaction = async (req, res) => {
   const { transactionId } = req.params;
 
   try {
@@ -63,7 +63,7 @@ exports.getByTransaction = async (req, res) => {
 };
 
 // Mettre à jour une exception
-exports.update = async (req, res) => {
+export const update = async (req, res) => {
   const { id } = req.params;
   const {
     exception_name,
@@ -108,7 +108,7 @@ exports.update = async (req, res) => {
 };
 
 // Supprimer une exception
-exports.delete = async (req, res) => {
+export const deleteException = async (req, res) => {
   const { id } = req.params;
 
   try {

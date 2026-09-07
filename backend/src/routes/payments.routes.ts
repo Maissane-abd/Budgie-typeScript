@@ -1,8 +1,9 @@
 import express from "express";
 import { createCheckoutSession, getCurrentSubscription, cancelSubscription, updateSubscription } from "../controllers/payments.controller.js";
 import { requireAuth } from "./auth.js";
+import type { Router } from "express";
 
-const router = express.Router();
+const router:Router = express.Router();
 
 // Route pour créer une session checkout (nécessite authentification)
 router.post("/checkout", requireAuth, createCheckoutSession);

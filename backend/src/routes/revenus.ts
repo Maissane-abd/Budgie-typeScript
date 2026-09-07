@@ -1,7 +1,6 @@
 // backend/src/routes/revenus.ts
 import express from 'express';
 import type { Router } from 'express';
-import type { Request, Response } from 'express';
 import { create, getAll, getById, update, remove } from '../controllers/revenusController.js';
 import { requireAuth } from './auth.js';
 

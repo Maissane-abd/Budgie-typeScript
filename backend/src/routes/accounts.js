@@ -1,7 +1,10 @@
 // backend/src/routes/accounts.js
+// Controllers et routes pour la gestion des comptes
 import express from "express";
 import db from "../models/db.js";
 import { requireAuth } from "./auth.js";
+import { Router } from "express";
+
 
 const router = express.Router();
 
@@ -28,21 +31,21 @@ function computeForecast(account, months = 12) {
 /*
  * Ajoute des champs calculés à un compte
  */
-function decorateAccount(a) {
+function decorateAccount(account) {
 
-  const balance = Number(a.balance || 0);
-  const annualRate = Number(a.annual_interest_rate || 0);
-  const taxRate = Number(a.tax_rate || 0);
+  const balance = Number(account.balance || 0);
+  const annualRate = Number(account.annual_interest_rate || 0);
+  const taxRate = Number(account.tax_rate || 0);
 
   const monthlyRate = annualRate / 100 / 12;
   const grossMonth = balance * monthlyRate;
   const netMonth = grossMonth * (1 - taxRate / 100);
 
   return {
-    ...a,
+    ...account,
     balance: Number(balance.toFixed(2)),
     current_balance: Number((balance + netMonth).toFixed(2)),
-    forecast_12m: Number(computeForecast(a, 12).toFixed(2)),
+    forecast_12m: Number(computeForecast(account, 12).toFixed(2)),
   };
 }
 

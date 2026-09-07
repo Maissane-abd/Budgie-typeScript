@@ -2,8 +2,9 @@
 import express from 'express';
 import { create, getAll, getById, update, remove } from '../controllers/expensesController.js';
 import { requireAuth } from './auth.js';
+import type { Router } from 'express';
 
-const router = express.Router();
+const router:Router = express.Router();
 
 // Routes for expenses
 router.post('/', requireAuth, create);

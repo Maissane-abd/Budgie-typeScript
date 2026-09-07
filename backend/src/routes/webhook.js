@@ -1,3 +1,5 @@
+// backend/src/routes/webhook.js
+// Routes et contrôleurs pour la gestion des webhooks Stripe
 import express from 'express';
 import { stripe } from '../config/stripe.js';
 import bodyParser from 'body-parser';

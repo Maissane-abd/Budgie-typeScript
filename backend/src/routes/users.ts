@@ -1,8 +1,10 @@
+//backend/src/routes/users.ts
 import express from 'express';
-import { requireAuth } from '/auth.js';
+import type { Router } from 'express';
+import { requireAuth } from './auth.js';
 import * as userCtrl from '../controllers/usersController.js';
 
-const router = express.Router();
+const router: Router = express.Router();
 
 router.get('/me', requireAuth, userCtrl.getProfile);
 router.put('/me', requireAuth, userCtrl.updateProfile);

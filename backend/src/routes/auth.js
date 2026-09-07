@@ -1,3 +1,4 @@
+// routes, controllers et middleware pour l’authentification
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
