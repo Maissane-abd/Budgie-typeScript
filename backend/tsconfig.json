@@ -3,7 +3,10 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
-    "allowJs": true
+    "allowJs": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+    // "allowImportingTsExtensions": true,
   },
   "include": ["src/**/*.ts", "src/routes/webhook.js", "src/routes/accounts.js", "src/controllers/revenusController.js"],
   "exclude": ["dist", "node_modules"]
