@@ -3,26 +3,51 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import db from '../models/db.js';
+import db from '../models/db.ts';
+import type { Request, Response, NextFunction } from 'express';
+import type {Router} from 'express';
 
-const router = express.Router();
+type User = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+};
 
-function createToken(user) {
+const router:Router = express.Router();
+
+function getEnvVariable(name: string): string {
+  const value: string | undefined = process.env[name];
+
+  if (!value) {
+    throw new Error(`${name} n'est pas défini`);
+  }
+
+  return value;
+}
+
+const JWT_SECRET:string = getEnvVariable("JWT_SECRET");
+
+
+function createToken(user:User): string {
+
+  
   return jwt.sign(
       { id: user.id, email: user.email },
-      process.env.JWT_SECRET,
+      JWT_SECRET,
       { expiresIn: "1d" }
   );
 }
 
-export function requireAuth(req, res, next) {
-  const authHeader = req.headers.authorization || "";
-  const token = authHeader.split(" ")[1];
+export function requireAuth(req: Request, res: Response, next: NextFunction) {
+  const authHeader:string = req.headers.authorization || "";
+  const token:string = authHeader.split(" ")[1];
 
   if (!token) return res.status(401).json({ error: "Token manquant" });
 
   try {
-    req.user = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded:string | jwt.JwtPayload = jwt.verify(token, JWT_SECRET);
+    req.user = { id: (decoded as any).id, email: (decoded as any).email };
     next();
   } catch (err) {
     res.status(401).json({ error: "Token invalide" });
@@ -41,7 +66,7 @@ const queryUser = `
   WHERE u.id = $1
 `;
 
-router.post("/register", async (req, res) => {
+router.post("/register", async (req: Request<User>, res: Response) => {
   const { first_name, last_name, email, password } = req.body;
 
   if (!first_name || !last_name || !email || !password) {
@@ -52,7 +77,7 @@ router.post("/register", async (req, res) => {
     const { rows: existing } = await db.query("SELECT id FROM users WHERE email = $1", [email]);
     if (existing.length > 0) return res.status(409).json({ error: "Email déjà utilisé" });
 
-    const hash = await bcrypt.hash(password, 10);
+    const hash: string = await bcrypt.hash(password, 10);
 
     const { rows } = await db.query(
         "INSERT INTO users (first_name, last_name, email, password_hash) VALUES ($1, $2, $3, $4) RETURNING id, first_name, last_name, email",
@@ -65,7 +90,7 @@ router.post("/register", async (req, res) => {
         [user.id]
     );
 
-    const token = createToken(user);
+    const token:string = createToken(user);
     res.status(201).json({ user: { ...user, plan_name: 'Free' }, token });
 
   } catch (err) {
@@ -73,7 +98,7 @@ router.post("/register", async (req, res) => {
   }
 });
 
-router.post("/login", async (req, res) => {
+router.post("/login", async (req: Request<{ email: string; password: string }>, res: Response) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: "Champs requis" });
 
@@ -87,16 +112,18 @@ router.post("/login", async (req, res) => {
 
     const { rows: fullUser } = await db.query(queryUser, [baseUser.id]);
     const user = fullUser[0];
-    const token = createToken(user);
+    const token:string = createToken(user);
 
     res.json({ user, token });
 
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Erreur serveur" });
   }
 });
 
-router.get("/me", requireAuth, async (req, res) => {
+router.get("/me", requireAuth, async (req: Request, res: Response) => {
+  if (!req.user) return res.status(401).json({ error: "Utilisateur non authentifié" });
   try {
     const { rows } = await db.query(queryUser, [req.user.id]);
     if (!rows.length) return res.status(404).json({ error: "Utilisateur introuvable" });
@@ -106,8 +133,9 @@ router.get("/me", requireAuth, async (req, res) => {
   }
 });
 
-router.put("/me", requireAuth, async (req, res) => {
+router.put("/me", requireAuth, async (req: Request<Partial<User>>, res: Response) => {
   const { first_name, last_name, email } = req.body;
+  if (!req.user) return res.status(401).json({ error: "Utilisateur non authentifié" });
   try {
     await db.query(
         `UPDATE users 
@@ -123,16 +151,21 @@ router.put("/me", requireAuth, async (req, res) => {
     res.json(rows[0]);
 
   } catch (err) {
-    if (err.code === '23505') return res.status(409).json({ error: "Email pris" });
-    res.status(500).json({ error: "Erreur mise à jour" });
+    if (err instanceof Error && err.message.includes("duplicate key value")) {
+     return res.status(409).json({ error: "Email déjà utilisé" });
+    }
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
   }
 });
 
-router.delete("/me", requireAuth, async (req, res) => {
+router.delete("/me", requireAuth, async (req: Request, res: Response) => {
+  if (!req.user) return res.status(401).json({ error: "Utilisateur non authentifié" });
   try {
     await db.query('DELETE FROM users WHERE id = $1', [req.user.id]);
     res.status(204).send();
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Erreur suppression" });
   }
 });

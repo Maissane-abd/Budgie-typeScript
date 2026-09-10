@@ -15,7 +15,7 @@ import type { Request, Response } from 'express';
 
 // Dans getProfile, on exclut le mot de passe de la réponse pour des raisons de sécurité. 
 // On ne renvoie que l'id, le prénom, le nom et l'email de l'utilisateur.
-type User = {
+export type User = {
     id: string;
     first_name: string;
     last_name: string;
@@ -27,20 +27,20 @@ type User = {
 // Dans updateProfile, on permet à l'utilisateur de mettre à jour son prénom, son nom et son email. 
 // Le mot de passe n'est pas modifiable ici pour des raisons de sécurité. 
 // Si l'utilisateur souhaite changer son mot de passe, il devrait passer par un processus dédié de changement de mot de passe.
-type AuthUser = {
-  id: string;
-  email: string;
-};
+// export type AuthUser = {
+//   id: string;
+//   email: string;
+// };
 
 // On définit un type pour la requête authentifiée, qui inclut les informations de l'utilisateur authentifié. 
 // Cela permet de typer correctement les contrôleurs qui nécessitent une authentification.
-type AuthenticatedRequest = Request & {
-  user: AuthUser;
-};
+// export type AuthenticatedRequest = Request & {
+//   user: AuthUser;
+// };
 
 // On définit un type pour le corps de la requête de mise à jour du profil, qui peut contenir le prénom, le nom et l'email. 
 // Ces champs sont optionnels, car l'utilisateur peut choisir de ne mettre à jour qu'une partie de son profil.
-type UpdateProfileBody = {
+export type UpdateProfileBody = {
     first_name?: string;
     last_name?: string;
     email?: string;
@@ -49,13 +49,18 @@ type UpdateProfileBody = {
 // On définit un type pour la requête de mise à jour du profil, 
 // qui inclut le corps de la requête et les informations de l'utilisateur authentifié. 
 // Cela permet de typer correctement le contrôleur de mise à jour du profil.
-type UpdateProfileRequest = Request<{}, {}, UpdateProfileBody> & {
-    user: AuthUser;
-};
+// export type UpdateProfileRequest = Request<{}, {}, UpdateProfileBody> & {
+//     user: AuthUser;
+// };
 
 
 
-export const getProfile = async (req: AuthenticatedRequest, res: Response<{error: string} | User>): Promise<void> => {
+export const getProfile = async (req: Request, res: Response<{error: string} | User>): Promise<void> => {
+    if (!req.user) {
+        res.status(401).json({ error: "Utilisateur non authentifié" });
+        return;
+    }
+    
     try {
         // On exclut le mot de passe de la réponse
         // les rows renvoient un tableau d'objets, même si on ne récupère qu'un seul utilisateur. 
@@ -74,8 +79,14 @@ export const getProfile = async (req: AuthenticatedRequest, res: Response<{error
     }
 };
 
-export const updateProfile = async (req: UpdateProfileRequest, res: Response<{error: string} | User>): Promise<void> => {
+export const updateProfile = async (req: Request, res: Response<{error: string} | User>): Promise<void> => {
     const { first_name, last_name, email } = req.body;
+    
+    if (!req.user) {
+        res.status(401).json({ error: "Utilisateur non authentifié" });
+        return;
+    }
+    
     try {
         const { rows }: { rows: User[] } = await db.query(
             `UPDATE users 
@@ -100,7 +111,12 @@ export const updateProfile = async (req: UpdateProfileRequest, res: Response<{er
 // Si la suppression est réussie, on renvoie un statut 204 (No Content). 
 // Si l'utilisateur n'est pas trouvé, on renvoie un statut 404 (Not Found). 
 // En cas d'erreur serveur, on renvoie un statut 500 (Internal Server Error).
-export const deleteAccount = async (req: AuthenticatedRequest, res: Response<{error: string} | void>): Promise<void> => {
+export const deleteAccount = async (req: Request, res: Response<{error: string} | void>): Promise<void> => {
+    if (!req.user) {
+        res.status(401).json({ error: "Utilisateur non authentifié" });
+        return;
+    }
+    
     try {
         await db.query('DELETE FROM users WHERE id = $1', [req.user.id]);
         res.status(204).send();

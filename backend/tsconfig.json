@@ -4,10 +4,10 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "allowJs": true,
-    "allowImportingTsExtensions": true,
-    "noEmit": true
-    // "allowImportingTsExtensions": true,
+    "allowImportingTsExtensions": true, // Permet d'importer des fichiers TypeScript avec l'extension .ts
+    "noEmit": true, // Empêche l'émission de fichiers JavaScript, utile pour le développement
+    "typeRoots": ["./node_modules/@types", "./src/types"] //custom type definitions
   },
-  "include": ["src/**/*.ts", "src/routes/webhook.js", "src/routes/accounts.js", "src/controllers/revenusController.js"],
+  "include": ["src/**/*.ts", "src/routes/webhook.ts", "src/routes/accounts.ts", "src/controllers/revenusController.js"],
   "exclude": ["dist", "node_modules"]
 }

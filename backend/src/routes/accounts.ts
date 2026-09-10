@@ -1,27 +1,42 @@
 // backend/src/routes/accounts.js
 // Controllers et routes pour la gestion des comptes
 import express from "express";
-import db from "../models/db.js";
+import db from "../models/db.ts";
 import { requireAuth } from "./auth.js";
-import { Router } from "express";
+import type { Request, Response } from "express";
+import type { Router } from "express";
+
+type Account = {
+  id: string;
+  user_id: string;
+  account_name: string;
+  description: string | null;
+  created_on: string; // DATE
+  currency: string; // CHAR(3)
+  balance: number; // NUMERIC(18,2)
+  annual_interest_rate: number | null; // NUMERIC(6,4)
+  tax_rate: number | null; // NUMERIC(6,4)
+  created_at: string; // TIMESTAMPTZ
+  updated_at: string; // TIMESTAMPTZ
+};
 
 
-const router = express.Router();
+const router: Router = express.Router();
 
 /*
  * Calcule le solde prévisionnel après `months` mois
  * Intérêts composés mensuels, net d’impôts
  */
-function computeForecast(account, months = 12) {
-  const annualRate = Number(account.annual_interest_rate || 0) / 100;
-  const taxRate = Number(account.tax_rate || 0) / 100;
-  let balance = Number(account.balance || 0);
+function computeForecast(account: Account, months: number = 12):number {
+  const annualRate: number = Number(account.annual_interest_rate || 0) / 100;
+  const taxRate: number = Number(account.tax_rate || 0) / 100;
+  let balance: number = Number(account.balance || 0);
 
-  const monthlyRate = annualRate / 12;
+  const monthlyRate: number = annualRate / 12;
 
   for (let i = 0; i < months; i++) {
-    const grossInterest = balance * monthlyRate;
-    const netInterest = grossInterest * (1 - taxRate);
+    const grossInterest: number = balance * monthlyRate;
+    const netInterest: number = grossInterest * (1 - taxRate);
     balance += netInterest;
   }
 
@@ -31,15 +46,15 @@ function computeForecast(account, months = 12) {
 /*
  * Ajoute des champs calculés à un compte
  */
-function decorateAccount(account) {
+function decorateAccount(account: Account): Account & { current_balance: number; forecast_12m: number } {
 
-  const balance = Number(account.balance || 0);
-  const annualRate = Number(account.annual_interest_rate || 0);
-  const taxRate = Number(account.tax_rate || 0);
+  const balance: number = Number(account.balance || 0);
+  const annualRate: number = Number(account.annual_interest_rate || 0);
+  const taxRate: number = Number(account.tax_rate || 0);
 
-  const monthlyRate = annualRate / 100 / 12;
-  const grossMonth = balance * monthlyRate;
-  const netMonth = grossMonth * (1 - taxRate / 100);
+  const monthlyRate: number = annualRate / 100 / 12;
+  const grossMonth: number = balance * monthlyRate;
+  const netMonth: number = grossMonth * (1 - taxRate / 100);
 
   return {
     ...account,
@@ -54,10 +69,14 @@ function decorateAccount(account) {
  * GET /api/accounts
  * Liste des comptes de l’utilisateur connecté
  */
-router.get("/", requireAuth, async (req, res) => {
+router.get("/", requireAuth, async (req: Request, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({ error: "Utilisateur non authentifié" });
+  }
+  
   try {
     // Récupérer l’ID de l’utilisateur connecté 
-    const userId = req.user.id;
+    const userId: string = req.user.id;
 
     // On récupère les comptes et on calcule le solde réel à partir des transactions.
     const { rows } = await db.query(
@@ -84,7 +103,7 @@ router.get("/", requireAuth, async (req, res) => {
     );
 
     // Décorer chaque compte avec les champs calculés
-    const data = rows.map(decorateAccount);
+    const data: (Account & { current_balance: number; forecast_12m: number })[] = rows.map(decorateAccount);
     res.json({ data });
   } catch (err) {
     console.error("GET /accounts error", err);
@@ -107,9 +126,12 @@ router.get("/", requireAuth, async (req, res) => {
  *   tax_rate
  * }
  */
-router.post("/", requireAuth, async (req, res) => {
+router.post("/", requireAuth, async (req: Request, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({ error: "Utilisateur non authentifié" });
+  }
   try {
-    const userId = req.user.id;
+    const userId: string = req.user.id;
 
     const {
       account_name,
@@ -140,7 +162,7 @@ router.post("/", requireAuth, async (req, res) => {
       [userId]
     );
 
-    const hasPremiumSubscription = subscriptionRows.length > 0;
+    const hasPremiumSubscription: boolean = subscriptionRows.length > 0;
 
     // Si l'utilisateur n'a pas d'abonnement Premium, vérifier la limite de 2 comptes
     if (!hasPremiumSubscription) {
@@ -149,7 +171,7 @@ router.post("/", requireAuth, async (req, res) => {
         [userId]
       );
 
-      const accountCount = parseInt(accountCountRows[0].count, 10);
+      const accountCount: number = parseInt(accountCountRows[0].count, 10);
 
       if (accountCount >= 2) {
         return res.status(403).json({
@@ -178,7 +200,7 @@ router.post("/", requireAuth, async (req, res) => {
       ]
     );
 
-    const account = decorateAccount(rows[0]);
+    const account: Account & { current_balance: number; forecast_12m: number } = decorateAccount(rows[0]);
     res.status(201).json({ data: account });
   } catch (err) {
     console.error("POST /accounts error", err);
@@ -192,10 +214,13 @@ router.post("/", requireAuth, async (req, res) => {
  * PUT /api/accounts/:id
  * Mise à jour d’un compte
  */
-router.put("/:id", requireAuth, async (req, res) => {
+router.put("/:id", requireAuth, async (req: Request, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({ error: "Utilisateur non authentifié" });
+  }
   try {
-    const userId = req.user.id;
-    const id = req.params.id;
+    const userId: string = req.user.id;
+    const id: string | string[] = req.params.id;
 
     const {
       account_name,
@@ -248,10 +273,13 @@ router.put("/:id", requireAuth, async (req, res) => {
  * DELETE /api/accounts/:id
  * Suppression d’un compte
  */
-router.delete("/:id", requireAuth, async (req, res) => {
+router.delete("/:id", requireAuth, async (req: Request, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({ error: "Utilisateur non authentifié" });
+  }
   try {
-    const userId = req.user.id;
-    const id = req.params.id;
+    const userId: string = req.user.id;
+    const id: string | string[] = req.params.id;
 
     const result = await db.query(
       "DELETE FROM accounts WHERE id = $1 AND user_id = $2",

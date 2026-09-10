@@ -1,15 +1,29 @@
-import pkg from 'pg';
 import dotenv from 'dotenv';
+import { Pool } from 'pg';
 
 // Charge les variables d'environnement (.env) pour le local
 dotenv.config();
 
-const { Pool } = pkg;
+type ConnectionConfig = {
+     connectionString: string | undefined;
+ ssl: boolean | {
+ rejectUnauthorized: boolean;
+ };
+ user: string | undefined;
+ host: string | undefined;
+ database: string | undefined;
+ password: string | undefined;
+ port: number | undefined;
+ max: number;
+ idleTimeoutMillis: number;
+};
+
+// const { Pool } = pkg;
 
 // Détection : Si DATABASE_URL existe, on est sur Render (Production)
-const isProduction = !!process.env.DATABASE_URL;
+const isProduction: boolean = !!process.env.DATABASE_URL;
 
-const connectionConfig = {
+const connectionConfig: ConnectionConfig = {
     // Render fournit une URL complète (connectionString).
     // Si elle n'existe pas (local), cette propriété sera undefined et ignorée.
     connectionString: process.env.DATABASE_URL,
@@ -23,14 +37,14 @@ const connectionConfig = {
     host: process.env.PGHOST,
     database: process.env.PGDATABASE,
     password: process.env.PGPASSWORD,
-    port: process.env.PGPORT,
+    port: Number(process.env.PGPORT),
 
     // Options du pool
     max: 10,
     idleTimeoutMillis: 30000
 };
 
-const db = new Pool(connectionConfig);
+const db: Pool = new Pool(connectionConfig);
 
 db.on('connect', () => {
     console.log(isProduction ? '✅ Connecté à PostgreSQL (Mode Production/Render)' : '💻 Connecté à PostgreSQL (Mode Local)');
