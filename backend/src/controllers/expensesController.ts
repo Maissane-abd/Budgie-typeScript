@@ -1,10 +1,18 @@
 // controllers/expensesController.js
-import db from '../models/db.js';
+import db from '../models/db.ts';
 import { checkExpenseLimit } from '../utils/subscription.js';
+import type { Request, Response } from 'express';
+import type { LimitCheckResult } from '../utils/subscription.ts';
 
 // GET /expenses
-export const getAll = async (req, res) => {
-    const userId = req.user.id;
+export const getAll = async (req: Request, res: Response): Promise<void> => {
+
+    if (!req.user || !req.user.id) {
+        res.status(401).json({ message: 'Utilisateur non authentifié' });
+        return;
+    }
+
+    const userId: string = req.user.id;
 
     const { rows } = await db.query(`
         SELECT
@@ -21,8 +29,12 @@ export const getAll = async (req, res) => {
 };
 
 // GET /expenses/:id
-export const getById = async (req, res) => {
-    const userId = req.user.id;
+export const getById = async (req: Request, res: Response): Promise<void> => {
+    if (!req.user || !req.user.id) {
+        res.status(401).json({ message: 'Utilisateur non authentifié' });
+        return;
+    }
+    const userId: string = req.user.id;
     const { id } = req.params;
 
     const { rows } = await db.query(`
@@ -35,14 +47,15 @@ export const getById = async (req, res) => {
     `, [id, userId]);
 
     if (rows.length === 0) {
-        return res.status(404).json({ message: 'Dépense non trouvée' });
+         res.status(404).json({ message: 'Dépense non trouvée' });
+         return;
     }
 
     res.json(rows[0]);
 };
 
 // POST /expenses
-export const create = async (req, res) => {
+export const create = async (req: Request, res: Response): Promise<void> => {
     let {
         account_id,
         transaction_name,
@@ -57,11 +70,13 @@ export const create = async (req, res) => {
 
     // Champs obligatoires
     if (!account_id || !transaction_name || !amount || !start_date) {
-        return res.status(400).json({ message: 'Champs obligatoires manquants' });
+        res.status(400).json({ message: 'Champs obligatoires manquants' });
+        return;
     }
 
     if (amount <= 0) {
-        return res.status(400).json({ message: 'Le montant doit être positif' });
+        res.status(400).json({ message: 'Le montant doit être positif' });
+        return;
     }
 
     if (end_date === "") {
@@ -70,31 +85,39 @@ export const create = async (req, res) => {
 
     if (duration_type === 'recurring') {
         if (!interval_count || interval_count < 1 || !interval_unit) {
-            return res.status(400).json({
+            res.status(400).json({
                 message: 'interval_count et interval_unit obligatoires pour une dépense récurrente'
             });
+            return;
         }
     }
 
     // Vérifier que le compte appartient à l'utilisateur
+
+    if (!req.user || !req.user.id) {
+        res.status(401).json({ message: 'Utilisateur non authentifié' });
+        return;
+    }
     const accountCheck = await db.query(
         `SELECT 1 FROM accounts WHERE id = $1 AND user_id = $2`,
         [account_id, req.user.id]
     );
 
     if (!accountCheck.rowCount) {
-        return res.status(403).json({ message: 'Compte non autorisé' });
+        res.status(403).json({ message: 'Compte non autorisé' });
+        return;
     }
 
     // Vérifier la limite de dépenses par compte
-    const limitCheck = await checkExpenseLimit(req.user.id, account_id);
+    const limitCheck: LimitCheckResult = await checkExpenseLimit(req.user.id, account_id);
     if (limitCheck.limitReached) {
-        return res.status(403).json({
+         res.status(403).json({
             message: `Limite de dépenses atteinte. Vous avez atteint la limite de ${limitCheck.maxCount} dépenses par compte du plan gratuit. Abonnez-vous au plan Premium pour des dépenses illimitées.`,
             limitReached: true,
             currentCount: limitCheck.currentCount,
             maxCount: limitCheck.maxCount
-        });
+        })
+        return;
     }
 
     // Insert transaction expense
@@ -136,7 +159,10 @@ export const create = async (req, res) => {
 };
 
 // PUT /expenses/:id
-export const update = async (req, res) => {
+export const update = async (req: Request, res: Response) => {
+    if (!req.user || !req.user.id) {
+        return res.status(401).json({ message: 'Utilisateur non authentifié' });
+    }
     const userId = req.user.id;
     const { id } = req.params;
 
@@ -234,7 +260,10 @@ export const update = async (req, res) => {
 };
 
 // DELETE /expenses/:id
-export const remove = async (req, res) => {
+export const remove = async (req: Request, res: Response) => {
+    if (!req.user || !req.user.id) {
+        return res.status(401).json({ message: 'Utilisateur non authentifié' });
+    }
     const userId = req.user.id;
     const { id } = req.params;
 

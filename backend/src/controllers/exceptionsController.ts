@@ -1,7 +1,8 @@
-const db = require('../models/db');
+import type { Request, Response } from 'express';
+import db from '../models/db.ts';
 
 // Créer une exception pour un revenu (transaction income)
-export const create = async (req, res) => {
+export const create = async (req: Request, res: Response): Promise<void> => {
   const {
     transaction_id,
     exception_name,
@@ -11,6 +12,11 @@ export const create = async (req, res) => {
     override_amount,
     override_n_months
   } = req.body;
+
+  if (!transaction_id || !exception_name || !started_at) {
+    res.status(400).json({ message: 'transaction_id, exception_name et started_at sont requis' });
+    return;
+  }
 
   try {
     const { rows } = await db.query(
@@ -38,13 +44,20 @@ export const create = async (req, res) => {
 
     res.status(201).json(rows[0]);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    if(err instanceof Error) {
+      res.status(400).json({ message: err.message });
+    }
   }
 };
 
 // Récupérer toutes les exceptions d’un revenu (transaction income)
-export const getByTransaction = async (req, res) => {
+export const getByTransaction = async (req: Request, res: Response): Promise<void> => {
   const { transactionId } = req.params;
+
+  if (!transactionId) {
+    res.status(400).json({ message: 'ID de la transaction requis' });
+    return;
+  }
 
   try {
     const { rows } = await db.query(
@@ -58,12 +71,14 @@ export const getByTransaction = async (req, res) => {
 
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+   if (err instanceof Error) {
+      res.status(500).json({ message: err.message });
+    }
   }
 };
 
 // Mettre à jour une exception
-export const update = async (req, res) => {
+export const update = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   const {
     exception_name,
@@ -73,6 +88,11 @@ export const update = async (req, res) => {
     override_amount,
     override_n_months
   } = req.body;
+
+  if (!id) {
+    res.status(400).json({ message: 'ID de l’exception requis' });
+    return;
+  }
 
   try {
     const { rows } = await db.query(
@@ -98,18 +118,26 @@ export const update = async (req, res) => {
     );
 
     if (rows.length === 0) {
-      return res.status(404).json({ message: 'Exception non trouvée' });
+      res.status(404).json({ message: 'Exception non trouvée' });
+      return;
     }
 
     res.json(rows[0]);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+  if (err instanceof Error) {
+      res.status(400).json({ message: err.message });
+    }
   }
 };
 
 // Supprimer une exception
-export const deleteException = async (req, res) => {
+export const deleteException = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
+
+  if (!id) {
+    res.status(400).json({ message: 'ID de l’exception requis' });
+    return;
+  }
 
   try {
     const result = await db.query(
@@ -119,11 +147,14 @@ export const deleteException = async (req, res) => {
     );
 
     if (result.rowCount === 0) {
-      return res.status(404).json({ message: 'Exception non trouvée' });
+      res.status(404).json({ message: 'Exception non trouvée' });
+      return;
     }
 
     res.status(204).send();
   } catch (err) {
-    res.status(500).json({ message: err.message });
+   if (err instanceof Error) {
+      res.status(400).json({ message: err.message });
+    }
   }
 };

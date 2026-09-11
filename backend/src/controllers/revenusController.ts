@@ -1,11 +1,18 @@
 // controllers/revenusController.js
-import db from '../models/db.js';
+import db from '../models/db.ts';
 import { v4 as uuidv4 } from 'uuid';
-import { checkIncomeLimit } from '../utils/subscription.js';
+import { checkIncomeLimit } from '../utils/subscription.ts';
+import { Request, Response } from 'express';
 
-export const getAll = async (req, res) => {
+export const getAll = async (req: Request, res: Response): Promise<void> => {
+  
+  if (!req.user) {
+     res.status(401).json({ message: 'Utilisateur non authentifié' });
+     return;
+  }
+
   console.log("REQ.USER =", req.user);
-  const userId = req.user.id;
+  const userId:string = req.user.id;
 
   const { rows } = await db.query(`
     SELECT
@@ -18,10 +25,16 @@ export const getAll = async (req, res) => {
     ORDER BY t.start_date DESC
   `, [userId]);
   res.json(rows);
+
+
 };
 
-export const getById = async (req, res) => {
-  const userId = req.user.id;
+export const getById = async (req: Request, res: Response<{ message: string }>): Promise<void> => {
+  if (!req.user) {
+    res.status(401).json({ message: 'Utilisateur non authentifié' });
+    return;
+  }
+  const userId: string = req.user.id;
   const { id } = req.params;
   const { rows } = await db.query(
       ` SELECT t.*
@@ -34,12 +47,13 @@ export const getById = async (req, res) => {
       `, [id, userId]);
 
   if (rows.length === 0) {
-    return res.status(404).json({ message: 'Revenu non trouvé' });
+     res.status(404).json({ message: 'Revenu non trouvé' });
+     return;
   }
   res.json(rows[0]);
 };
 
-export const create = async (req, res) => {
+export const create = async (req: Request, res: Response): Promise<void> => {
 
   let {
     account_id,
@@ -56,9 +70,10 @@ export const create = async (req, res) => {
   // Validation des champs obligatoires
 
   if (!account_id || !transaction_name || !amount || !start_date) {
-    return res.status(400).json({
+     res.status(400).json({
       message: 'Champs obligatoires manquants'
     });
+    return;
   }
 
   if (end_date === "") {
@@ -66,20 +81,27 @@ export const create = async (req, res) => {
   }
 
   if (amount <= 0) {
-    return res.status(400).json({
+     res.status(400).json({
       message: 'Le montant doit être positif'
     });
+    return;
   }
 
   if (duration_type === 'recurring') {
     if (!interval_count || interval_count < 1 || !interval_unit) {
-      return res.status(400).json({
+       res.status(400).json({
         message: 'interval_count et interval_unit obligatoire pour un revenu récurrent'
       });
+      return;
     }
   }
 
 // Vérification de la propriété du compte
+
+if (!req.user) {
+    res.status(401).json({ message: 'Utilisateur non authentifié' });
+    return;
+  }
 
   const accountCheck = await db.query(
       `SELECT 1 FROM accounts WHERE id = $1 AND user_id = $2`,
@@ -87,18 +109,20 @@ export const create = async (req, res) => {
   );
 
   if (!accountCheck.rowCount) {
-    return res.status(403).json({ message: 'Compte non autorisé' });
+     res.status(403).json({ message: 'Compte non autorisé' });
+     return;
   }
 
   // Vérifier la limite de revenus par compte
   const limitCheck = await checkIncomeLimit(req.user.id, account_id);
   if (limitCheck.limitReached) {
-    return res.status(403).json({
+     res.status(403).json({
       message: `Limite de revenus atteinte. Vous avez atteint la limite de ${limitCheck.maxCount} revenus par compte du plan gratuit. Abonnez-vous au plan Premium pour des revenus illimités.`,
       limitReached: true,
       currentCount: limitCheck.currentCount,
       maxCount: limitCheck.maxCount
     });
+    return;
   }
 
   // Insertion du nouveau revenu
@@ -140,7 +164,13 @@ export const create = async (req, res) => {
   res.status(201).json(transaction);
 };
 
-export const update = async (req, res) => {
+export const update = async (req: Request, res: Response<{ message: string }>): Promise<void> => {
+
+  if (!req.user) {
+    res.status(401).json({ message: 'Utilisateur non authentifié' });
+    return;
+  }
+
   const userId = req.user.id;
   const { id } = req.params;
 
@@ -158,15 +188,17 @@ export const update = async (req, res) => {
   // Validation des champs obligatoires
 
   if (!transaction_name || !amount || !start_date) {
-    return res.status(400).json({
+     res.status(400).json({
       message: 'Champs obligatoires manquants'
     });
+    return;
   }
 
   if (amount <= 0) {
-    return res.status(400).json({
+     res.status(400).json({
       message: 'Le montant doit être positif'
     });
+    return;
   }
 
   if (end_date === "") {
@@ -175,7 +207,8 @@ export const update = async (req, res) => {
 
   if (duration_type === 'recurring') {
     if (!interval_count || interval_count < 1 || !interval_unit) {
-      return res.status(400).json({ message: 'interval_count et interval_unit obligatoires pour un revenu récurrent' });
+       res.status(400).json({ message: 'interval_count et interval_unit obligatoires pour un revenu récurrent' });
+       return;
     }
   }
 
@@ -209,7 +242,8 @@ export const update = async (req, res) => {
   );
 
   if (!transactionRows.length) {
-    return res.status(404).json({ message: 'Revenu non trouvé' });
+   res.status(404).json({ message: 'Revenu non trouvé' });
+   return;
   }
 
   // Mettre à jour ou créer la règle de récurrence
@@ -247,7 +281,11 @@ export const update = async (req, res) => {
   res.json(transactionRows[0]);
 };
 
-export const remove = async (req, res) => {
+export const remove = async (req: Request, res: Response<{ message: string }>): Promise<void> => {
+  if (!req.user) {
+    res.status(401).json({ message: 'Utilisateur non authentifié' });
+    return;
+  }
   const userId = req.user.id;
   const { id } = req.params;
 
@@ -265,7 +303,8 @@ export const remove = async (req, res) => {
   );
 
   if (!result.rowCount) {
-    return res.status(404).json({ message: 'Revenu non trouvé' });
+     res.status(404).json({ message: 'Revenu non trouvé' });
+     return;
   }
 
   res.status(204).send();

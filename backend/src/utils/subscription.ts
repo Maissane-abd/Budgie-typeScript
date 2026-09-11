@@ -1,12 +1,30 @@
 // utils/subscription.js
-import db from '../models/db.js';
+import db from '../models/db.ts';
+
+type Plan = {
+    plan_name: string;
+    max_accounts: number;
+    max_expenses_per_account: number;
+    max_incomes_per_account: number;
+};
+
+export type LimitCheckResult = {
+    limitReached: boolean;
+    currentCount: number;
+    maxCount: number | null;
+};
 
 /**
  * Récupère le plan actif de l'utilisateur et ses limites
  * @param {string} userId - ID de l'utilisateur
  * @returns {Promise<Object|null>} Plan avec limites ou null si pas d'abonnement actif
  */
-export async function getUserPlan(userId) {
+export async function getUserPlan(userId: string): Promise<Plan | null> {
+
+    if (!userId) {
+        throw new Error('L\'ID de l\'utilisateur est requis pour récupérer le plan.');
+    }
+
     try {
         const { rows } = await db.query(
             `SELECT 
@@ -53,11 +71,11 @@ export async function getUserPlan(userId) {
  * @param {string} accountId - ID du compte
  * @returns {Promise<Object>} { limitReached: boolean, currentCount: number, maxCount: number|null }
  */
-export async function checkExpenseLimit(userId, accountId) {
-    const plan = await getUserPlan(userId);
+export async function checkExpenseLimit(userId: string, accountId: string): Promise<LimitCheckResult> {
+    const plan: Plan | null = await getUserPlan(userId);
 
     // Si Premium ou limite null/undefined, pas de limite
-    if (plan.plan_name === 'Premium' || !plan.max_expenses_per_account) {
+    if (plan?.plan_name === 'Premium' || !plan?.max_expenses_per_account) {
         return { limitReached: false, currentCount: 0, maxCount: null };
     }
 
@@ -72,8 +90,8 @@ export async function checkExpenseLimit(userId, accountId) {
         [accountId, userId]
     );
 
-    const currentCount = parseInt(rows[0].count, 10);
-    const maxCount = plan.max_expenses_per_account;
+    const currentCount: number = parseInt(rows[0].count, 10);
+    const maxCount: number | null = plan?.max_expenses_per_account ?? null;
 
     return {
         limitReached: currentCount >= maxCount,
@@ -88,11 +106,11 @@ export async function checkExpenseLimit(userId, accountId) {
  * @param {string} accountId - ID du compte
  * @returns {Promise<Object>} { limitReached: boolean, currentCount: number, maxCount: number|null }
  */
-export async function checkIncomeLimit(userId, accountId) {
-    const plan = await getUserPlan(userId);
+export async function checkIncomeLimit(userId: string, accountId: string): Promise<LimitCheckResult> {
+    const plan: Plan | null = await getUserPlan(userId);
 
     // Si Premium ou limite null/undefined, pas de limite
-    if (plan.plan_name === 'Premium' || !plan.max_incomes_per_account) {
+    if (plan?.plan_name === 'Premium' || !plan?.max_incomes_per_account) {
         return { limitReached: false, currentCount: 0, maxCount: null };
     }
 
@@ -107,8 +125,8 @@ export async function checkIncomeLimit(userId, accountId) {
         [accountId, userId]
     );
 
-    const currentCount = parseInt(rows[0].count, 10);
-    const maxCount = plan.max_incomes_per_account;
+    const currentCount: number = parseInt(rows[0].count, 10);
+    const maxCount: number | null = plan?.max_incomes_per_account ?? null;
 
     return {
         limitReached: currentCount >= maxCount,

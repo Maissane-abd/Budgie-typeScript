@@ -1,25 +1,50 @@
-import { stripe } from "../config/stripe.js";
-import db from "../models/db.js";
+import { stripe } from "../config/stripe.ts";
+import db from "../models/db.ts";
+import type { Request, Response } from "express";
+
+type CheckoutSuccessResponse = {
+  url: string | null;
+};
+
+type CheckoutErrorResponse = {
+  error: string;
+  details?: string;
+  type?: string;
+};
+
+type CheckoutResponse =
+  | CheckoutSuccessResponse
+  | CheckoutErrorResponse;
+
 
 /**
  * POST /api/payments/checkout
  * Création d'une session Stripe Checkout
  * Body: { priceId }
  */
-export async function createCheckoutSession(req, res) {
+export async function createCheckoutSession(req: Request, res: Response<CheckoutResponse>): Promise<void> {
   if (!stripe) {
-    return res.status(503).json({
+     res.status(503).json({
       error: "Paiements Stripe désactivés en environnement local",
     });
+    return;
+  }
+
+  if (!req.user) { 
+     res.status(401).json({
+      error: "Utilisateur non authentifié",
+    });
+    return;
   }
 
   const { priceId } = req.body;
-  const userEmail = req.user.email; // L'utilisateur est authentifié via requireAuth
+  const userEmail:string = req.user.email; // L'utilisateur est authentifié via requireAuth
 
   if (!priceId) {
-    return res.status(400).json({
+     res.status(400).json({
       error: "priceId est requis",
     });
+    return;
   }
 
   try {
@@ -39,16 +64,28 @@ export async function createCheckoutSession(req, res) {
 
     res.json({ url: session.url });
   } catch (error) {
-    console.error("Stripe checkout error:", error);
-    // Retourner plus d'informations sur l'erreur
+
+     if (error instanceof Error) {
     res.status(500).json({
       error: "Impossible de créer la session",
-      details: error.message || "Erreur inconnue",
-      type: error.type || "stripe_error"
+      details: error.message,
+      type: "type" in error && typeof error.type === "string"
+        ? error.type
+        : "stripe_error"
     });
+    return;
+  }
+
+  res.status(500).json({
+    error: "Impossible de créer la session",
+    details: "Erreur inconnue",
+    type: "stripe_error"
+  });
   }
 }
+    
 
+   
 /**
  * Helper: Récupère ou crée le plan Premium
  */
@@ -74,7 +111,7 @@ async function getOrCreatePremiumPlan() {
 /**
  * Helper: Récupère l'utilisateur par email
  */
-async function getUserByEmail(email) {
+async function getUserByEmail(email: string): Promise<string | null> {
   const { rows } = await db.query("SELECT id FROM users WHERE email = $1", [
     email,
   ]);
@@ -84,7 +121,7 @@ async function getUserByEmail(email) {
 /**
  * Helper: Calcule la date de fin en fonction de la période du prix
  */
-function calculateEndDate(startedAt, interval, intervalCount = 1) {
+function calculateEndDate(startedAt: Date, interval: string, intervalCount: number = 1) {
   const endDate = new Date(startedAt);
 
   if (interval === 'month') {
@@ -101,7 +138,7 @@ function calculateEndDate(startedAt, interval, intervalCount = 1) {
 /**
  * Helper: Limite les comptes d'un utilisateur à 2 (garde les 2 plus anciens)
  */
-async function limitAccountsToTwo(userId) {
+async function limitAccountsToTwo(userId: string) {
   try {
     // Compter le nombre de comptes de l'utilisateur
     const { rows: countRows } = await db.query(
@@ -142,15 +179,26 @@ async function limitAccountsToTwo(userId) {
 /**
  * Helper: Crée ou met à jour un abonnement
  */
+
+type UpsertSubscriptionParams = {
+  userId: string;
+  planId: string;
+  status: string;
+  stripeCustomerId: string;
+  stripeSubscriptionId: string;
+  startedAt: Date;
+  endsAt: Date | null;
+};
+
 async function upsertSubscription({
-                                    userId,
-                                    planId,
-                                    status,
-                                    stripeCustomerId,
-                                    stripeSubscriptionId,
-                                    startedAt,
-                                    endsAt,
-                                  }) {
+                                    userId ,
+                                    planId ,
+                                    status ,
+                                    stripeCustomerId ,
+                                    stripeSubscriptionId ,
+                                    startedAt ,
+                                    endsAt ,
+                                  }: UpsertSubscriptionParams): Promise<void> {
   // Vérifier si un abonnement existe déjà
   const { rows: existing } = await db.query(
       "SELECT id FROM subscriptions WHERE stripe_subscription_id = $1",
@@ -189,7 +237,41 @@ async function upsertSubscription({
  * POST /api/payments/webhook
  * Webhook Stripe
  */
-export const stripeWebhook = async (req, res) => {
+
+// -- Table des Abonnements
+// CREATE TABLE subscriptions (
+//   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+//   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+//   plan_id UUID NOT NULL REFERENCES plans(id),
+//   status VARCHAR(50) NOT NULL CHECK (status IN ('active','canceled','trial')),
+//   started_at TIMESTAMPTZ NOT NULL,
+//   ends_at TIMESTAMPTZ,
+//   stripe_customer_id VARCHAR(255),
+//   stripe_subscription_id VARCHAR(255),
+//   created_at TIMESTAMPTZ DEFAULT now()
+// );
+
+type SubscriptionsRow = {
+  id: string;
+  user_id: string;
+  plan_id: string;
+  status: 'active' | 'canceled' | 'trial';
+  started_at: Date;
+  ends_at: Date | null;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  created_at: Date;
+};
+
+const endpointSecret: string | undefined = process.env.STRIPE_WEBHOOK_SECRET;
+
+if (!endpointSecret) {
+  throw new Error(
+      "STRIPE_WEBHOOK_SECRET est manquant dans les variables d'environnement"
+  );
+}
+
+export const stripeWebhook = async (req: any, res: any) => {
   if (!stripe) {
     return res.status(503).json({
       error: "Stripe webhook désactivé (Stripe non configuré)",
@@ -199,14 +281,20 @@ export const stripeWebhook = async (req, res) => {
   const sig = req.headers["stripe-signature"];
 
   let event;
+
   try {
     event = stripe.webhooks.constructEvent(
         req.body,
         sig,
-        process.env.STRIPE_WEBHOOK_SECRET
+        endpointSecret
     );
   } catch (err) {
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    if (err instanceof Error) {
+      console.error("❌ Webhook signature verification failed:", err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+    console.error("❌ Webhook signature verification failed: unknown error");
+    return res.status(400).send("Webhook Error: unknown error");
   }
 
   try {
@@ -216,20 +304,33 @@ export const stripeWebhook = async (req, res) => {
         console.log("✅ Checkout session completed:", session.id);
 
         if (session.mode === "subscription" && session.subscription) {
-          const customerEmail = session.customer_email || session.customer_details?.email;
+          const customerEmail =
+            session.customer_email ||
+            session.customer_details?.email;
+
           if (!customerEmail) {
             console.error("❌ Pas d'email dans la session");
             break;
           }
 
           const userId = await getUserByEmail(customerEmail);
+
           if (!userId) {
-            console.error(`❌ Utilisateur introuvable pour l'email: ${customerEmail}`);
+            console.error(
+              `❌ Utilisateur introuvable pour l'email: ${customerEmail}`
+            );
             break;
           }
 
           const planId = await getOrCreatePremiumPlan();
-          const subscription = await stripe.subscriptions.retrieve(session.subscription);
+
+          const subscriptionId =
+            typeof session.subscription === "string"
+              ? session.subscription
+              : session.subscription.id;
+
+          const subscription =
+            await stripe.subscriptions.retrieve(subscriptionId);
 
           const status = subscription.status === "active" ? "active" : "trial";
 
@@ -370,9 +471,12 @@ export const stripeWebhook = async (req, res) => {
 
     res.json({ received: true });
   } catch (error) {
-    console.error("❌ Erreur lors du traitement du webhook:", error);
-    // Retourner 200 pour éviter que Stripe ne réessaie trop souvent
-    res.json({ received: true, error: error.message });
+   if (error instanceof Error) {
+      console.error("❌ Erreur lors du traitement du webhook:", error.message);
+      return res.status(500).send(`Webhook Error: ${error.message}`);
+    }
+    console.error("❌ Erreur inconnue lors du traitement du webhook:", error);
+    return res.status(500).send("Webhook Error: erreur inconnue");
   }
 };
 
@@ -380,7 +484,7 @@ export const stripeWebhook = async (req, res) => {
  * GET /api/payments/subscription
  * Récupère l'abonnement actif de l'utilisateur connecté depuis la base de données
  */
-export async function getCurrentSubscription(req, res) {
+export async function getCurrentSubscription(req: { user: { id: string } }, res: any) {
   try {
     const userId = req.user.id;
 
@@ -433,7 +537,7 @@ export async function getCurrentSubscription(req, res) {
  * Modifie l'abonnement actif (change de price, ex: mensuel -> annuel)
  * Body: { priceId }
  */
-export async function updateSubscription(req, res) {
+export async function updateSubscription(req: { user: { id: string }; body: { priceId: string } }, res: any) {
   if (!stripe) {
     return res.status(503).json({
       error: "Stripe non configuré",
@@ -497,10 +601,22 @@ export async function updateSubscription(req, res) {
       subscription: updatedSubscription,
     });
   } catch (error) {
-    console.error("Erreur lors de la modification de l'abonnement:", error);
-    res.status(500).json({
+    // console.error("Erreur lors de la modification de l'abonnement:", error);
+    // res.status(500).json({
+    //   error: "Erreur lors de la modification de l'abonnement",
+    //   details: error.message || "Erreur inconnue",
+    // });
+    if (error instanceof Error) {
+      console.error("Erreur lors de la modification de l'abonnement:", error.message);
+      return res.status(500).json({
+        error: "Erreur lors de la modification de l'abonnement",
+        details: error.message,
+      });
+    }
+    console.error("Erreur inconnue lors de la modification de l'abonnement:", error);
+    return res.status(500).json({
       error: "Erreur lors de la modification de l'abonnement",
-      details: error.message || "Erreur inconnue",
+      details: "Erreur inconnue",
     });
   }
 }
@@ -509,7 +625,7 @@ export async function updateSubscription(req, res) {
  * DELETE /api/payments/subscription
  * Annule l'abonnement actif de l'utilisateur connecté
  */
-export async function cancelSubscription(req, res) {
+export async function cancelSubscription(req: { user: { id: string } }, res: any) {
   if (!stripe) {
     return res.status(503).json({
       error: "Stripe non configuré",
@@ -566,10 +682,17 @@ export async function cancelSubscription(req, res) {
       subscription: canceledSubscription,
     });
   } catch (error) {
-    console.error("Erreur lors de l'annulation de l'abonnement:", error);
-    res.status(500).json({
+    if (error instanceof Error) {
+      console.error("Erreur lors de l'annulation de l'abonnement:", error.message);
+      return res.status(500).json({
+        error: "Erreur lors de l'annulation de l'abonnement",
+        details: error.message,
+      });
+    }
+    console.error("Erreur inconnue lors de l'annulation de l'abonnement:", error);
+    return res.status(500).json({
       error: "Erreur lors de l'annulation de l'abonnement",
-      details: error.message || "Erreur inconnue",
+      details: "Erreur inconnue",
     });
   }
 }
