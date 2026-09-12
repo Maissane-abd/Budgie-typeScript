@@ -265,16 +265,23 @@ type SubscriptionsRow = {
 
 const endpointSecret: string | undefined = process.env.STRIPE_WEBHOOK_SECRET;
 
-if (!endpointSecret) {
-  throw new Error(
-      "STRIPE_WEBHOOK_SECRET est manquant dans les variables d'environnement"
-  );
-}
+
+// if (!endpointSecret) {
+//   throw new Error(
+//       "STRIPE_WEBHOOK_SECRET est manquant dans les variables d'environnement"
+//   );
+// }
 
 export const stripeWebhook = async (req:Request, res: Response) => {
   if (!stripe) {
     return res.status(503).json({
       error: "Stripe webhook désactivé (Stripe non configuré)",
+    });
+  }
+
+  if (!endpointSecret) {
+    return res.status(503).json({
+      error: "Stripe webhook désactivé (STRIPE_WEBHOOK_SECRET manquant)",
     });
   }
 

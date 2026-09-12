@@ -8,6 +8,6 @@
     "noEmit": true, // Empêche l'émission de fichiers JavaScript, utile pour le développement
     "typeRoots": ["./node_modules/@types", "./src/types"] //custom type definitions
   },
-  "include": ["src/**/*.ts", "src/routes/webhook.ts", "src/routes/accounts.ts", "src/controllers/revenusController.ts", "src/controllers/payments.controller.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["dist", "node_modules"]
 }

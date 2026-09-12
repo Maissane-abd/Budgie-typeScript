@@ -1,6 +1,6 @@
 import express from 'express';
 import type { Router } from 'express';
-import { create, getByTransaction, update, deleteException } from '../controllers/exceptionsController.ss';
+import { create, getByTransaction, update, deleteException } from '../controllers/exceptionsController.ts';
 
 const router:Router = express.Router();
 
