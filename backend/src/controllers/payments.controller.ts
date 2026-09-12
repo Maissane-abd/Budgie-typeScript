@@ -271,14 +271,18 @@ if (!endpointSecret) {
   );
 }
 
-export const stripeWebhook = async (req: any, res: any) => {
+export const stripeWebhook = async (req:Request, res: Response) => {
   if (!stripe) {
     return res.status(503).json({
       error: "Stripe webhook désactivé (Stripe non configuré)",
     });
   }
 
-  const sig = req.headers["stripe-signature"];
+  const sig: string | string[] | undefined = req.headers["stripe-signature"];
+
+  if (!sig) {
+    return res.status(400).send("Missing stripe-signature header");
+  }
 
   let event;
 
@@ -341,14 +345,14 @@ export const stripeWebhook = async (req: any, res: any) => {
 
           // Convertir les timestamps Stripe (en secondes) en dates JavaScript
           // Stripe calcule automatiquement current_period_end selon la période du prix (mensuel ou annuel)
-          const startedAt = subscription.current_period_start
-              ? new Date(subscription.current_period_start * 1000)
+          const startedAt = priceItem?.current_period_start
+              ? new Date(priceItem.current_period_start * 1000)
               : new Date();
 
           // Utiliser current_period_end de Stripe, ou calculer en fallback
           let endsAt = null;
-          if (subscription.current_period_end) {
-            endsAt = new Date(subscription.current_period_end * 1000);
+          if (priceItem.current_period_end) {
+            endsAt = new Date(priceItem.current_period_end * 1000);
           } else if (startedAt) {
             // Fallback: calculer la date de fin en fonction de l'interval
             endsAt = calculateEndDate(startedAt, interval, intervalCount);
@@ -357,11 +361,21 @@ export const stripeWebhook = async (req: any, res: any) => {
           // Log pour vérifier la période (optionnel, pour debug)
           console.log(`📅 Période d'abonnement: ${intervalCount} ${interval}${intervalCount > 1 ? 's' : ''} | Fin: ${endsAt?.toISOString()}`);
 
+          if (subscription.customer === null) {
+            console.error("❌ Pas de customer dans l'abonnement:", subscriptionId);
+            break;
+          }
+
+          const stripeCustomerId =
+            typeof subscription.customer === "string"
+              ? subscription.customer
+              : subscription.customer.id;
+
           await upsertSubscription({
             userId,
             planId,
             status,
-            stripeCustomerId: subscription.customer,
+            stripeCustomerId,
             stripeSubscriptionId: subscription.id,
             startedAt,
             endsAt,
@@ -374,12 +388,28 @@ export const stripeWebhook = async (req: any, res: any) => {
       case "customer.subscription.updated": {
         const subscription = event.data.object;
         console.log(
-            `✅ Subscription ${event.type === "created" ? "créée" : "mise à jour"}:`,
+            `✅ Subscription ${event.type === "customer.subscription.created" ? "créée" : "mise à jour"}:`,
             subscription.id
         );
 
+        if (!subscription.customer) {
+          console.error("❌ Aucun customer associé");
+          break;
+        }
+
+        const customerId =
+          typeof subscription.customer === "string"
+            ? subscription.customer
+            : subscription.customer.id;
+
         // Récupérer le customer pour obtenir l'email
-        const customer = await stripe.customers.retrieve(subscription.customer);
+        const customer = await stripe.customers.retrieve(customerId);
+
+        if ("deleted" in customer) {
+          console.error("❌ Le customer Stripe a été supprimé:", customer.id);
+          break;
+        }
+
         const customerEmail =
             typeof customer === "object" && customer.email ? customer.email : null;
 
@@ -409,14 +439,14 @@ export const stripeWebhook = async (req: any, res: any) => {
 
         // Convertir les timestamps Stripe (en secondes) en dates JavaScript
         // Stripe calcule automatiquement current_period_end selon la période du prix (mensuel ou annuel)
-        const startedAt = subscription.current_period_start
-            ? new Date(subscription.current_period_start * 1000)
+        const startedAt = priceItem?.current_period_start
+            ? new Date(priceItem.current_period_start * 1000)
             : new Date();
 
         // Utiliser current_period_end de Stripe, ou calculer en fallback
         let endsAt = null;
-        if (subscription.current_period_end) {
-          endsAt = new Date(subscription.current_period_end * 1000);
+        if (priceItem?.current_period_end) {
+          endsAt = new Date(priceItem.current_period_end * 1000);
         } else if (startedAt) {
           // Fallback: calculer la date de fin en fonction de l'interval
           endsAt = calculateEndDate(startedAt, interval, intervalCount);
@@ -425,11 +455,16 @@ export const stripeWebhook = async (req: any, res: any) => {
         // Log pour vérifier la période (optionnel, pour debug)
         console.log(`📅 Période d'abonnement: ${intervalCount} ${interval}${intervalCount > 1 ? 's' : ''} | Fin: ${endsAt?.toISOString()}`);
 
+        const stripeCustomerId =
+            typeof subscription.customer === "string"
+              ? subscription.customer
+              : subscription.customer.id; 
+
         await upsertSubscription({
           userId,
           planId,
           status,
-          stripeCustomerId: subscription.customer,
+          stripeCustomerId,
           stripeSubscriptionId: subscription.id,
           startedAt,
           endsAt,
