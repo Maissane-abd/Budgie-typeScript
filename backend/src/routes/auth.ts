@@ -3,7 +3,7 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import db from '../models/db.ts';
+import db from '../models/db.js';
 import type { Request, Response, NextFunction } from 'express';
 import type {Router} from 'express';
 

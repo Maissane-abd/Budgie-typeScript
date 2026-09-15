@@ -2,8 +2,8 @@
 // Routes et contrôleurs pour le calcul des prévisions financières
 
 import express from "express";
-import db from "../models/db.ts";
-import { requireAuth } from "./auth.ts";
+import db from "../models/db.js";
+import { requireAuth } from "./auth.js";
 import { Request, Response } from "express";
 import type { Router } from "express";
 

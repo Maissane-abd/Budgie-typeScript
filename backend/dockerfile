@@ -1,6 +1,6 @@
 # Dockerfile pour le backend Node.js
 # Utilise une image Node officielle
-FROM node:20-alpine
+FROM node:20-alpine 
 
 # Crée un dossier de travail
 WORKDIR /app
@@ -13,6 +13,9 @@ RUN npm install
 
 # Copie tout le code source
 COPY . .
+
+# Compile en js
+RUN npm run build
 
 # Expose le port du backend
 EXPOSE 5001

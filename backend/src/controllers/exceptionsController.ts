@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import db from '../models/db.ts';
+import db from '../models/db.js';
 
 // Créer une exception pour un revenu (transaction income)
 export const create = async (req: Request, res: Response): Promise<void> => {

@@ -1,5 +1,5 @@
-import { stripe } from "../config/stripe.ts";
-import db from "../models/db.ts";
+import { stripe } from "../config/stripe.js";
+import db from "../models/db.js";
 import type { Request, Response } from "express";
 
 type CheckoutSuccessResponse = {

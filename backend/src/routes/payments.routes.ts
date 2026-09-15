@@ -1,5 +1,5 @@
 import express from "express";
-import { createCheckoutSession, getCurrentSubscription, cancelSubscription, updateSubscription } from "../controllers/payments.controller.ts";
+import { createCheckoutSession, getCurrentSubscription, cancelSubscription, updateSubscription } from "../controllers/payments.controller.js";
 import { requireAuth } from "./auth.js";
 import type { Router } from "express";
 

@@ -1,10 +1,20 @@
+// routes, controllers et middleware pour l’authentification
+// backend/src/routes/auth.js
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import db from '../models/db.js';
 const router = express.Router();
+function getEnvVariable(name) {
+    const value = process.env[name];
+    if (!value) {
+        throw new Error(`${name} n'est pas défini`);
+    }
+    return value;
+}
+const JWT_SECRET = getEnvVariable("JWT_SECRET");
 function createToken(user) {
-    return jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "1d" });
+    return jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: "1d" });
 }
 export function requireAuth(req, res, next) {
     const authHeader = req.headers.authorization || "";
@@ -12,7 +22,8 @@ export function requireAuth(req, res, next) {
     if (!token)
         return res.status(401).json({ error: "Token manquant" });
     try {
-        req.user = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.user = { id: decoded.id, email: decoded.email };
         next();
     }
     catch (err) {
@@ -66,10 +77,13 @@ router.post("/login", async (req, res) => {
         res.json({ user, token });
     }
     catch (err) {
+        console.error(err);
         res.status(500).json({ error: "Erreur serveur" });
     }
 });
 router.get("/me", requireAuth, async (req, res) => {
+    if (!req.user)
+        return res.status(401).json({ error: "Utilisateur non authentifié" });
     try {
         const { rows } = await db.query(queryUser, [req.user.id]);
         if (!rows.length)
@@ -82,6 +96,8 @@ router.get("/me", requireAuth, async (req, res) => {
 });
 router.put("/me", requireAuth, async (req, res) => {
     const { first_name, last_name, email } = req.body;
+    if (!req.user)
+        return res.status(401).json({ error: "Utilisateur non authentifié" });
     try {
         await db.query(`UPDATE users 
        SET first_name = COALESCE($1, first_name), 
@@ -93,17 +109,22 @@ router.put("/me", requireAuth, async (req, res) => {
         res.json(rows[0]);
     }
     catch (err) {
-        if (err.code === '23505')
-            return res.status(409).json({ error: "Email pris" });
-        res.status(500).json({ error: "Erreur mise à jour" });
+        if (err instanceof Error && err.message.includes("duplicate key value")) {
+            return res.status(409).json({ error: "Email déjà utilisé" });
+        }
+        console.error(err);
+        res.status(500).json({ error: "Erreur serveur" });
     }
 });
 router.delete("/me", requireAuth, async (req, res) => {
+    if (!req.user)
+        return res.status(401).json({ error: "Utilisateur non authentifié" });
     try {
         await db.query('DELETE FROM users WHERE id = $1', [req.user.id]);
         res.status(204).send();
     }
     catch (err) {
+        console.error(err);
         res.status(500).json({ error: "Erreur suppression" });
     }
 });

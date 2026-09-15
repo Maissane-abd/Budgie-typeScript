@@ -6,6 +6,9 @@ import db from '../models/db.js';
  * @returns {Promise<Object|null>} Plan avec limites ou null si pas d'abonnement actif
  */
 export async function getUserPlan(userId) {
+    if (!userId) {
+        throw new Error('L\'ID de l\'utilisateur est requis pour récupérer le plan.');
+    }
     try {
         const { rows } = await db.query(`SELECT 
         p.plan_name,
@@ -50,7 +53,7 @@ export async function getUserPlan(userId) {
 export async function checkExpenseLimit(userId, accountId) {
     const plan = await getUserPlan(userId);
     // Si Premium ou limite null/undefined, pas de limite
-    if (plan.plan_name === 'Premium' || !plan.max_expenses_per_account) {
+    if (plan?.plan_name === 'Premium' || !plan?.max_expenses_per_account) {
         return { limitReached: false, currentCount: 0, maxCount: null };
     }
     // Compter les dépenses pour ce compte
@@ -61,7 +64,7 @@ export async function checkExpenseLimit(userId, accountId) {
      AND t.transaction_type = 'expense'
      AND a.user_id = $2`, [accountId, userId]);
     const currentCount = parseInt(rows[0].count, 10);
-    const maxCount = plan.max_expenses_per_account;
+    const maxCount = plan?.max_expenses_per_account ?? null;
     return {
         limitReached: currentCount >= maxCount,
         currentCount,
@@ -77,7 +80,7 @@ export async function checkExpenseLimit(userId, accountId) {
 export async function checkIncomeLimit(userId, accountId) {
     const plan = await getUserPlan(userId);
     // Si Premium ou limite null/undefined, pas de limite
-    if (plan.plan_name === 'Premium' || !plan.max_incomes_per_account) {
+    if (plan?.plan_name === 'Premium' || !plan?.max_incomes_per_account) {
         return { limitReached: false, currentCount: 0, maxCount: null };
     }
     // Compter les revenus pour ce compte
@@ -88,7 +91,7 @@ export async function checkIncomeLimit(userId, accountId) {
      AND t.transaction_type = 'income'
      AND a.user_id = $2`, [accountId, userId]);
     const currentCount = parseInt(rows[0].count, 10);
-    const maxCount = plan.max_incomes_per_account;
+    const maxCount = plan?.max_incomes_per_account ?? null;
     return {
         limitReached: currentCount >= maxCount,
         currentCount,

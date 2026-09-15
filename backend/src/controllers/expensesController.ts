@@ -1,5 +1,5 @@
 // controllers/expensesController.js
-import db from '../models/db.ts';
+import db from '../models/db.js';
 import { checkExpenseLimit } from '../utils/subscription.js';
 import type { Request, Response } from 'express';
 import type { LimitCheckResult } from '../utils/subscription.ts';

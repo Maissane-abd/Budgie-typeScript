@@ -1,7 +1,7 @@
 // controllers/revenusController.js
-import db from '../models/db.ts';
+import db from '../models/db.js';
 import { v4 as uuidv4 } from 'uuid';
-import { checkIncomeLimit } from '../utils/subscription.ts';
+import { checkIncomeLimit } from '../utils/subscription.js';
 import { Request, Response } from 'express';
 
 export const getAll = async (req: Request, res: Response): Promise<void> => {

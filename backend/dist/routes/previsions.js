@@ -1,4 +1,5 @@
 // backend/src/routes/previsions.js
+// Routes et contrôleurs pour le calcul des prévisions financières
 import express from "express";
 import db from "../models/db.js";
 import { requireAuth } from "./auth.js";
@@ -52,7 +53,7 @@ function calculateAccountForecast(account, transactions, targetDate) {
     for (const transaction of transactions) {
         // Transaction récurrente : calculer toutes les occurrences
         if (transaction.duration_type === 'recurring' && transaction.recurrence_rule) {
-            const occurrences = getRecurringOccurrences(transaction, transaction.recurrence_rule, target);
+            const occurrences = getRecurringOccurrences(transaction, transaction.recurrence_rule, targetDate);
             occurrences.forEach(occ => {
                 occ.name = transaction.transaction_name;
             });
@@ -72,7 +73,7 @@ function calculateAccountForecast(account, transactions, targetDate) {
         }
     }
     // Trier les occurrences par date
-    allOccurrences.sort((a, b) => a.date - b.date);
+    allOccurrences.sort((a, b) => a.date.getTime() - b.date.getTime());
     // Simuler mois par mois jusqu'à la date cible
     const monthlyDetails = [];
     let currentMonth = new Date(startDate);
@@ -128,6 +129,9 @@ function calculateAccountForecast(account, transactions, targetDate) {
  * Calcule les prévisions financières jusqu'à la date cible
  */
 router.get("/", requireAuth, async (req, res) => {
+    if (!req.user) {
+        return res.status(401).json({ error: "Utilisateur non authentifié" });
+    }
     try {
         const userId = req.user.id;
         const targetDate = req.query.target_date || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // 1 an par défaut

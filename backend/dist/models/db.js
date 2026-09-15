@@ -1,8 +1,8 @@
-import pkg from 'pg';
 import dotenv from 'dotenv';
+import { Pool } from 'pg';
 // Charge les variables d'environnement (.env) pour le local
 dotenv.config();
-const { Pool } = pkg;
+// const { Pool } = pkg;
 // Détection : Si DATABASE_URL existe, on est sur Render (Production)
 const isProduction = !!process.env.DATABASE_URL;
 const connectionConfig = {
@@ -17,7 +17,7 @@ const connectionConfig = {
     host: process.env.PGHOST,
     database: process.env.PGDATABASE,
     password: process.env.PGPASSWORD,
-    port: process.env.PGPORT,
+    port: Number(process.env.PGPORT),
     // Options du pool
     max: 10,
     idleTimeoutMillis: 30000

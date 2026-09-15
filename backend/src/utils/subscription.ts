@@ -1,5 +1,5 @@
 // utils/subscription.js
-import db from '../models/db.ts';
+import db from '../models/db.js';
 
 type Plan = {
     plan_name: string;

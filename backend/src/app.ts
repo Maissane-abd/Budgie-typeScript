@@ -3,12 +3,12 @@ import express from "express";
 import type { Express, Request, Response } from "express";
 import cors from "cors";
 
-import revenusRoutes from "./routes/revenus.ts";
-import paymentRoutes from "./routes/payments.routes.ts";
+import revenusRoutes from "./routes/revenus.js";
+import paymentRoutes from "./routes/payments.routes.js";
 import webhookRoute from "./routes/webhook.js";
 import authRoutes from "./routes/auth.js";
 import accountsRoutes from "./routes/accounts.js";
-import expensesRoutes from "./routes/expenses.ts";
+import expensesRoutes from "./routes/expenses.js";
 import previsionsRoutes from "./routes/previsions.js";
 
 

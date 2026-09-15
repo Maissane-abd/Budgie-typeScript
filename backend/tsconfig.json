@@ -4,10 +4,10 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "allowJs": true,
-    "allowImportingTsExtensions": true, // Permet d'importer des fichiers TypeScript avec l'extension .ts
-    "noEmit": true, // Empêche l'émission de fichiers JavaScript, utile pour le développement
+    // "allowImportingTsExtensions": false, // Permet d'importer des fichiers TypeScript avec l'extension .ts
+    // "noEmit": false, // Empêche l'émission de fichiers JavaScript, utile pour le développement
     "typeRoots": ["./node_modules/@types", "./src/types"] //custom type definitions
   },
   "include": ["src/**/*.ts"],
   "exclude": ["dist", "node_modules"]
-}
+} 

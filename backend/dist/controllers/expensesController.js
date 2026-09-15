@@ -3,6 +3,10 @@ import db from '../models/db.js';
 import { checkExpenseLimit } from '../utils/subscription.js';
 // GET /expenses
 export const getAll = async (req, res) => {
+    if (!req.user || !req.user.id) {
+        res.status(401).json({ message: 'Utilisateur non authentifié' });
+        return;
+    }
     const userId = req.user.id;
     const { rows } = await db.query(`
         SELECT
@@ -18,6 +22,10 @@ export const getAll = async (req, res) => {
 };
 // GET /expenses/:id
 export const getById = async (req, res) => {
+    if (!req.user || !req.user.id) {
+        res.status(401).json({ message: 'Utilisateur non authentifié' });
+        return;
+    }
     const userId = req.user.id;
     const { id } = req.params;
     const { rows } = await db.query(`
@@ -29,7 +37,8 @@ export const getById = async (req, res) => {
           AND a.user_id = $2
     `, [id, userId]);
     if (rows.length === 0) {
-        return res.status(404).json({ message: 'Dépense non trouvée' });
+        res.status(404).json({ message: 'Dépense non trouvée' });
+        return;
     }
     res.json(rows[0]);
 };
@@ -38,35 +47,44 @@ export const create = async (req, res) => {
     let { account_id, transaction_name, amount, start_date, description, duration_type, interval_count, interval_unit, end_date } = req.body;
     // Champs obligatoires
     if (!account_id || !transaction_name || !amount || !start_date) {
-        return res.status(400).json({ message: 'Champs obligatoires manquants' });
+        res.status(400).json({ message: 'Champs obligatoires manquants' });
+        return;
     }
     if (amount <= 0) {
-        return res.status(400).json({ message: 'Le montant doit être positif' });
+        res.status(400).json({ message: 'Le montant doit être positif' });
+        return;
     }
     if (end_date === "") {
         end_date = null;
     }
     if (duration_type === 'recurring') {
         if (!interval_count || interval_count < 1 || !interval_unit) {
-            return res.status(400).json({
+            res.status(400).json({
                 message: 'interval_count et interval_unit obligatoires pour une dépense récurrente'
             });
+            return;
         }
     }
     // Vérifier que le compte appartient à l'utilisateur
+    if (!req.user || !req.user.id) {
+        res.status(401).json({ message: 'Utilisateur non authentifié' });
+        return;
+    }
     const accountCheck = await db.query(`SELECT 1 FROM accounts WHERE id = $1 AND user_id = $2`, [account_id, req.user.id]);
     if (!accountCheck.rowCount) {
-        return res.status(403).json({ message: 'Compte non autorisé' });
+        res.status(403).json({ message: 'Compte non autorisé' });
+        return;
     }
     // Vérifier la limite de dépenses par compte
     const limitCheck = await checkExpenseLimit(req.user.id, account_id);
     if (limitCheck.limitReached) {
-        return res.status(403).json({
+        res.status(403).json({
             message: `Limite de dépenses atteinte. Vous avez atteint la limite de ${limitCheck.maxCount} dépenses par compte du plan gratuit. Abonnez-vous au plan Premium pour des dépenses illimitées.`,
             limitReached: true,
             currentCount: limitCheck.currentCount,
             maxCount: limitCheck.maxCount
         });
+        return;
     }
     // Insert transaction expense
     const { rows: transactionRows } = await db.query(`INSERT INTO transactions (
@@ -98,6 +116,9 @@ export const create = async (req, res) => {
 };
 // PUT /expenses/:id
 export const update = async (req, res) => {
+    if (!req.user || !req.user.id) {
+        return res.status(401).json({ message: 'Utilisateur non authentifié' });
+    }
     const userId = req.user.id;
     const { id } = req.params;
     let { transaction_name, amount, start_date, description, duration_type, interval_count, interval_unit, end_date } = req.body;
@@ -169,6 +190,9 @@ export const update = async (req, res) => {
 };
 // DELETE /expenses/:id
 export const remove = async (req, res) => {
+    if (!req.user || !req.user.id) {
+        return res.status(401).json({ message: 'Utilisateur non authentifié' });
+    }
     const userId = req.user.id;
     const { id } = req.params;
     const result = await db.query(`

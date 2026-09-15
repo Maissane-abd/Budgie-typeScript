@@ -1,7 +1,7 @@
 // backend/src/routes/accounts.js
 // Controllers et routes pour la gestion des comptes
 import express from "express";
-import db from "../models/db.ts";
+import db from "../models/db.js";
 import { requireAuth } from "./auth.js";
 import type { Request, Response } from "express";
 import type { Router } from "express";

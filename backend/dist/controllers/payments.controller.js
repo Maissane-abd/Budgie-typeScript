@@ -7,16 +7,24 @@ import db from "../models/db.js";
  */
 export async function createCheckoutSession(req, res) {
     if (!stripe) {
-        return res.status(503).json({
+        res.status(503).json({
             error: "Paiements Stripe désactivés en environnement local",
         });
+        return;
+    }
+    if (!req.user) {
+        res.status(401).json({
+            error: "Utilisateur non authentifié",
+        });
+        return;
     }
     const { priceId } = req.body;
     const userEmail = req.user.email; // L'utilisateur est authentifié via requireAuth
     if (!priceId) {
-        return res.status(400).json({
+        res.status(400).json({
             error: "priceId est requis",
         });
+        return;
     }
     try {
         const session = await stripe.checkout.sessions.create({
@@ -35,12 +43,20 @@ export async function createCheckoutSession(req, res) {
         res.json({ url: session.url });
     }
     catch (error) {
-        console.error("Stripe checkout error:", error);
-        // Retourner plus d'informations sur l'erreur
+        if (error instanceof Error) {
+            res.status(500).json({
+                error: "Impossible de créer la session",
+                details: error.message,
+                type: "type" in error && typeof error.type === "string"
+                    ? error.type
+                    : "stripe_error"
+            });
+            return;
+        }
         res.status(500).json({
             error: "Impossible de créer la session",
-            details: error.message || "Erreur inconnue",
-            type: error.type || "stripe_error"
+            details: "Erreur inconnue",
+            type: "stripe_error"
         });
     }
 }
@@ -114,9 +130,6 @@ async function limitAccountsToTwo(userId) {
         // Ne pas faire échouer le processus si la limitation échoue
     }
 }
-/**
- * Helper: Crée ou met à jour un abonnement
- */
 async function upsertSubscription({ userId, planId, status, stripeCustomerId, stripeSubscriptionId, startedAt, endsAt, }) {
     // Vérifier si un abonnement existe déjà
     const { rows: existing } = await db.query("SELECT id FROM subscriptions WHERE stripe_subscription_id = $1", [stripeSubscriptionId]);
@@ -142,23 +155,38 @@ async function upsertSubscription({ userId, planId, status, stripeCustomerId, st
         console.log(`✅ Abonnement créé: ${stripeSubscriptionId}`);
     }
 }
-/**
- * POST /api/payments/webhook
- * Webhook Stripe
- */
+const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+// if (!endpointSecret) {
+//   throw new Error(
+//       "STRIPE_WEBHOOK_SECRET est manquant dans les variables d'environnement"
+//   );
+// }
 export const stripeWebhook = async (req, res) => {
     if (!stripe) {
         return res.status(503).json({
             error: "Stripe webhook désactivé (Stripe non configuré)",
         });
     }
+    if (!endpointSecret) {
+        return res.status(503).json({
+            error: "Stripe webhook désactivé (STRIPE_WEBHOOK_SECRET manquant)",
+        });
+    }
     const sig = req.headers["stripe-signature"];
+    if (!sig) {
+        return res.status(400).send("Missing stripe-signature header");
+    }
     let event;
     try {
-        event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+        event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
     }
     catch (err) {
-        return res.status(400).send(`Webhook Error: ${err.message}`);
+        if (err instanceof Error) {
+            console.error("❌ Webhook signature verification failed:", err.message);
+            return res.status(400).send(`Webhook Error: ${err.message}`);
+        }
+        console.error("❌ Webhook signature verification failed: unknown error");
+        return res.status(400).send("Webhook Error: unknown error");
     }
     try {
         switch (event.type) {
@@ -166,7 +194,8 @@ export const stripeWebhook = async (req, res) => {
                 const session = event.data.object;
                 console.log("✅ Checkout session completed:", session.id);
                 if (session.mode === "subscription" && session.subscription) {
-                    const customerEmail = session.customer_email || session.customer_details?.email;
+                    const customerEmail = session.customer_email ||
+                        session.customer_details?.email;
                     if (!customerEmail) {
                         console.error("❌ Pas d'email dans la session");
                         break;
@@ -177,7 +206,10 @@ export const stripeWebhook = async (req, res) => {
                         break;
                     }
                     const planId = await getOrCreatePremiumPlan();
-                    const subscription = await stripe.subscriptions.retrieve(session.subscription);
+                    const subscriptionId = typeof session.subscription === "string"
+                        ? session.subscription
+                        : session.subscription.id;
+                    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
                     const status = subscription.status === "active" ? "active" : "trial";
                     // Récupérer l'interval du prix pour le calcul de fallback
                     const priceItem = subscription.items?.data?.[0];
@@ -185,13 +217,13 @@ export const stripeWebhook = async (req, res) => {
                     const intervalCount = priceItem?.price?.recurring?.interval_count || 1;
                     // Convertir les timestamps Stripe (en secondes) en dates JavaScript
                     // Stripe calcule automatiquement current_period_end selon la période du prix (mensuel ou annuel)
-                    const startedAt = subscription.current_period_start
-                        ? new Date(subscription.current_period_start * 1000)
+                    const startedAt = priceItem?.current_period_start
+                        ? new Date(priceItem.current_period_start * 1000)
                         : new Date();
                     // Utiliser current_period_end de Stripe, ou calculer en fallback
                     let endsAt = null;
-                    if (subscription.current_period_end) {
-                        endsAt = new Date(subscription.current_period_end * 1000);
+                    if (priceItem.current_period_end) {
+                        endsAt = new Date(priceItem.current_period_end * 1000);
                     }
                     else if (startedAt) {
                         // Fallback: calculer la date de fin en fonction de l'interval
@@ -199,11 +231,18 @@ export const stripeWebhook = async (req, res) => {
                     }
                     // Log pour vérifier la période (optionnel, pour debug)
                     console.log(`📅 Période d'abonnement: ${intervalCount} ${interval}${intervalCount > 1 ? 's' : ''} | Fin: ${endsAt?.toISOString()}`);
+                    if (subscription.customer === null) {
+                        console.error("❌ Pas de customer dans l'abonnement:", subscriptionId);
+                        break;
+                    }
+                    const stripeCustomerId = typeof subscription.customer === "string"
+                        ? subscription.customer
+                        : subscription.customer.id;
                     await upsertSubscription({
                         userId,
                         planId,
                         status,
-                        stripeCustomerId: subscription.customer,
+                        stripeCustomerId,
                         stripeSubscriptionId: subscription.id,
                         startedAt,
                         endsAt,
@@ -214,9 +253,20 @@ export const stripeWebhook = async (req, res) => {
             case "customer.subscription.created":
             case "customer.subscription.updated": {
                 const subscription = event.data.object;
-                console.log(`✅ Subscription ${event.type === "created" ? "créée" : "mise à jour"}:`, subscription.id);
+                console.log(`✅ Subscription ${event.type === "customer.subscription.created" ? "créée" : "mise à jour"}:`, subscription.id);
+                if (!subscription.customer) {
+                    console.error("❌ Aucun customer associé");
+                    break;
+                }
+                const customerId = typeof subscription.customer === "string"
+                    ? subscription.customer
+                    : subscription.customer.id;
                 // Récupérer le customer pour obtenir l'email
-                const customer = await stripe.customers.retrieve(subscription.customer);
+                const customer = await stripe.customers.retrieve(customerId);
+                if ("deleted" in customer) {
+                    console.error("❌ Le customer Stripe a été supprimé:", customer.id);
+                    break;
+                }
                 const customerEmail = typeof customer === "object" && customer.email ? customer.email : null;
                 if (!customerEmail) {
                     console.error("❌ Pas d'email pour le customer:", subscription.customer);
@@ -239,13 +289,13 @@ export const stripeWebhook = async (req, res) => {
                 const intervalCount = priceItem?.price?.recurring?.interval_count || 1;
                 // Convertir les timestamps Stripe (en secondes) en dates JavaScript
                 // Stripe calcule automatiquement current_period_end selon la période du prix (mensuel ou annuel)
-                const startedAt = subscription.current_period_start
-                    ? new Date(subscription.current_period_start * 1000)
+                const startedAt = priceItem?.current_period_start
+                    ? new Date(priceItem.current_period_start * 1000)
                     : new Date();
                 // Utiliser current_period_end de Stripe, ou calculer en fallback
                 let endsAt = null;
-                if (subscription.current_period_end) {
-                    endsAt = new Date(subscription.current_period_end * 1000);
+                if (priceItem?.current_period_end) {
+                    endsAt = new Date(priceItem.current_period_end * 1000);
                 }
                 else if (startedAt) {
                     // Fallback: calculer la date de fin en fonction de l'interval
@@ -253,11 +303,14 @@ export const stripeWebhook = async (req, res) => {
                 }
                 // Log pour vérifier la période (optionnel, pour debug)
                 console.log(`📅 Période d'abonnement: ${intervalCount} ${interval}${intervalCount > 1 ? 's' : ''} | Fin: ${endsAt?.toISOString()}`);
+                const stripeCustomerId = typeof subscription.customer === "string"
+                    ? subscription.customer
+                    : subscription.customer.id;
                 await upsertSubscription({
                     userId,
                     planId,
                     status,
-                    stripeCustomerId: subscription.customer,
+                    stripeCustomerId,
                     stripeSubscriptionId: subscription.id,
                     startedAt,
                     endsAt,
@@ -288,9 +341,12 @@ export const stripeWebhook = async (req, res) => {
         res.json({ received: true });
     }
     catch (error) {
-        console.error("❌ Erreur lors du traitement du webhook:", error);
-        // Retourner 200 pour éviter que Stripe ne réessaie trop souvent
-        res.json({ received: true, error: error.message });
+        if (error instanceof Error) {
+            console.error("❌ Erreur lors du traitement du webhook:", error.message);
+            return res.status(500).send(`Webhook Error: ${error.message}`);
+        }
+        console.error("❌ Erreur inconnue lors du traitement du webhook:", error);
+        return res.status(500).send("Webhook Error: erreur inconnue");
     }
 };
 /**
@@ -393,10 +449,22 @@ export async function updateSubscription(req, res) {
         });
     }
     catch (error) {
-        console.error("Erreur lors de la modification de l'abonnement:", error);
-        res.status(500).json({
+        // console.error("Erreur lors de la modification de l'abonnement:", error);
+        // res.status(500).json({
+        //   error: "Erreur lors de la modification de l'abonnement",
+        //   details: error.message || "Erreur inconnue",
+        // });
+        if (error instanceof Error) {
+            console.error("Erreur lors de la modification de l'abonnement:", error.message);
+            return res.status(500).json({
+                error: "Erreur lors de la modification de l'abonnement",
+                details: error.message,
+            });
+        }
+        console.error("Erreur inconnue lors de la modification de l'abonnement:", error);
+        return res.status(500).json({
             error: "Erreur lors de la modification de l'abonnement",
-            details: error.message || "Erreur inconnue",
+            details: "Erreur inconnue",
         });
     }
 }
@@ -446,10 +514,17 @@ export async function cancelSubscription(req, res) {
         });
     }
     catch (error) {
-        console.error("Erreur lors de l'annulation de l'abonnement:", error);
-        res.status(500).json({
+        if (error instanceof Error) {
+            console.error("Erreur lors de l'annulation de l'abonnement:", error.message);
+            return res.status(500).json({
+                error: "Erreur lors de l'annulation de l'abonnement",
+                details: error.message,
+            });
+        }
+        console.error("Erreur inconnue lors de l'annulation de l'abonnement:", error);
+        return res.status(500).json({
             error: "Erreur lors de l'annulation de l'abonnement",
-            details: error.message || "Erreur inconnue",
+            details: "Erreur inconnue",
         });
     }
 }
