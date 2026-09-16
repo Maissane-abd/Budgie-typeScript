@@ -58,7 +58,8 @@ router.post("/register", async (req, res) => {
         res.status(201).json({ user: { ...user, plan_name: 'Free' }, token });
     }
     catch (err) {
-        res.status(500).json({ error: "Erreur serveur" });
+        console.error("REGISTER ERROR: ", err);
+        res.status(500).json({ error: "Erreur serveur pour le register" });
     }
 });
 router.post("/login", async (req, res) => {

@@ -99,7 +99,8 @@ const loading = ref(false);
 const error = ref("");
 const success = ref("");
 
-const API_BASE = "https://budgie-api-s1yz.onrender.com/api";
+// const API_BASE = "https://budgie-api-s1yz.onrender.com/api";
+const API_BASE = "http://localhost:5001/api"
 
 async function handleRegister() {
   error.value = "";
