@@ -26,9 +26,9 @@ services:
     environment:
       PGHOST: db
       PGPORT: 5432
-      PGUSER: budgie
-      PGPASSWORD: budgie_password
-      PGDATABASE: budgie_db
+      PGUSER: ${PGUSER}
+      PGPASSWORD: ${PGPASSWORD}
+      PGDATABASE: ${PGDATABASE}
       JWT_SECRET: ${JWT_SECRET}
     depends_on:
       - db
