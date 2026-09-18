@@ -120,7 +120,8 @@ import PrevisionsHeader from '@/components/previsions/PrevisionsHeader.vue';
 import PrevisionsControls from '@/components/previsions/PrevisionsControls.vue';
 import PrevisionsTable from '@/components/previsions/PrevisionsTable.vue';
 const router = useRouter();
-const API_BASE = 'https://budgie-api-s1yz.onrender.com/api';
+import {API_BASE} from '@config/api.js'
+// const API_BASE = 'https://budgie-api-s1yz.onrender.com/api';
 
 const previsions = ref(null);
 const loading = ref(false);

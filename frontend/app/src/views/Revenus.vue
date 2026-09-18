@@ -54,6 +54,7 @@ import RevenusTable from '../components/revenus/RevenusTable.vue';
 import RevenusFilters from '../components/revenus/RevenusFilters.vue';
 import RevenuCreateModal from '../components/revenus/RevenuCreateModal.vue';
 import RevenuModal from '../components/revenus/RevenuModale.vue';
+import {API_BASE} from '../config/api.js'
 
 const toast = useToast();
 
@@ -71,7 +72,7 @@ const filters = ref({
   search: ''
 });
 
-const API_URL = "https://budgie-api-s1yz.onrender.com/api";
+// const API_BASE = "https://budgie-api-s1yz.onrender.com/api";
 
 const fetchRevenus = async () => {
   const token = localStorage.getItem('budgie_token');
@@ -81,7 +82,7 @@ const fetchRevenus = async () => {
   }
 
   try {
-    const res = await axios.get(`${API_URL}/revenus`, {
+    const res = await axios.get(`${API_BASE}/revenus`, {
       headers: {Authorization: `Bearer ${token}`}
     });
     revenus.value = res.data;
@@ -93,7 +94,7 @@ const fetchRevenus = async () => {
 const handleCreate = async (newRevenu) => {
   const token = localStorage.getItem("budgie_token");
   try {
-    await axios.post(`${API_URL}/revenus`, newRevenu, {
+    await axios.post(`${API_BASE}/revenus`, newRevenu, {
       headers: {Authorization: `Bearer ${token}`}
     });
     showCreateModal.value = false;

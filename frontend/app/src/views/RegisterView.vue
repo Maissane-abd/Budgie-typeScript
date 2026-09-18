@@ -87,6 +87,7 @@ import '../assets/main.css';
 import { ref } from "vue";
 import axios from "axios";
 import { RouterLink, useRouter } from "vue-router";
+import {API_BASE} from '@/config/api.js'
 
 const router = useRouter();
 
@@ -100,7 +101,7 @@ const error = ref("");
 const success = ref("");
 
 // const API_BASE = "https://budgie-api-s1yz.onrender.com/api";
-const API_BASE = "http://localhost:5001/api"
+// const API_BASE = "http://localhost:5001/api"
 
 async function handleRegister() {
   error.value = "";

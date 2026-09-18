@@ -54,6 +54,7 @@
 import {ref, onMounted, computed} from 'vue';
 import axios from 'axios';
 import {useToast} from "vue-toastification";
+import { API_BASE } from '@/api.js';
 
 import DepensesTable from '../components/depenses/DepensesTable.vue';
 import DepenseCreateModal from '../components/depenses/DepenseCreateModal.vue';
@@ -80,7 +81,8 @@ const filters = ref({
   sort: 'date_desc'
 });
 
-const API_URL = "https://budgie-api-s1yz.onrender.com/api";
+// const API_URL = "https://budgie-api-s1yz.onrender.com/api";
+
 
 const fetchData = async () => {
   const token = localStorage.getItem('budgie_token');

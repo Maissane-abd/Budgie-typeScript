@@ -40,6 +40,7 @@ import axios from 'axios';
 import AbonnementHeader from '@/components/abonnement/AbonnementHeader.vue';
 import PricingToggle from '@/components/abonnement/PricingToggle.vue';
 import PricingCard from '@/components/abonnement/PricingCard.vue';
+import {API_BASE} from '@/config/api.js'
 
 const route = useRoute();
 

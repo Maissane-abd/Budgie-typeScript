@@ -103,10 +103,12 @@ import axios from 'axios';
 import {useRouter} from 'vue-router';
 import {useUserStore} from '@/stores/userStore';
 import AbonnementHeader from '../components/profile/AbonnementHeader.vue';
+import {API_BASE} from '@/config/api.js'
 
 const router = useRouter();
 const userStore = useUserStore();
-const API_URL = "https://budgie-api-s1yz.onrender.com/api";
+
+// const API_BASE = "https://budgie-api-s1yz.onrender.com/api";
 
 const user = ref({});
 const form = ref({first_name: '', last_name: '', email: ''});
@@ -122,7 +124,7 @@ const fetchProfile = async () => {
   if (!token) return router.push('/login');
 
   try {
-    const res = await axios.get(`${API_URL}/auth/me`, {
+    const res = await axios.get(`${API_BASE}/auth/me`, {
       headers: {Authorization: `Bearer ${token}`}
     });
     user.value = res.data;
@@ -136,7 +138,7 @@ const fetchProfile = async () => {
 const saveProfile = async () => {
   const token = localStorage.getItem("budgie_token");
   try {
-    const res = await axios.put(`${API_URL}/auth/me`, form.value, {
+    const res = await axios.put(`${API_BASE}/auth/me`, form.value, {
       headers: {Authorization: `Bearer ${token}`}
     });
     user.value = {...user.value, ...res.data};
@@ -156,7 +158,7 @@ const handleDeleteAccount = async () => {
   if (confirm("Action irréversible. Confirmer ?")) {
     const token = localStorage.getItem("budgie_token");
     try {
-      await axios.delete(`${API_URL}/auth/me`, {headers: {Authorization: `Bearer ${token}`}});
+      await axios.delete(`${API_BASE}/auth/me`, {headers: {Authorization: `Bearer ${token}`}});
       userStore.clearUser();
       router.push('/register');
     } catch (e) {
