@@ -97,7 +97,7 @@ const emit = defineEmits(['save', 'close']);
 const toast = useToast();
 
 const accounts = ref([]);
-const API_URL = "https://budgie-api-s1yz.onrender.com/api";
+const API_URL = "/api";
 
 const form = reactive({
   transaction_name: '',

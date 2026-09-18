@@ -1,6 +1,8 @@
 import axios from "axios";
 
-const API_URL = "https://budgie-api-s1yz.onrender.com/api/accounts";
+import { API_BASE } from "@/config/api";
+
+const API_URL = `${API_BASE}/accounts`;
 
 export const AccountsService = {
     getAll() {

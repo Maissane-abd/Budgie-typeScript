@@ -87,7 +87,7 @@ const props = defineProps({
 const emit = defineEmits(['close', 'updated', 'deleted']);
 
 const accounts = ref([]);
-const API_URL = "https://budgie-api-s1yz.onrender.com/api";
+const API_URL = "/api";
 
 // Formulaire réactif
 const form = reactive({

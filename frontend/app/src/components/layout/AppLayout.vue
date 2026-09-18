@@ -40,7 +40,7 @@ onMounted(async () => {
   // Logique de persistance de l'utilisateur (inchangée)
   if (token && !userStore.user) {
     try {
-      const res = await axios.get('https://budgie-api-s1yz.onrender.com/api/auth/me', {
+      const res = await axios.get('/api/auth/me', {
         headers: { Authorization: `Bearer ${token}` }
       })
       userStore.setUser(res.data)

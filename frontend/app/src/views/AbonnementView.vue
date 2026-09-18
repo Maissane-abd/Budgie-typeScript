@@ -58,7 +58,7 @@ const STRIPE_PRICE_IDS = {
   yearly: 'price_1SlaUNBjOH26LR6u1EnEMWk2'  
 };
 
-const API_BASE = 'https://budgie-api-s1yz.onrender.com/api';
+// const API_BASE = 'https://budgie-api-s1yz.onrender.com/api';
 
 const displayedPriceAmount = computed(() => {
   if (billing.value === 'yearly') {

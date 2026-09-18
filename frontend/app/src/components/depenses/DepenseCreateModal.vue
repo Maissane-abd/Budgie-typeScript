@@ -98,7 +98,7 @@ const fetchAccounts = async () => {
   const token = localStorage.getItem('budgie_token');
   if (!token) return;
   try {
-    const res = await axios.get('https://budgie-api-s1yz.onrender.com/api/accounts', {
+    const res = await axios.get('/api/accounts', {
       headers: {Authorization: `Bearer ${token}`}
     });
     accounts.value = res.data.data;

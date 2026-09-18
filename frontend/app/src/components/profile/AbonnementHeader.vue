@@ -68,7 +68,7 @@ const props = defineProps({
   }
 });
 
-const API_URL = "https://budgie-api-s1yz.onrender.com/api";
+const API_URL = "/api";
 
 const isPremium = computed(() => props.user?.plan_name === 'Premium');
 
