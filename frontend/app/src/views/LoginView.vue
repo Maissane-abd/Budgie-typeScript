@@ -53,6 +53,7 @@ import { ref } from "vue";
 import axios from "axios";
 import { RouterLink, useRoute } from "vue-router";
 import { useUserStore } from "@/stores/userStore";
+import { API_BASE } from "@/config/api";
 
 const email = ref("");
 const password = ref("");
@@ -63,7 +64,7 @@ const route = useRoute();
 const userStore = useUserStore();
 
 // const API_BASE = "https://budgie-api-s1yz.onrender.com/api";
-const API_BASE = "http://localhost:5001/api"
+// const API_BASE = "http://localhost:5001/api"
 
 async function handleLogin() {
   error.value = "";
