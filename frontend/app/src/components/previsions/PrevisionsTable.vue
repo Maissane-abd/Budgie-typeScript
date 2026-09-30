@@ -12,7 +12,7 @@
       </thead>
       <tbody>
         <tr
-          v-for="(month, index) in monthlyDetails"
+          v-for="(month, index) in details"
           :key="index"
           :class="{ 'current-month': isCurrentMonth(month.month) }"
         >
@@ -37,7 +37,7 @@
 
 <script setup>
 defineProps({
-  monthlyDetails: {
+  details: {
     type: Array,
     required: true,
   },

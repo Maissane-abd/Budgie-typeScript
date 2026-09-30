@@ -34,17 +34,17 @@
           </div>
           <div class="summary-card">
             <div class="summary-label">Évolution</div>
-            <div
-              class="summary-value"
-              :class="{
-                positive: selectedAccountEvolution >= 0,
-                negative: selectedAccountEvolution < 0
-              }"
-            >
-              {{ formatCurrency(selectedAccountEvolution) }}
+              <div
+                class="summary-value"
+                :class="{
+                  positive: selectedAccountEvolution >= 0,
+                  negative: selectedAccountEvolution < 0
+                }"
+              >
+                {{ formatCurrency(selectedAccountEvolution) }}
+              </div>
             </div>
           </div>
-        </div>
 
         <div class="account-tabs" v-if="previsions.accounts && previsions.accounts.length > 0">
           <button
@@ -103,7 +103,10 @@
             </div>
           </div>
 
-          <PrevisionsTable :details="account.monthly_details" />
+          <!-- BUG -->
+          <PrevisionsTable 
+          :details="account.monthly_details" 
+          />
 
         </div>
       </div>
