@@ -5,13 +5,13 @@ services:
     environment:
       POSTGRES_USER: budgie
       POSTGRES_PASSWORD: budgie_password
-      POSTGRES_DB: budgie_db
+      POSTGRES_DB: budgie_db 
     ports:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-      - ./db/seed.sql:/docker-entrypoint-initdb.d/seed.sql:ro 
+      # - ./db/seed.sql:/docker-entrypoint-initdb.d/seed.sql:ro 
 
   backend:
     build: 

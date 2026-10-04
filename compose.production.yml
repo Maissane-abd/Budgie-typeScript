@@ -1,0 +1,34 @@
+services:
+  db:
+    restart: unless-stopped
+
+    ports: !reset []
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PGUSER} -d ${PGDATABASE}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  backend:
+    restart: unless-stopped
+
+    volumes: !reset []
+    ports: !reset []
+
+    environment:
+      NODE_ENV: production
+      PGHOST: db
+      PGPORT: 5432
+      PGUSER: ${PGUSER}
+      PGPASSWORD: ${PGPASSWORD}
+      PGDATABASE: ${PGDATABASE}
+      JWT_SECRET: ${JWT_SECRET}
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    restart: unless-stopped
