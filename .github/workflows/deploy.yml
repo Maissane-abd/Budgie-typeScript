@@ -1,8 +1,11 @@
 
-name: Deploy Budgie
+name: CI/CD Budgie
 
 on:
   push:
+    branches:
+      - main
+  pull_request:
     branches:
       - main
   workflow_dispatch:
@@ -11,12 +14,73 @@ permissions:
   contents: read
 
 concurrency:
-  group: budgie-production
+  group: budgie-production-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
+  backend:
+    name: Check Backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check TypeScript
+        run: npm run typecheck
+
+      - name: Build backend
+        run: npm run build
+
+  frontend:
+    name: Check Frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    defaults:
+      run:
+        working-directory: frontend/app
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
   deploy:
     name: Deploy to VPS
+    needs: 
+      - backend
+      - frontend
+
+    if : github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
