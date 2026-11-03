@@ -1,6 +1,5 @@
 // controllers/expensesController.js
 import db from '../models/db.js';
-import { checkExpenseLimit } from '../utils/subscription.js';
 // GET /expenses
 export const getAll = async (req, res) => {
     if (!req.user || !req.user.id) {
@@ -75,17 +74,17 @@ export const create = async (req, res) => {
         res.status(403).json({ message: 'Compte non autorisé' });
         return;
     }
-    // Vérifier la limite de dépenses par compte
-    const limitCheck = await checkExpenseLimit(req.user.id, account_id);
-    if (limitCheck.limitReached) {
-        res.status(403).json({
-            message: `Limite de dépenses atteinte. Vous avez atteint la limite de ${limitCheck.maxCount} dépenses par compte du plan gratuit. Abonnez-vous au plan Premium pour des dépenses illimitées.`,
-            limitReached: true,
-            currentCount: limitCheck.currentCount,
-            maxCount: limitCheck.maxCount
-        });
-        return;
-    }
+    // // Vérifier la limite de dépenses par compte
+    // const limitCheck: LimitCheckResult = await checkExpenseLimit(req.user.id, account_id);
+    // if (limitCheck.limitReached) {
+    //      res.status(403).json({
+    //         message: `Limite de dépenses atteinte. Vous avez atteint la limite de ${limitCheck.maxCount} dépenses par compte du plan gratuit. Abonnez-vous au plan Premium pour des dépenses illimitées.`,
+    //         limitReached: true,
+    //         currentCount: limitCheck.currentCount,
+    //         maxCount: limitCheck.maxCount
+    //     })
+    //     return;
+    // }
     // Insert transaction expense
     const { rows: transactionRows } = await db.query(`INSERT INTO transactions (
             account_id,
