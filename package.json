@@ -18,6 +18,7 @@
     "test:frontend": "npm --prefix frontend/app run test",
     "build": "npm --prefix backend run build && npm --prefix frontend/app run build",
     "lint": "npm --prefix backend run lint && npm --prefix frontend/app run lint",
+    "lint:fix": "npm --prefix backend run lint:fix && npm --prefix frontend/app run lint:fix",
     "typecheck": "npm --prefix backend run typecheck",
     "format": "prettier . --write",
     "format:check": "prettier . --check"
