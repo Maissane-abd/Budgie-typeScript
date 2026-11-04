@@ -6,9 +6,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx watch src/app.ts",
     "typecheck": "tsc --noEmit",
-    "build":"rm -rf dist && tsc",
+    "build": "rimraf dist && tsc",
     "start": "node dist/app.js"
-  }, 
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -25,6 +25,7 @@
   },
   "type": "module",
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@tsconfig/node22": "^22.0.6",
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.19",
@@ -35,7 +36,12 @@
     "@types/pg": "^8.23.1",
     "@types/stripe": "^8.0.416",
     "@types/uuid": "^10.0.0",
+    "eslint": "^10.14.0",
+    "globals": "^17.14.0",
+    "jiti": "^2.7.0",
+    "rimraf": "^6.1.4",
     "tsx": "^4.23.13",
-    "typescript": "^7.0.2"
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.1"
   }
 }

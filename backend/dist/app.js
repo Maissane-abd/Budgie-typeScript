@@ -10,7 +10,15 @@ import expensesRoutes from "./routes/expenses.js";
 import previsionsRoutes from "./routes/previsions.js";
 const app = express();
 // Middlewares
-app.use(cors());
+app.use(cors({
+    origin: [
+        "http:localhost:80",
+        "https://budgie.com"
+    ],
+    methods: [
+        "GET", "POST", "PUT", "DELETE"
+    ]
+}));
 app.use(express.json());
 // Routes
 app.use("/api", webhookRoute);
@@ -25,5 +33,6 @@ app.get("/", (req, res) => {
     res.send("Hello World from backend!");
 });
 // Start server
-const PORT = 5001;
+const PORT = process.env.PORT || 5001;
+// const PORT = 5001;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
