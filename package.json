@@ -13,7 +13,12 @@
     "prettier": "3.9.10"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm --prefix backend run test && npm --prefix frontend/app run test",
+    "test:backend": "npm --prefix backend run test",
+    "test:frontend": "npm --prefix frontend/app run test",
+    "build": "npm --prefix backend run build && npm --prefix frontend/app run build",
+    "lint": "npm --prefix backend run lint && npm --prefix frontend/app run lint",
+    "typecheck": "npm --prefix backend run typecheck",
     "format": "prettier . --write",
     "format:check": "prettier . --check"
   },

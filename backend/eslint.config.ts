@@ -11,6 +11,7 @@ export default defineConfig([
     extends: ['js/recommended'],
     languageOptions: { globals: globals.node },
   },
+  { ignores: ['dist/**', 'coverage/**'] },
   tseslint.configs.recommended,
   eslintConfigPrettier,
 ]);

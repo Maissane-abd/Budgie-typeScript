@@ -11,6 +11,7 @@ export default defineConfig([
     extends: ['js/recommended'],
     languageOptions: { globals: globals.browser },
   },
+  { ignores: ['dist/**', 'coverage/**'] },
   pluginVue.configs['flat/essential'],
   eslintConfigPrettier,
 ]);
