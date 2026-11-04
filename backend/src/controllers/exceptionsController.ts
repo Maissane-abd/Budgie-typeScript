@@ -10,7 +10,7 @@ export const create = async (req: Request, res: Response): Promise<void> => {
     started_at,
     ends_at,
     override_amount,
-    override_n_months
+    override_n_months,
   } = req.body;
 
   if (!transaction_id || !exception_name || !started_at) {
@@ -38,13 +38,13 @@ export const create = async (req: Request, res: Response): Promise<void> => {
         started_at,
         ends_at,
         override_amount,
-        override_n_months
-      ]
+        override_n_months,
+      ],
     );
 
     res.status(201).json(rows[0]);
   } catch (err) {
-    if(err instanceof Error) {
+    if (err instanceof Error) {
       res.status(400).json({ message: err.message });
     }
   }
@@ -66,12 +66,12 @@ export const getByTransaction = async (req: Request, res: Response): Promise<voi
        JOIN transactions t ON t.id = te.transaction_id
        WHERE te.transaction_id = $1
        AND t.transaction_type = 'income'`,
-      [transactionId]
+      [transactionId],
     );
 
     res.json(rows);
   } catch (err) {
-   if (err instanceof Error) {
+    if (err instanceof Error) {
       res.status(500).json({ message: err.message });
     }
   }
@@ -80,14 +80,8 @@ export const getByTransaction = async (req: Request, res: Response): Promise<voi
 // Mettre à jour une exception
 export const update = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
-  const {
-    exception_name,
-    description,
-    started_at,
-    ends_at,
-    override_amount,
-    override_n_months
-  } = req.body;
+  const { exception_name, description, started_at, ends_at, override_amount, override_n_months } =
+    req.body;
 
   if (!id) {
     res.status(400).json({ message: 'ID de l’exception requis' });
@@ -106,15 +100,7 @@ export const update = async (req: Request, res: Response): Promise<void> => {
          override_n_months = $6
        WHERE id = $7
        RETURNING *`,
-      [
-        exception_name,
-        description,
-        started_at,
-        ends_at,
-        override_amount,
-        override_n_months,
-        id
-      ]
+      [exception_name, description, started_at, ends_at, override_amount, override_n_months, id],
     );
 
     if (rows.length === 0) {
@@ -124,7 +110,7 @@ export const update = async (req: Request, res: Response): Promise<void> => {
 
     res.json(rows[0]);
   } catch (err) {
-  if (err instanceof Error) {
+    if (err instanceof Error) {
       res.status(400).json({ message: err.message });
     }
   }
@@ -143,7 +129,7 @@ export const deleteException = async (req: Request, res: Response): Promise<void
     const result = await db.query(
       `DELETE FROM transaction_exceptions
        WHERE id = $1`,
-      [id]
+      [id],
     );
 
     if (result.rowCount === 0) {
@@ -153,7 +139,7 @@ export const deleteException = async (req: Request, res: Response): Promise<void
 
     res.status(204).send();
   } catch (err) {
-   if (err instanceof Error) {
+    if (err instanceof Error) {
       res.status(400).json({ message: err.message });
     }
   }

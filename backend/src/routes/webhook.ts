@@ -15,55 +15,56 @@ const endpointSecret: string | undefined = process.env.STRIPE_WEBHOOK_SECRET;
 //   );
 // }
 
+router.post(
+  '/webhook',
+  bodyParser.raw({ type: 'application/json' }),
+  (req: Request, res: Response<{ received: boolean } | string>) => {
+    const sig: string | string[] | undefined = req.headers['stripe-signature'];
+    let event;
 
-router.post('/webhook', bodyParser.raw({ type: 'application/json' }), (req: Request, res: Response<{ received: boolean; } | string>) => {
-  const sig: string | string[] | undefined = req.headers['stripe-signature'];
-  let event;
+    if (!stripe) {
+      console.error('Stripe n’est pas configuré correctement.');
+      return res.status(400).send('Stripe n’est pas configuré correctement.');
+    }
 
-  if (!stripe) {
-    console.error('Stripe n’est pas configuré correctement.');
-    return res.status(400).send('Stripe n’est pas configuré correctement.');
-  }
+    if (!sig) {
+      console.error('Signature Stripe manquante dans les en-têtes.');
+      return res.status(400).send('Signature Stripe manquante dans les en-têtes.');
+    }
 
-  if (!sig) {
-    console.error('Signature Stripe manquante dans les en-têtes.');
-    return res.status(400).send('Signature Stripe manquante dans les en-têtes.');
-  }
+    try {
+      if (!endpointSecret) {
+        return res.status(503).send('Stripe webhook désactivé (STRIPE_WEBHOOK_SECRET manquant)');
+      }
+      event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+    } catch (err) {
+      if (err instanceof Error) {
+        console.error('Webhook signature verification failed.', err.message);
+        return res.status(400).send(`Webhook Error: ${err.message}`);
+      }
 
-  try {
-    if (!endpointSecret) {
-    return res.status(503).send(
-      "Stripe webhook désactivé (STRIPE_WEBHOOK_SECRET manquant)",
-    );
-  }
-    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
-  } catch (err) {
-  if (err instanceof Error) {
-    console.error('Webhook signature verification failed.', err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  }
+      console.error('Erreur inconnue', err);
+      return res.status(400).send('Webhook Error: erreur inconnue');
+    }
 
-  console.error('Erreur inconnue', err);
-  return res.status(400).send('Webhook Error: erreur inconnue');
-}
+    console.log('✅ Event received:', event.type);
 
-  console.log('✅ Event received:', event.type);
+    switch (event.type) {
+      case 'checkout.session.completed':
+        const session = event.data.object;
+        console.log('Checkout session completed:', session.id);
+        break;
 
-  switch (event.type) {
-    case 'checkout.session.completed':
-      const session = event.data.object;
-      console.log('Checkout session completed:', session.id);
-      break;
+      case 'customer.subscription.created':
+        console.log('Subscription created:', event.data.object.id);
+        break;
 
-    case 'customer.subscription.created':
-      console.log('Subscription created:', event.data.object.id);
-      break;
+      default:
+        console.log(`Unhandled event type ${event.type}`);
+    }
 
-    default:
-      console.log(`Unhandled event type ${event.type}`);
-  }
-
-  res.json({ received: true });
-});
+    res.json({ received: true });
+  },
+);
 
 export default router;

@@ -5,17 +5,19 @@ import { Pool } from 'pg';
 dotenv.config();
 
 type ConnectionConfig = {
-     connectionString: string | undefined;
- ssl: boolean | {
- rejectUnauthorized: boolean;
- };
- user: string | undefined;
- host: string | undefined;
- database: string | undefined;
- password: string | undefined;
- port: number | undefined;
- max: number;
- idleTimeoutMillis: number;
+  connectionString: string | undefined;
+  ssl:
+    | boolean
+    | {
+        rejectUnauthorized: boolean;
+      };
+  user: string | undefined;
+  host: string | undefined;
+  database: string | undefined;
+  password: string | undefined;
+  port: number | undefined;
+  max: number;
+  idleTimeoutMillis: number;
 };
 
 // const { Pool } = pkg;
@@ -24,34 +26,38 @@ type ConnectionConfig = {
 const isProduction: boolean = !!process.env.DATABASE_URL;
 
 const connectionConfig: ConnectionConfig = {
-    // Render fournit une URL complète (connectionString).
-    // Si elle n'existe pas (local), cette propriété sera undefined et ignorée.
-    connectionString: process.env.DATABASE_URL,
+  // Render fournit une URL complète (connectionString).
+  // Si elle n'existe pas (local), cette propriété sera undefined et ignorée.
+  connectionString: process.env.DATABASE_URL,
 
-    // SSL est OBLIGATOIRE pour Render
-    ssl: isProduction ? { rejectUnauthorized: false } : false,
+  // SSL est OBLIGATOIRE pour Render
+  ssl: isProduction ? { rejectUnauthorized: false } : false,
 
-    // Configuration de repli pour le local (Docker)
-    // Ces valeurs seront utilisées si connectionString est vide
-    user: process.env.PGUSER,
-    host: process.env.PGHOST,
-    database: process.env.PGDATABASE,
-    password: process.env.PGPASSWORD,
-    port: Number(process.env.PGPORT),
+  // Configuration de repli pour le local (Docker)
+  // Ces valeurs seront utilisées si connectionString est vide
+  user: process.env.PGUSER,
+  host: process.env.PGHOST,
+  database: process.env.PGDATABASE,
+  password: process.env.PGPASSWORD,
+  port: Number(process.env.PGPORT),
 
-    // Options du pool
-    max: 10,
-    idleTimeoutMillis: 30000
+  // Options du pool
+  max: 10,
+  idleTimeoutMillis: 30000,
 };
 
 const db: Pool = new Pool(connectionConfig);
 
 db.on('connect', () => {
-    console.log(isProduction ? '✅ Connecté à PostgreSQL (Mode Production/Render)' : '💻 Connecté à PostgreSQL (Mode Local)');
+  console.log(
+    isProduction
+      ? '✅ Connecté à PostgreSQL (Mode Production/Render)'
+      : '💻 Connecté à PostgreSQL (Mode Local)',
+  );
 });
 
 db.on('error', (err) => {
-    console.error('❌ Erreur PostgreSQL', err);
+  console.error('❌ Erreur PostgreSQL', err);
 });
 
 export default db;

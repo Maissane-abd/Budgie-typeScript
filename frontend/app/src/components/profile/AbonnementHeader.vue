@@ -7,15 +7,23 @@
           {{ user.plan_name || 'Free' }}
         </span>
       </div>
-      <div class="price-tag">
-        {{ formatPrice(user.price) }} <span class="period">/ mois</span>
-      </div>
+      <div class="price-tag">{{ formatPrice(user.price) }} <span class="period">/ mois</span></div>
     </div>
 
     <div class="sub-content">
       <div class="limits-grid">
         <div class="limit-item">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
             <line x1="1" y1="10" x2="23" y2="10"></line>
           </svg>
@@ -27,7 +35,17 @@
           </div>
         </div>
         <div class="limit-item">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <line x1="18" y1="20" x2="18" y2="10"></line>
             <line x1="12" y1="20" x2="12" y2="4"></line>
             <line x1="6" y1="20" x2="6" y2="14"></line>
@@ -40,14 +58,14 @@
       </div>
 
       <div class="actions-area">
-        <p v-if="!isPremium" class="upsell-text">
-          Débloquez la puissance illimitée de Budgie.
-        </p>
-        <p v-else class="upsell-text">
-          Merci pour votre confiance !
-        </p>
+        <p v-if="!isPremium" class="upsell-text">Débloquez la puissance illimitée de Budgie.</p>
+        <p v-else class="upsell-text">Merci pour votre confiance !</p>
 
-        <button class="btn-sub" :class="isPremium ? 'btn-manage' : 'btn-upgrade'" @click="handleAction">
+        <button
+          class="btn-sub"
+          :class="isPremium ? 'btn-manage' : 'btn-upgrade'"
+          @click="handleAction"
+        >
           {{ isPremium ? 'Gérer mon abonnement' : 'Passer Premium' }}
         </button>
       </div>
@@ -64,21 +82,21 @@ const props = defineProps({
   user: {
     type: Object,
     required: true,
-    default: () => ({})
-  }
+    default: () => ({}),
+  },
 });
 
-const API_URL = "/api";
+const API_URL = '/api';
 
 const isPremium = computed(() => props.user?.plan_name === 'Premium');
 
 const formatPrice = (p) => {
-  return (!p || p === 0) ? 'Gratuit' : `${p} €`;
+  return !p || p === 0 ? 'Gratuit' : `${p} €`;
 };
 
 const handleAction = async () => {
   // Exemple d'action vers le backend (Stripe)
-  const token = localStorage.getItem("budgie_token");
+  const token = localStorage.getItem('budgie_token');
   if (!token) return;
 
   // Si  premium -> Portail client sinon -> Paiement
@@ -94,7 +112,7 @@ const handleAction = async () => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
   margin-bottom: 20px;
 }
 

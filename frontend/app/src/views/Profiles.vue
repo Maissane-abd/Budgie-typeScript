@@ -1,6 +1,5 @@
 <template>
   <div class="profile-wrapper">
-
     <div class="hero-banner">
       <div class="hero-content">
         <div class="avatar-container">
@@ -14,27 +13,44 @@
     </div>
 
     <div class="main-content-container">
-
       <section class="content-section sub-section">
-        <AbonnementHeader v-if="user.email" :user="user"/>
+        <AbonnementHeader v-if="user.email" :user="user" />
       </section>
 
       <div class="grid-layout">
         <section class="card info-card">
           <div class="card-header">
             <div class="header-title">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                   class="feather feather-user">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="feather feather-user"
+              >
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
               </svg>
               <h2>Mes informations</h2>
             </div>
             <button v-if="!isEditing" class="btn-icon-text" @click="isEditing = true">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                   class="feather feather-edit-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="feather feather-edit-2"
+              >
                 <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
               </svg>
               Modifier
@@ -50,23 +66,48 @@
               <div class="form-group">
                 <label>Prénom</label>
                 <div class="input-wrapper">
-                  <input v-model="form.first_name" type="text" :disabled="!isEditing" placeholder="Votre prénom"/>
+                  <input
+                    v-model="form.first_name"
+                    type="text"
+                    :disabled="!isEditing"
+                    placeholder="Votre prénom"
+                  />
                 </div>
               </div>
               <div class="form-group">
                 <label>Nom</label>
                 <div class="input-wrapper">
-                  <input v-model="form.last_name" type="text" :disabled="!isEditing" placeholder="Votre nom"/>
+                  <input
+                    v-model="form.last_name"
+                    type="text"
+                    :disabled="!isEditing"
+                    placeholder="Votre nom"
+                  />
                 </div>
               </div>
             </div>
             <div class="form-group">
               <label>Email</label>
               <div class="input-wrapper email-wrapper">
-                <input v-model="form.email" type="email" :disabled="!isEditing" placeholder="email@exemple.com"/>
-                <svg v-if="!isEditing" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                     class="feather feather-lock lock-icon">
+                <input
+                  v-model="form.email"
+                  type="email"
+                  :disabled="!isEditing"
+                  placeholder="email@exemple.com"
+                />
+                <svg
+                  v-if="!isEditing"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="feather feather-lock lock-icon"
+                >
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                   <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                 </svg>
@@ -81,29 +122,39 @@
             <p>La suppression du compte est définitive et effacera toutes vos données.</p>
           </div>
           <button class="btn-danger-outline" @click="handleDeleteAccount">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                 class="feather feather-trash-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="feather feather-trash-2"
+            >
               <polyline points="3 6 5 6 21 6"></polyline>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              <path
+                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+              ></path>
               <line x1="10" y1="11" x2="10" y2="17"></line>
               <line x1="14" y1="11" x2="14" y2="17"></line>
             </svg>
           </button>
         </section>
       </div>
-
     </div>
   </div>
 </template>
 
 <script setup>
-import {ref, onMounted} from 'vue';
+import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import {useRouter} from 'vue-router';
-import {useUserStore} from '@/stores/userStore';
+import { useRouter } from 'vue-router';
+import { useUserStore } from '@/stores/userStore';
 import AbonnementHeader from '../components/profile/AbonnementHeader.vue';
-import {API_BASE} from '@/config/api.js'
+import { API_BASE } from '@/config/api.js';
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -111,24 +162,24 @@ const userStore = useUserStore();
 // const API_BASE = "https://budgie-api-s1yz.onrender.com/api";
 
 const user = ref({});
-const form = ref({first_name: '', last_name: '', email: ''});
+const form = ref({ first_name: '', last_name: '', email: '' });
 const isEditing = ref(false);
 
 const fetchProfile = async () => {
   if (userStore.user) {
     user.value = userStore.user;
-    form.value = {...userStore.user};
+    form.value = { ...userStore.user };
   }
 
-  const token = localStorage.getItem("budgie_token");
+  const token = localStorage.getItem('budgie_token');
   if (!token) return router.push('/login');
 
   try {
     const res = await axios.get(`${API_BASE}/auth/me`, {
-      headers: {Authorization: `Bearer ${token}`}
+      headers: { Authorization: `Bearer ${token}` },
     });
     user.value = res.data;
-    form.value = {...res.data};
+    form.value = { ...res.data };
     userStore.setUser(res.data);
   } catch (err) {
     console.error(err);
@@ -136,33 +187,33 @@ const fetchProfile = async () => {
 };
 
 const saveProfile = async () => {
-  const token = localStorage.getItem("budgie_token");
+  const token = localStorage.getItem('budgie_token');
   try {
     const res = await axios.put(`${API_BASE}/auth/me`, form.value, {
-      headers: {Authorization: `Bearer ${token}`}
+      headers: { Authorization: `Bearer ${token}` },
     });
-    user.value = {...user.value, ...res.data};
+    user.value = { ...user.value, ...res.data };
     userStore.updateUser(res.data);
     isEditing.value = false;
   } catch (err) {
-    alert("Erreur mise à jour");
+    alert('Erreur mise à jour');
   }
 };
 
 const cancelEdit = () => {
-  form.value = {...user.value};
+  form.value = { ...user.value };
   isEditing.value = false;
 };
 
 const handleDeleteAccount = async () => {
-  if (confirm("Action irréversible. Confirmer ?")) {
-    const token = localStorage.getItem("budgie_token");
+  if (confirm('Action irréversible. Confirmer ?')) {
+    const token = localStorage.getItem('budgie_token');
     try {
-      await axios.delete(`${API_BASE}/auth/me`, {headers: {Authorization: `Bearer ${token}`}});
+      await axios.delete(`${API_BASE}/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
       userStore.clearUser();
       router.push('/register');
     } catch (e) {
-      alert("Erreur");
+      alert('Erreur');
     }
   }
 };
@@ -248,7 +299,9 @@ onMounted(fetchProfile);
 .card {
   background: white;
   border-radius: 16px;
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 10px 30px -10px rgba(0, 0, 0, 0.08),
+    0 4px 6px -2px rgba(0, 0, 0, 0.04);
   overflow: hidden;
 }
 

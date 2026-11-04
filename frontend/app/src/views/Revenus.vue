@@ -1,6 +1,5 @@
 <template>
   <div class="revenus-container">
-
     <div class="card header-card">
       <div class="header-top">
         <div>
@@ -8,8 +7,17 @@
           <p class="page-subtitle">Gérez tous vos revenus, mensuels ou ponctuels</p>
         </div>
         <button class="btn-primary" @click="showCreateModal = true">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
           </svg>
@@ -17,44 +25,40 @@
         </button>
       </div>
 
-      <RevenusFilters @change="updateFilters"/>
+      <RevenusFilters @change="updateFilters" />
     </div>
 
     <div class="card table-card">
-      <RevenusTable
-          :revenus="filteredRevenus"
-          @select="openEditModal"
-      />
+      <RevenusTable :revenus="filteredRevenus" @select="openEditModal" />
     </div>
 
     <RevenuCreateModal
-        :show="showCreateModal"
-        @save="handleCreate"
-        @close="showCreateModal = false"
+      :show="showCreateModal"
+      @save="handleCreate"
+      @close="showCreateModal = false"
     />
 
     <RevenuModal
-        :show="showModal"
-        :revenu="selected"
-        @close="showModal = false"
-        @updated="fetchRevenus"
-        @deleted="fetchRevenus"
+      :show="showModal"
+      :revenu="selected"
+      @close="showModal = false"
+      @updated="fetchRevenus"
+      @deleted="fetchRevenus"
     />
-
   </div>
 </template>
 
 <script setup>
-import {ref, onMounted, computed} from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
-import {useRouter} from 'vue-router';
-import {useToast} from "vue-toastification";
+import { useRouter } from 'vue-router';
+import { useToast } from 'vue-toastification';
 
 import RevenusTable from '../components/revenus/RevenusTable.vue';
 import RevenusFilters from '../components/revenus/RevenusFilters.vue';
 import RevenuCreateModal from '../components/revenus/RevenuCreateModal.vue';
 import RevenuModal from '../components/revenus/RevenuModale.vue';
-import {API_BASE} from '../config/api.js'
+import { API_BASE } from '../config/api.js';
 
 const toast = useToast();
 
@@ -64,12 +68,11 @@ const showModal = ref(false);
 const selected = ref({});
 const router = useRouter();
 
-
 const filters = ref({
   account: '',
   period: '',
   type: '',
-  search: ''
+  search: '',
 });
 
 // const API_BASE = "https://budgie-api-s1yz.onrender.com/api";
@@ -83,25 +86,25 @@ const fetchRevenus = async () => {
 
   try {
     const res = await axios.get(`${API_BASE}/revenus`, {
-      headers: {Authorization: `Bearer ${token}`}
+      headers: { Authorization: `Bearer ${token}` },
     });
     revenus.value = res.data;
   } catch (error) {
-    console.error("Erreur API :", error);
+    console.error('Erreur API :', error);
   }
 };
 
 const handleCreate = async (newRevenu) => {
-  const token = localStorage.getItem("budgie_token");
+  const token = localStorage.getItem('budgie_token');
   try {
     await axios.post(`${API_BASE}/revenus`, newRevenu, {
-      headers: {Authorization: `Bearer ${token}`}
+      headers: { Authorization: `Bearer ${token}` },
     });
     showCreateModal.value = false;
     fetchRevenus();
-    toast.success("Revenu ajouté avec succès !");
+    toast.success('Revenu ajouté avec succès !');
   } catch (error) {
-    const errorMessage = error.response?.data?.message || "Erreur lors de la création du revenu";
+    const errorMessage = error.response?.data?.message || 'Erreur lors de la création du revenu';
     toast.error(errorMessage);
   }
 };
@@ -111,19 +114,27 @@ const updateFilters = (newFilters) => {
 };
 
 const filteredRevenus = computed(() => {
-  return revenus.value.filter(r => {
+  return revenus.value.filter((r) => {
     // Compte
     if (filters.value.account && r.account_id !== filters.value.account) return false;
     // Type
     if (filters.value.type && r.duration_type !== filters.value.type) return false;
     // Recherche
-    if (filters.value.search && !r.transaction_name.toLowerCase().includes(filters.value.search.toLowerCase())) return false;
+    if (
+      filters.value.search &&
+      !r.transaction_name.toLowerCase().includes(filters.value.search.toLowerCase())
+    )
+      return false;
 
     // Période (Logique simplifiée pour l'exemple)
     if (filters.value.period) {
       const now = new Date();
       const date = new Date(r.start_date);
-      if (filters.value.period === 'month' && (date.getMonth() !== now.getMonth() || date.getFullYear() !== now.getFullYear())) return false;
+      if (
+        filters.value.period === 'month' &&
+        (date.getMonth() !== now.getMonth() || date.getFullYear() !== now.getFullYear())
+      )
+        return false;
       if (filters.value.period === 'year' && date.getFullYear() !== now.getFullYear()) return false;
     }
 

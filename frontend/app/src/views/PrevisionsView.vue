@@ -14,9 +14,7 @@
         {{ error }}
       </div>
 
-      <div v-if="loading && !previsions" class="loading">
-        Chargement des prévisions...
-      </div>
+      <div v-if="loading && !previsions" class="loading">Chargement des prévisions...</div>
 
       <div v-else-if="previsions" class="previsions-content">
         <div class="summary-cards" v-if="selectedAccount">
@@ -34,17 +32,17 @@
           </div>
           <div class="summary-card">
             <div class="summary-label">Évolution</div>
-              <div
-                class="summary-value"
-                :class="{
-                  positive: selectedAccountEvolution >= 0,
-                  negative: selectedAccountEvolution < 0
-                }"
-              >
-                {{ formatCurrency(selectedAccountEvolution) }}
-              </div>
+            <div
+              class="summary-value"
+              :class="{
+                positive: selectedAccountEvolution >= 0,
+                negative: selectedAccountEvolution < 0,
+              }"
+            >
+              {{ formatCurrency(selectedAccountEvolution) }}
             </div>
           </div>
+        </div>
 
         <div class="account-tabs" v-if="previsions.accounts && previsions.accounts.length > 0">
           <button
@@ -84,14 +82,14 @@
                   <div
                     class="chart-bar positive"
                     :style="{
-                      height: `${Math.abs((month.income / maxMonthlyValue) * 100)}%`
+                      height: `${Math.abs((month.income / maxMonthlyValue) * 100)}%`,
                     }"
                     :title="`Revenus: ${formatCurrency(month.income)}`"
                   ></div>
                   <div
                     class="chart-bar negative"
                     :style="{
-                      height: `${Math.abs((month.expense / maxMonthlyValue) * 100)}%`
+                      height: `${Math.abs((month.expense / maxMonthlyValue) * 100)}%`,
                     }"
                     :title="`Dépenses: ${formatCurrency(month.expense)}`"
                   ></div>
@@ -104,10 +102,7 @@
           </div>
 
           <!-- BUG -->
-          <PrevisionsTable 
-          :details="account.monthly_details" 
-          />
-
+          <PrevisionsTable :details="account.monthly_details" />
         </div>
       </div>
     </div>
@@ -123,7 +118,7 @@ import PrevisionsHeader from '@/components/previsions/PrevisionsHeader.vue';
 import PrevisionsControls from '@/components/previsions/PrevisionsControls.vue';
 import PrevisionsTable from '@/components/previsions/PrevisionsTable.vue';
 const router = useRouter();
-import {API_BASE} from '@/config/api.js'
+import { API_BASE } from '@/config/api.js';
 // const API_BASE = 'https://budgie-api-s1yz.onrender.com/api';
 
 const previsions = ref(null);
@@ -142,7 +137,7 @@ const selectedAccount = computed(() => {
   if (!previsions.value || !previsions.value.accounts || !activeAccountId.value) {
     return null;
   }
-  return previsions.value.accounts.find(acc => acc.account_id === activeAccountId.value);
+  return previsions.value.accounts.find((acc) => acc.account_id === activeAccountId.value);
 });
 
 // Computed pour les valeurs du compte sélectionné
@@ -161,7 +156,7 @@ const selectedAccountEvolution = computed(() => {
 const maxMonthlyValue = computed(() => {
   if (!previsions.value || !selectedAccount.value) return 1;
   let max = 0;
-  selectedAccount.value.monthly_details.forEach(month => {
+  selectedAccount.value.monthly_details.forEach((month) => {
     max = Math.max(max, Math.abs(month.income), Math.abs(month.expense));
   });
   return max || 1;
@@ -180,18 +175,21 @@ async function fetchPrevisions() {
 
     const res = await axios.get(`${API_BASE}/previsions`, {
       params: {
-        target_date: targetDate.value
+        target_date: targetDate.value,
       },
       headers: {
-        Authorization: `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     });
 
     previsions.value = res.data;
 
     // Si on a des comptes et qu'aucun n'est sélectionné, on prend le premier
     if (previsions.value.accounts && previsions.value.accounts.length > 0) {
-      if (!activeAccountId.value || !previsions.value.accounts.find(a => a.account_id === activeAccountId.value)) {
+      if (
+        !activeAccountId.value ||
+        !previsions.value.accounts.find((a) => a.account_id === activeAccountId.value)
+      ) {
         activeAccountId.value = previsions.value.accounts[0].account_id;
       }
     }
@@ -216,7 +214,7 @@ function formatCurrency(amount) {
   if (amount === undefined || amount === null) return '0,00 €';
   return new Intl.NumberFormat('fr-FR', {
     style: 'currency',
-    currency: 'EUR'
+    currency: 'EUR',
   }).format(amount);
 }
 
@@ -239,7 +237,12 @@ onMounted(() => {
 .page-previsions {
   margin: 0;
   padding: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
 }
 
 .previsions-container {
@@ -427,8 +430,14 @@ onMounted(() => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .account-header {
@@ -589,7 +598,8 @@ onMounted(() => {
   }
 
   /* --- MODIFICATION ICI : On cache le graphique sur mobile --- */
-  .chart-container, .details-table-wrapper {
+  .chart-container,
+  .details-table-wrapper {
     display: none;
   }
 

@@ -1,10 +1,8 @@
-<!-- src/views/ResetPasswordView.vue --> 
+<!-- src/views/ResetPasswordView.vue -->
 <template>
   <section class="auth-card">
     <h1 class="auth-title">Réinitialiser le mot de passe</h1>
-    <p class="auth-subtitle">
-      Entre ton email pour recevoir un lien de réinitialisation.
-    </p>
+    <p class="auth-subtitle">Entre ton email pour recevoir un lien de réinitialisation.</p>
 
     <form class="auth-form" @submit.prevent="handleReset">
       <div>
@@ -20,9 +18,7 @@
 
       <p v-if="message" class="auth-success">{{ message }}</p>
 
-      <button class="auth-button" type="submit">
-        Envoyer le lien
-      </button>
+      <button class="auth-button" type="submit">Envoyer le lien</button>
     </form>
 
     <div class="auth-footer">
@@ -33,20 +29,18 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { RouterLink } from "vue-router";
+import { ref } from 'vue';
+import { RouterLink } from 'vue-router';
 
-const email = ref("");
-const message = ref("");
+const email = ref('');
+const message = ref('');
 
 function handleReset() {
-  message.value =
-    "Si un compte existe avec cet email, un lien sera envoyé (simulation).";
+  message.value = 'Si un compte existe avec cet email, un lien sera envoyé (simulation).';
 }
 </script>
 
 <style scoped>
-
 .auth-card {
   width: 420px;
   max-width: 100%;
@@ -73,7 +67,6 @@ function handleReset() {
   margin-bottom: 24px;
 }
 
-
 .auth-form {
   display: flex;
   flex-direction: column;
@@ -96,7 +89,8 @@ function handleReset() {
   font-size: 14px;
   outline: none;
   background: #f9fafb;
-  transition: border-color var(--transition-fast),
+  transition:
+    border-color var(--transition-fast),
     box-shadow var(--transition-fast),
     background var(--transition-fast);
 }
@@ -119,7 +113,8 @@ function handleReset() {
   cursor: pointer;
   margin-top: 10px;
   box-shadow: 0 10px 25px rgba(63, 43, 150, 0.35);
-  transition: background var(--transition-fast),
+  transition:
+    background var(--transition-fast),
     transform var(--transition-fast),
     box-shadow var(--transition-fast);
 }
@@ -151,7 +146,6 @@ function handleReset() {
 .auth-link:hover {
   text-decoration: underline;
 }
-
 
 .auth-error {
   font-size: 12px;

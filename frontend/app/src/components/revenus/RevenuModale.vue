@@ -9,31 +9,23 @@
       <div class="modal-body">
         <div class="form-group">
           <label>Nom</label>
-          <input
-              v-model="form.transaction_name"
-              type="text"
-              placeholder="Ex: Salaire"
-          />
+          <input v-model="form.transaction_name" type="text" placeholder="Ex: Salaire" />
         </div>
 
         <div class="form-group">
           <label>Montant (€)</label>
-          <input
-              v-model.number="form.amount"
-              type="number"
-              placeholder="0.00"
-          />
+          <input v-model.number="form.amount" type="number" placeholder="0.00" />
         </div>
 
         <div class="form-group">
           <label>Type de revenu</label>
           <div class="radio-group">
             <label class="radio-label">
-              <input type="radio" value="once" v-model="form.duration_type">
+              <input type="radio" value="once" v-model="form.duration_type" />
               <span>Ponctuel</span>
             </label>
             <label class="radio-label">
-              <input type="radio" value="recurring" v-model="form.duration_type">
+              <input type="radio" value="recurring" v-model="form.duration_type" />
               <span>Récurrent (tous les mois)</span>
             </label>
           </div>
@@ -54,15 +46,14 @@
         <div class="row-dates">
           <div class="form-group half">
             <label>Date de réception</label>
-            <input type="date" v-model="form.start_date"/>
+            <input type="date" v-model="form.start_date" />
           </div>
-          <div class="form-group half" :style="{ opacity: form.duration_type === 'once' ? '0.5' : '1' }">
+          <div
+            class="form-group half"
+            :style="{ opacity: form.duration_type === 'once' ? '0.5' : '1' }"
+          >
             <label>Date de fin (facultatif)</label>
-            <input
-                type="date"
-                v-model="form.end_date"
-                :disabled="form.duration_type === 'once'"
-            />
+            <input type="date" v-model="form.end_date" :disabled="form.duration_type === 'once'" />
           </div>
         </div>
       </div>
@@ -76,18 +67,18 @@
 </template>
 
 <script setup>
-import {reactive, watch, ref, onMounted} from 'vue';
+import { reactive, watch, ref, onMounted } from 'vue';
 import axios from 'axios';
 
 const props = defineProps({
   show: Boolean,
-  revenu: Object // L'objet revenu passé par le parent
+  revenu: Object, // L'objet revenu passé par le parent
 });
 
 const emit = defineEmits(['close', 'updated', 'deleted']);
 
 const accounts = ref([]);
-const API_URL = "/api";
+const API_URL = '/api';
 
 // Formulaire réactif
 const form = reactive({
@@ -97,7 +88,7 @@ const form = reactive({
   duration_type: 'once',
   account_id: null,
   start_date: '',
-  end_date: ''
+  end_date: '',
 });
 
 // Charger les comptes pour la liste déroulante
@@ -106,72 +97,79 @@ const fetchAccounts = async () => {
   if (!token) return;
   try {
     const res = await axios.get(`${API_URL}/accounts`, {
-      headers: {Authorization: `Bearer ${token}`}
+      headers: { Authorization: `Bearer ${token}` },
     });
     // Gestion de la structure de réponse { data: [...] } ou [...]
-    accounts.value = Array.isArray(res.data) ? res.data : (res.data.data || []);
+    accounts.value = Array.isArray(res.data) ? res.data : res.data.data || [];
   } catch (e) {
-    console.error("Erreur chargement comptes", e);
+    console.error('Erreur chargement comptes', e);
   }
 };
 
 // Mettre à jour le formulaire quand la prop 'revenu' change
-watch(() => props.revenu, (newVal) => {
-  if (newVal) {
-    form.id = newVal.id;
-    form.transaction_name = newVal.transaction_name;
-    form.amount = newVal.amount;
-    form.duration_type = newVal.duration_type || 'once';
-    form.account_id = newVal.account_id;
-    // Formatage des dates pour l'input HTML type="date" (YYYY-MM-DD)
-    form.start_date = newVal.start_date ? newVal.start_date.split('T')[0] : '';
-    form.end_date = newVal.end_date ? newVal.end_date.split('T')[0] : '';
-  }
-}, {immediate: true});
+watch(
+  () => props.revenu,
+  (newVal) => {
+    if (newVal) {
+      form.id = newVal.id;
+      form.transaction_name = newVal.transaction_name;
+      form.amount = newVal.amount;
+      form.duration_type = newVal.duration_type || 'once';
+      form.account_id = newVal.account_id;
+      // Formatage des dates pour l'input HTML type="date" (YYYY-MM-DD)
+      form.start_date = newVal.start_date ? newVal.start_date.split('T')[0] : '';
+      form.end_date = newVal.end_date ? newVal.end_date.split('T')[0] : '';
+    }
+  },
+  { immediate: true },
+);
 
 // Gestion de la date de fin si on repasse en ponctuel
-watch(() => form.duration_type, (newVal) => {
-  if (newVal === 'once') {
-    form.end_date = '';
-  }
-});
+watch(
+  () => form.duration_type,
+  (newVal) => {
+    if (newVal === 'once') {
+      form.end_date = '';
+    }
+  },
+);
 
 onMounted(fetchAccounts);
 
 // MISE A JOUR
 const handleUpdate = async () => {
   if (!form.transaction_name || !form.amount || !form.start_date) {
-    alert("Veuillez remplir les champs obligatoires (Nom, Montant, Date).");
+    alert('Veuillez remplir les champs obligatoires (Nom, Montant, Date).');
     return;
   }
 
-  const token = localStorage.getItem("budgie_token");
+  const token = localStorage.getItem('budgie_token');
   try {
     await axios.put(`${API_URL}/revenus/${form.id}`, form, {
-      headers: {Authorization: `Bearer ${token}`}
+      headers: { Authorization: `Bearer ${token}` },
     });
     emit('updated');
     emit('close');
   } catch (err) {
     console.error(err);
-    alert("Erreur lors de la modification");
+    alert('Erreur lors de la modification');
   }
 };
 
 // SUPPRESSION
 const handleDelete = async () => {
-  if (!confirm("Voulez-vous vraiment supprimer ce revenu ?")) return;
+  if (!confirm('Voulez-vous vraiment supprimer ce revenu ?')) return;
 
-  const token = localStorage.getItem("budgie_token");
+  const token = localStorage.getItem('budgie_token');
   try {
     await axios.delete(`${API_URL}/revenus/${form.id}`, {
-      headers: {Authorization: `Bearer ${token}`}
+      headers: { Authorization: `Bearer ${token}` },
     });
     emit('deleted');
     emit('close');
   } catch (err) {
     console.error(err);
-    alert("Erreur lors de la suppression");
+    alert('Erreur lors de la suppression');
   }
 };
 </script>
@@ -255,7 +253,10 @@ const handleDelete = async () => {
   font-weight: 500;
 }
 
-input[type="text"], input[type="number"], input[type="date"], select {
+input[type='text'],
+input[type='number'],
+input[type='date'],
+select {
   width: 100%;
   padding: 12px;
   border: 1px solid #e5e7eb;
@@ -266,7 +267,8 @@ input[type="text"], input[type="number"], input[type="date"], select {
   transition: border-color 0.2s;
 }
 
-input:focus, select:focus {
+input:focus,
+select:focus {
   border-color: #5409c4;
   box-shadow: 0 0 0 3px rgba(84, 9, 196, 0.1);
 }
@@ -363,7 +365,10 @@ input:focus, select:focus {
     gap: 10px;
   }
 
-  .btn-submit, .btn-cancel, .btn-delete, .btn-save {
+  .btn-submit,
+  .btn-cancel,
+  .btn-delete,
+  .btn-save {
     width: 100%;
     margin: 0;
   }

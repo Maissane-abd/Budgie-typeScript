@@ -39,13 +39,13 @@ Gestionnaire de navigation côté client permettant de passer d'une vue à une a
 
 Le frontend s'articule autour de plusieurs responsabilités :
 
-| Élément | Responsabilité |
-|---|---|
-| Vues | Représenter les principales pages de l'application |
+| Élément        | Responsabilité                                     |
+| -------------- | -------------------------------------------------- |
+| Vues           | Représenter les principales pages de l'application |
 | Composants Vue | Afficher les éléments réutilisables de l'interface |
-| Stores Pinia | Centraliser les états partagés |
-| Vue Router | Gérer la navigation entre les vues |
-| Couche HTTP | Communiquer avec l'API Express |
+| Stores Pinia   | Centraliser les états partagés                     |
+| Vue Router     | Gérer la navigation entre les vues                 |
+| Couche HTTP    | Communiquer avec l'API Express                     |
 
 Les principales fonctionnalités de l'interface concernent l'authentification, la gestion des comptes financiers, les revenus, les dépenses et les prévisions.
 
@@ -59,7 +59,7 @@ Les composants Vue permettent de diviser l'interface en éléments indépendants
 
 Un composant peut notamment être chargé d'afficher un formulaire, une carte de compte financier, un tableau ou un graphique.
 
-Les composants peuvent recevoir des données depuis leurs composants parents au moyen de propriétés (*props*) et communiquer des événements grâce au mécanisme `emit`.
+Les composants peuvent recevoir des données depuis leurs composants parents au moyen de propriétés (_props_) et communiquer des événements grâce au mécanisme `emit`.
 
 Cette approche favorise :
 
@@ -106,15 +106,15 @@ Il assure principalement :
 
 Les routes sont regroupées dans le répertoire `backend/src/routes/`, selon leur domaine fonctionnel.
 
-| Route principale | Responsabilité |
-|---|---|
-| `/api/auth` | Inscription, connexion et gestion du profil |
-| `/api/accounts` | Gestion des comptes financiers |
-| `/api/revenus` | Gestion des revenus |
-| `/api/expenses` | Gestion des dépenses |
-| `/api/previsions` | Calcul des prévisions financières |
-| `/api/payments` | Routes de paiement présentes dans le code |
-| `/api` | Inclut également le routeur webhook |
+| Route principale  | Responsabilité                              |
+| ----------------- | ------------------------------------------- |
+| `/api/auth`       | Inscription, connexion et gestion du profil |
+| `/api/accounts`   | Gestion des comptes financiers              |
+| `/api/revenus`    | Gestion des revenus                         |
+| `/api/expenses`   | Gestion des dépenses                        |
+| `/api/previsions` | Calcul des prévisions financières           |
+| `/api/payments`   | Routes de paiement présentes dans le code   |
+| `/api`            | Inclut également le routeur webhook         |
 
 Les routes de paiement et le webhook subsistent dans le code, mais l'intégration Stripe n'est pas activée comme fonctionnalité commerciale de la V1 en production.
 
@@ -214,13 +214,13 @@ Lorsqu'un utilisateur consulte ses comptes :
 
 ### Répartition des responsabilités
 
-| Frontend Vue | Backend Express |
-|---|---|
-| Affiche les formulaires | Valide les données reçues |
-| Déclenche les requêtes HTTP | Traite les requêtes API |
-| Présente les résultats | Applique les règles métier |
-| Gère les interactions | Contrôle les accès |
-| Actualise l'interface | Communique avec PostgreSQL |
+| Frontend Vue                | Backend Express            |
+| --------------------------- | -------------------------- |
+| Affiche les formulaires     | Valide les données reçues  |
+| Déclenche les requêtes HTTP | Traite les requêtes API    |
+| Présente les résultats      | Applique les règles métier |
+| Gère les interactions       | Contrôle les accès         |
+| Actualise l'interface       | Communique avec PostgreSQL |
 
 Cette séparation permet de maintenir une distinction claire entre les responsabilités de présentation et celles du serveur.
 

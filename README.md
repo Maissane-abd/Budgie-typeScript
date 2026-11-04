@@ -14,9 +14,7 @@
 
 **[Découvrir l'application](https://monbudgie.fr)** · **[Code source](https://github.com/Maissane-abd/Budgie-typeScript)**
 
-
 ![Aperçu de Budgie](docs/images/overview.png)
-
 
 </div>
 
@@ -52,18 +50,18 @@ Budgie répond à deux objectifs complémentaires :
 - **Un besoin utilisateur :** disposer d'un outil accessible de suivi et d'anticipation budgétaires, encourageant une gestion financière responsable.
 - **Un objectif de développement :** concevoir, déployer et maintenir de bout en bout une application full-stack, en pratiquant l'architecture logicielle, l'API REST, la gestion de données, Docker, la CI/CD et l'administration serveur.
 
-La **V1** est un *MVP* (*Minimum Viable Product*) : elle se concentre volontairement sur les fonctionnalités essentielles, avec une feuille de route d'amélioration progressive.
+La **V1** est un _MVP_ (_Minimum Viable Product_) : elle se concentre volontairement sur les fonctionnalités essentielles, avec une feuille de route d'amélioration progressive.
 
 ## Fonctionnalités de la V1
 
-| Domaine | Fonctionnalités |
-| --- | --- |
-| **Authentification** | Inscription, connexion, déconnexion et accès aux ressources protégées par JWT. |
+| Domaine                | Fonctionnalités                                                                        |
+| ---------------------- | -------------------------------------------------------------------------------------- |
+| **Authentification**   | Inscription, connexion, déconnexion et accès aux ressources protégées par JWT.         |
 | **Comptes financiers** | Création et gestion de comptes courants, d'épargne, d'investissement ou personnalisés. |
-| **Revenus** | Enregistrement de revenus ponctuels ou récurrents, associés à un compte. |
-| **Dépenses** | Enregistrement de dépenses ponctuelles ou récurrentes, associées à un compte. |
-| **Prévisions** | Estimation de l'évolution des soldes selon les revenus et les charges enregistrés. |
-| **Visualisation** | Consultation des prévisions sous forme graphique et chiffrée. |
+| **Revenus**            | Enregistrement de revenus ponctuels ou récurrents, associés à un compte.               |
+| **Dépenses**           | Enregistrement de dépenses ponctuelles ou récurrentes, associées à un compte.          |
+| **Prévisions**         | Estimation de l'évolution des soldes selon les revenus et les charges enregistrés.     |
+| **Visualisation**      | Consultation des prévisions sous forme graphique et chiffrée.                          |
 
 **Limite de la V1 :** le plan gratuit prévoit actuellement un maximum de **deux comptes financiers** (pour la V2 on enlèvera cette limite).
 
@@ -74,13 +72,12 @@ La **V1** est un *MVP* (*Minimum Viable Product*) : elle se concentre volontaire
 
 Les captures d'écran seront intégrées ici à partir de l'application réelle, idéalement avec des données de démonstration.
 
-| Écran | Fonction |
-| --- | --- |
-| **Connexion** | Accéder à Budgie et à son espace personnel. |
-| **Comptes** | Gérer les différents comptes financiers. |
-| **Revenus / dépenses** | Ajouter et organiser les opérations. |
-| **Prévisions** | Visualiser l'évolution estimée des soldes. |
-
+| Écran                  | Fonction                                    |
+| ---------------------- | ------------------------------------------- |
+| **Connexion**          | Accéder à Budgie et à son espace personnel. |
+| **Comptes**            | Gérer les différents comptes financiers.    |
+| **Revenus / dépenses** | Ajouter et organiser les opérations.        |
+| **Prévisions**         | Visualiser l'évolution estimée des soldes.  |
 
 ![Connexion](docs/images/auth.png)
 ![Gestion des comptes](docs/images/accounts.png)
@@ -88,19 +85,18 @@ Les captures d'écran seront intégrées ici à partir de l'application réelle,
 ![Saisie des dépenses](docs/images/expenses.png)
 ![Prévisions financières](docs/images/forecasts.png)
 
-
 ## Stack technique
 
-| Couche | Technologies | Rôle |
-| --- | --- | --- |
-| **Frontend** | Vue.js 3, Vite, Pinia, Vue Router, HTML/CSS | Interface utilisateur, navigation et gestion d'état. |
-| **Backend** | Node.js, Express.js, TypeScript | API REST, règles métier et calculs de prévision. |
-| **Authentification** | JWT, bcrypt | Contrôle des accès et hachage des mots de passe. |
-| **Base de données** | PostgreSQL 15 | Stockage relationnel et persistance des données. |
-| **Conteneurisation** | Docker, Docker Compose | Exécution et orchestration des services. |
-| **Infrastructure** | VPS OVHcloud, Debian 12, Nginx | Hébergement et routage des requêtes. |
-| **HTTPS** | Certbot, TLS | Chiffrement des communications web. |
-| **Automatisation** | GitHub Actions | Vérifications automatisées du code et préparation des livraisons. |
+| Couche               | Technologies                                | Rôle                                                              |
+| -------------------- | ------------------------------------------- | ----------------------------------------------------------------- |
+| **Frontend**         | Vue.js 3, Vite, Pinia, Vue Router, HTML/CSS | Interface utilisateur, navigation et gestion d'état.              |
+| **Backend**          | Node.js, Express.js, TypeScript             | API REST, règles métier et calculs de prévision.                  |
+| **Authentification** | JWT, bcrypt                                 | Contrôle des accès et hachage des mots de passe.                  |
+| **Base de données**  | PostgreSQL 15                               | Stockage relationnel et persistance des données.                  |
+| **Conteneurisation** | Docker, Docker Compose                      | Exécution et orchestration des services.                          |
+| **Infrastructure**   | VPS OVHcloud, Debian 12, Nginx              | Hébergement et routage des requêtes.                              |
+| **HTTPS**            | Certbot, TLS                                | Chiffrement des communications web.                               |
+| **Automatisation**   | GitHub Actions                              | Vérifications automatisées du code et préparation des livraisons. |
 
 ## Architecture
 
@@ -226,7 +222,6 @@ Le fichier Compose local prévoit trois services : **`frontend`**, **`backend`**
 Une fois les services opérationnels, ouvrir :
 
 **➡️ [http://localhost](http://localhost)**
-
 
 ### 6. Vérifier l'installation
 

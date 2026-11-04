@@ -18,7 +18,7 @@
   background: white;
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
 .header-card {
@@ -45,4 +45,3 @@
   margin: 0;
 }
 </style>
-

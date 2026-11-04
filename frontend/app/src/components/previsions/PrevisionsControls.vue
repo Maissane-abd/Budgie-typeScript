@@ -10,11 +10,7 @@
         @change="handleChange"
       />
     </div>
-    <button
-      class="refresh-btn"
-      :disabled="loading"
-      @click="$emit('refresh')"
-    >
+    <button class="refresh-btn" :disabled="loading" @click="$emit('refresh')">
       {{ loading ? 'Chargement...' : 'Actualiser' }}
     </button>
   </div>
@@ -91,4 +87,3 @@ function handleChange(event) {
   cursor: not-allowed;
 }
 </style>
-

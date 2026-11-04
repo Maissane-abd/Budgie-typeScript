@@ -9,23 +9,23 @@
       <div class="modal-body">
         <div class="form-group">
           <label>Nom</label>
-          <input v-model="form.transaction_name" type="text" placeholder="Salle de sport"/>
+          <input v-model="form.transaction_name" type="text" placeholder="Salle de sport" />
         </div>
 
         <div class="form-group">
           <label>Montant (€)</label>
-          <input v-model.number="form.amount" type="number" placeholder="30,00"/>
+          <input v-model.number="form.amount" type="number" placeholder="30,00" />
         </div>
 
         <div class="form-group">
           <label>Durée</label>
           <div class="radio-group">
             <label class="radio-label">
-              <input type="radio" value="once" v-model="form.duration_type">
+              <input type="radio" value="once" v-model="form.duration_type" />
               <span>Ponctuelle</span>
             </label>
             <label class="radio-label">
-              <input type="radio" value="recurring" v-model="form.duration_type">
+              <input type="radio" value="recurring" v-model="form.duration_type" />
               <span>Tous les mois</span>
             </label>
           </div>
@@ -45,15 +45,14 @@
         <div class="row-dates">
           <div class="form-group half">
             <label>Date de début</label>
-            <input type="date" v-model="form.start_date"/>
+            <input type="date" v-model="form.start_date" />
           </div>
-          <div class="form-group half" :style="{ opacity: form.duration_type === 'once' ? '0.5' : '1' }">
+          <div
+            class="form-group half"
+            :style="{ opacity: form.duration_type === 'once' ? '0.5' : '1' }"
+          >
             <label>Date de fin (facultatif)</label>
-            <input
-                type="date"
-                v-model="form.end_date"
-                :disabled="form.duration_type === 'once'"
-            />
+            <input type="date" v-model="form.end_date" :disabled="form.duration_type === 'once'" />
           </div>
         </div>
       </div>
@@ -67,13 +66,13 @@
 </template>
 
 <script setup>
-import {reactive, onMounted, ref, watch} from 'vue';
+import { reactive, onMounted, ref, watch } from 'vue';
 import axios from 'axios';
-import {useToast} from "vue-toastification";
+import { useToast } from 'vue-toastification';
 
 const props = defineProps({
   show: Boolean,
-  expenseToEdit: Object
+  expenseToEdit: Object,
 });
 
 const emit = defineEmits(['close', 'updated']);
@@ -89,39 +88,46 @@ const form = reactive({
   start_date: '',
   end_date: '',
   interval_unit: 'month',
-  interval_count: 1
+  interval_count: 1,
 });
 
-watch(() => props.expenseToEdit, (newVal) => {
-  if (newVal) {
-    form.transaction_name = newVal.transaction_name;
-    form.amount = newVal.amount;
-    form.duration_type = newVal.duration_type;
-    form.account_id = newVal.account_id;
-    form.start_date = newVal.start_date ? newVal.start_date.split('T')[0] : '';
-    form.end_date = newVal.end_date ? newVal.end_date.split('T')[0] : '';
-    form.interval_unit = newVal.interval_unit || 'month';
-    form.interval_count = newVal.interval_count || 1;
-  }
-}, {immediate: true});
+watch(
+  () => props.expenseToEdit,
+  (newVal) => {
+    if (newVal) {
+      form.transaction_name = newVal.transaction_name;
+      form.amount = newVal.amount;
+      form.duration_type = newVal.duration_type;
+      form.account_id = newVal.account_id;
+      form.start_date = newVal.start_date ? newVal.start_date.split('T')[0] : '';
+      form.end_date = newVal.end_date ? newVal.end_date.split('T')[0] : '';
+      form.interval_unit = newVal.interval_unit || 'month';
+      form.interval_count = newVal.interval_count || 1;
+    }
+  },
+  { immediate: true },
+);
 
-watch(() => form.duration_type, (newVal) => {
-  if (newVal === 'once') {
-    form.end_date = '';
-  }
-});
+watch(
+  () => form.duration_type,
+  (newVal) => {
+    if (newVal === 'once') {
+      form.end_date = '';
+    }
+  },
+);
 
 const fetchAccounts = async () => {
   const token = localStorage.getItem('budgie_token');
   if (!token) return;
   try {
     const res = await axios.get('/api/accounts', {
-      headers: {Authorization: `Bearer ${token}`}
+      headers: { Authorization: `Bearer ${token}` },
     });
     accounts.value = res.data.data;
   } catch (e) {
     console.error(e);
-    toast.error("Impossible de charger les comptes");
+    toast.error('Impossible de charger les comptes');
   }
 };
 
@@ -129,18 +135,18 @@ onMounted(fetchAccounts);
 
 const handleUpdate = () => {
   if (!form.transaction_name || !form.amount || !form.account_id) {
-    toast.error("Veuillez remplir les champs obligatoires");
+    toast.error('Veuillez remplir les champs obligatoires');
     return;
   }
 
   if (form.end_date && form.end_date < form.start_date) {
-    toast.error("La date de fin ne peut pas être avant le début !");
+    toast.error('La date de fin ne peut pas être avant le début !');
     return;
   }
 
   emit('updated', {
     id: props.expenseToEdit.id,
-    data: {...form}
+    data: { ...form },
   });
 };
 </script>
@@ -201,7 +207,10 @@ const handleUpdate = () => {
   margin-bottom: 6px;
 }
 
-input[type="text"], input[type="number"], input[type="date"], select {
+input[type='text'],
+input[type='number'],
+input[type='date'],
+select {
   width: 100%;
   padding: 12px;
   border: 1px solid #e5e7eb;
@@ -296,7 +305,10 @@ input[type="text"], input[type="number"], input[type="date"], select {
     gap: 10px;
   }
 
-  .btn-submit, .btn-cancel, .btn-delete, .btn-save {
+  .btn-submit,
+  .btn-cancel,
+  .btn-delete,
+  .btn-save {
     width: 100%;
     margin: 0;
   }

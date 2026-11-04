@@ -3,8 +3,8 @@
 Budgie repose sur une architecture composée de plusieurs services Docker.
 
 flowchart TB
-    U["👤 Utilisateur<br/>Navigateur web"]
-    DNS["🌐 DNS OVH<br/>monbudgie.fr"]
+U["👤 Utilisateur<br/>Navigateur web"]
+DNS["🌐 DNS OVH<br/>monbudgie.fr"]
 
     U -.->|"1. Résolution du domaine"| DNS
     DNS -.->|"Adresse IP publique"| U

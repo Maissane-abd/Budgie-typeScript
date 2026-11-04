@@ -10,14 +10,14 @@
           <div
             class="chart-bar positive"
             :style="{
-              height: `${Math.abs((month.income / maxValue) * 100)}%`
+              height: `${Math.abs((month.income / maxValue) * 100)}%`,
             }"
             :title="`Revenus: ${formatCurrency(month.income)}`"
           ></div>
           <div
             class="chart-bar negative"
             :style="{
-              height: `${Math.abs((month.expense / maxValue) * 100)}%`
+              height: `${Math.abs((month.expense / maxValue) * 100)}%`,
             }"
             :title="`Dépenses: ${formatCurrency(month.expense)}`"
           ></div>
@@ -45,7 +45,7 @@ defineProps({
 function formatCurrency(amount) {
   return new Intl.NumberFormat('fr-FR', {
     style: 'currency',
-    currency: 'EUR'
+    currency: 'EUR',
   }).format(amount);
 }
 
@@ -118,4 +118,3 @@ function formatMonth(date) {
   }
 }
 </style>
-

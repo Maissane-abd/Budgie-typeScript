@@ -28,15 +28,15 @@ Ce document décrit le modèle relationnel PostgreSQL de Budgie V1, les relation
 
 Le modèle défini dans `db/init.sql` comporte **7 tables** :
 
-| Table | Fonction | Propriétaire fonctionnel |
-| --- | --- | --- |
-| `users` | Profils et comptes de connexion | Utilisateur |
-| `accounts` | Comptes financiers (solde initial, devise, intérêts) | Utilisateur |
-| `transactions` | Revenus et dépenses d'un compte | Compte financier |
-| `recurrence_rules` | Paramètres de répétition d'une transaction | Transaction |
-| `transaction_exceptions` | Exceptions ou ajustements prévus pour une transaction | Transaction |
-| `plans` | Définition des offres et plafonds | Référentiel commun |
-| `subscriptions` | Abonnements et identifiants Stripe | Utilisateur + offre |
+| Table                    | Fonction                                              | Propriétaire fonctionnel |
+| ------------------------ | ----------------------------------------------------- | ------------------------ |
+| `users`                  | Profils et comptes de connexion                       | Utilisateur              |
+| `accounts`               | Comptes financiers (solde initial, devise, intérêts)  | Utilisateur              |
+| `transactions`           | Revenus et dépenses d'un compte                       | Compte financier         |
+| `recurrence_rules`       | Paramètres de répétition d'une transaction            | Transaction              |
+| `transaction_exceptions` | Exceptions ou ajustements prévus pour une transaction | Transaction              |
+| `plans`                  | Définition des offres et plafonds                     | Référentiel commun       |
+| `subscriptions`          | Abonnements et identifiants Stripe                    | Utilisateur + offre      |
 
 **Choix de conception essentiel :** les revenus et les dépenses **ne possèdent pas deux tables distinctes**. La table `transactions` contient les deux, et la colonne `transaction_type` distingue `income` (revenu) et `expense` (dépense). Les routeurs REST séparent cependant les opérations fonctionnelles (`/api/revenus` et `/api/expenses`).
 
@@ -134,39 +134,39 @@ erDiagram
 
 ## 3. Dictionnaire des tables
 
-La colonne *Obligatoire* indique les contraintes `NOT NULL` explicitement présentes dans le schéma ; une colonne peut être facultative tout en ayant une valeur `DEFAULT`.
+La colonne _Obligatoire_ indique les contraintes `NOT NULL` explicitement présentes dans le schéma ; une colonne peut être facultative tout en ayant une valeur `DEFAULT`.
 
 ### 3.1 `users` — utilisateurs
 
 Conserve les informations nécessaires à l'inscription, à la connexion et à l'identification du propriétaire des comptes.
 
-| Colonne | Type SQL | Obligatoire | Contrainte / valeur par défaut |
-| --- | --- | --- | --- |
-| `id` | `UUID` | Oui | PK ; `uuid_generate_v4()` |
-| `first_name` | `VARCHAR(100)` | Oui | — |
-| `last_name` | `VARCHAR(100)` | Oui | — |
-| `email` | `VARCHAR(255)` | Oui | `UNIQUE` |
-| `password_hash` | `TEXT` | Oui | Empreinte du mot de passe, jamais le mot de passe brut |
-| `created_at` | `TIMESTAMPTZ` | Non | `now()` |
-| `updated_at` | `TIMESTAMPTZ` | Non | `now()` |
+| Colonne         | Type SQL       | Obligatoire | Contrainte / valeur par défaut                         |
+| --------------- | -------------- | ----------- | ------------------------------------------------------ |
+| `id`            | `UUID`         | Oui         | PK ; `uuid_generate_v4()`                              |
+| `first_name`    | `VARCHAR(100)` | Oui         | —                                                      |
+| `last_name`     | `VARCHAR(100)` | Oui         | —                                                      |
+| `email`         | `VARCHAR(255)` | Oui         | `UNIQUE`                                               |
+| `password_hash` | `TEXT`         | Oui         | Empreinte du mot de passe, jamais le mot de passe brut |
+| `created_at`    | `TIMESTAMPTZ`  | Non         | `now()`                                                |
+| `updated_at`    | `TIMESTAMPTZ`  | Non         | `now()`                                                |
 
 Le backend hache les mots de passe avec `bcryptjs`. L'inscription crée également un compte intitulé **Compte Principal**, en euros, pour l'utilisateur nouvellement créé. Les routes d'authentification génèrent un JWT ; **le JWT n'est pas stocké dans cette table**.
 
 ### 3.2 `accounts` — comptes financiers
 
-| Colonne | Type SQL | Obligatoire | Contrainte / valeur par défaut |
-| --- | --- | --- | --- |
-| `id` | `UUID` | Oui | PK ; UUID v4 |
-| `user_id` | `UUID` | Oui | FK → `users.id` ; `ON DELETE CASCADE` |
-| `account_name` | `VARCHAR(100)` | Oui | — |
-| `description` | `TEXT` | Non | — |
-| `created_on` | `DATE` | Oui | Date métier fournie lors de la création |
-| `currency` | `CHAR(3)` | Oui | `'EUR'` |
-| `balance` | `NUMERIC(18,2)` | Non | `0` |
-| `annual_interest_rate` | `NUMERIC(6,4)` | Non | — |
-| `tax_rate` | `NUMERIC(6,4)` | Non | — |
-| `created_at` | `TIMESTAMPTZ` | Non | `now()` |
-| `updated_at` | `TIMESTAMPTZ` | Non | `now()` |
+| Colonne                | Type SQL        | Obligatoire | Contrainte / valeur par défaut          |
+| ---------------------- | --------------- | ----------- | --------------------------------------- |
+| `id`                   | `UUID`          | Oui         | PK ; UUID v4                            |
+| `user_id`              | `UUID`          | Oui         | FK → `users.id` ; `ON DELETE CASCADE`   |
+| `account_name`         | `VARCHAR(100)`  | Oui         | —                                       |
+| `description`          | `TEXT`          | Non         | —                                       |
+| `created_on`           | `DATE`          | Oui         | Date métier fournie lors de la création |
+| `currency`             | `CHAR(3)`       | Oui         | `'EUR'`                                 |
+| `balance`              | `NUMERIC(18,2)` | Non         | `0`                                     |
+| `annual_interest_rate` | `NUMERIC(6,4)`  | Non         | —                                       |
+| `tax_rate`             | `NUMERIC(6,4)`  | Non         | —                                       |
+| `created_at`           | `TIMESTAMPTZ`   | Non         | `now()`                                 |
+| `updated_at`           | `TIMESTAMPTZ`   | Non         | `now()`                                 |
 
 **Attention :** `accounts.balance` est la valeur persistée servant de base à plusieurs calculs. Le `balance` retourné par `GET /api/accounts` est recalculé par une requête d'agrégation des transactions. Les champs API `current_balance` et `forecast_12m` sont **calculés à la volée** et **n'existent pas comme colonnes** de la table.
 
@@ -174,17 +174,17 @@ Le backend hache les mots de passe avec `bcryptjs`. L'inscription crée égaleme
 
 ### 3.3 `transactions` — revenus et dépenses
 
-| Colonne | Type SQL | Obligatoire | Contrainte / valeur par défaut |
-| --- | --- | --- | --- |
-| `id` | `UUID` | Oui | PK ; UUID v4 |
-| `account_id` | `UUID` | Oui | FK → `accounts.id` ; `ON DELETE CASCADE` |
-| `transaction_name` | `VARCHAR(150)` | Oui | — |
-| `transaction_type` | `VARCHAR(50)` | Oui | `CHECK` : `'income'` ou `'expense'` |
-| `description` | `TEXT` | Non | — |
-| `amount` | `NUMERIC(18,2)` | Oui | Aucune contrainte SQL `CHECK (amount > 0)` |
-| `duration_type` | `VARCHAR(50)` | Non | Pas de `CHECK` SQL sur les valeurs |
-| `start_date` | `DATE` | Oui | Date de référence de l'opération |
-| `created_at` | `TIMESTAMPTZ` | Non | `now()` |
+| Colonne            | Type SQL        | Obligatoire | Contrainte / valeur par défaut             |
+| ------------------ | --------------- | ----------- | ------------------------------------------ |
+| `id`               | `UUID`          | Oui         | PK ; UUID v4                               |
+| `account_id`       | `UUID`          | Oui         | FK → `accounts.id` ; `ON DELETE CASCADE`   |
+| `transaction_name` | `VARCHAR(150)`  | Oui         | —                                          |
+| `transaction_type` | `VARCHAR(50)`   | Oui         | `CHECK` : `'income'` ou `'expense'`        |
+| `description`      | `TEXT`          | Non         | —                                          |
+| `amount`           | `NUMERIC(18,2)` | Oui         | Aucune contrainte SQL `CHECK (amount > 0)` |
+| `duration_type`    | `VARCHAR(50)`   | Non         | Pas de `CHECK` SQL sur les valeurs         |
+| `start_date`       | `DATE`          | Oui         | Date de référence de l'opération           |
+| `created_at`       | `TIMESTAMPTZ`   | Non         | `now()`                                    |
 
 Le backend utilise les valeurs métier `one_time` et `recurring` pour `duration_type` ; la prévision traite une transaction comme récurrente uniquement si `duration_type = 'recurring'` **et** si une règle de récurrence associée est présente. Les autres cas sont traités comme ponctuels.
 
@@ -192,61 +192,61 @@ Le backend utilise les valeurs métier `one_time` et `recurring` pour `duration_
 
 ### 3.4 `recurrence_rules` — règles de récurrence
 
-| Colonne | Type SQL | Obligatoire | Contrainte / valeur par défaut |
-| --- | --- | --- | --- |
-| `id` | `UUID` | Oui | PK ; UUID v4 |
-| `transaction_id` | `UUID` | Oui | FK → `transactions.id` ; `ON DELETE CASCADE` |
-| `interval_unit` | `VARCHAR(20)` | Oui | `CHECK` : `'day'`, `'month'`, `'year'` |
-| `interval_count` | `INT` | Oui | `1` ; pas de `CHECK (interval_count > 0)` |
-| `start_date` | `DATE` | Oui | Début de la règle |
-| `end_date` | `DATE` | Non | Fin facultative |
+| Colonne          | Type SQL      | Obligatoire | Contrainte / valeur par défaut               |
+| ---------------- | ------------- | ----------- | -------------------------------------------- |
+| `id`             | `UUID`        | Oui         | PK ; UUID v4                                 |
+| `transaction_id` | `UUID`        | Oui         | FK → `transactions.id` ; `ON DELETE CASCADE` |
+| `interval_unit`  | `VARCHAR(20)` | Oui         | `CHECK` : `'day'`, `'month'`, `'year'`       |
+| `interval_count` | `INT`         | Oui         | `1` ; pas de `CHECK (interval_count > 0)`    |
+| `start_date`     | `DATE`        | Oui         | Début de la règle                            |
+| `end_date`       | `DATE`        | Non         | Fin facultative                              |
 
 **Exemples :** (`month`, `1`) = chaque mois ; (`month`, `3`) = tous les trois mois ; (`year`, `1`) = chaque année. Le calcul actuel prend comme date de début **`transactions.start_date`** et non `recurrence_rules.start_date`.
 
 ### 3.5 `transaction_exceptions` — exceptions de transactions
 
-| Colonne | Type SQL | Obligatoire | Contrainte / valeur par défaut |
-| --- | --- | --- | --- |
-| `id` | `UUID` | Oui | PK ; UUID v4 |
-| `transaction_id` | `UUID` | Oui | FK → `transactions.id` ; `ON DELETE CASCADE` |
-| `exception_name` | `VARCHAR(150)` | Non | — |
-| `description` | `TEXT` | Non | — |
-| `started_at` | `TIMESTAMPTZ` | Non | — |
-| `ends_at` | `TIMESTAMPTZ` | Non | — |
-| `override_amount` | `NUMERIC(18,2)` | Non | Montant de remplacement prévu |
-| `override_duration_type` | `VARCHAR(50)` | Non | — |
-| `override_n_months` | `INT` | Non | — |
-| `created_at` | `TIMESTAMPTZ` | Non | `now()` |
+| Colonne                  | Type SQL        | Obligatoire | Contrainte / valeur par défaut               |
+| ------------------------ | --------------- | ----------- | -------------------------------------------- |
+| `id`                     | `UUID`          | Oui         | PK ; UUID v4                                 |
+| `transaction_id`         | `UUID`          | Oui         | FK → `transactions.id` ; `ON DELETE CASCADE` |
+| `exception_name`         | `VARCHAR(150)`  | Non         | —                                            |
+| `description`            | `TEXT`          | Non         | —                                            |
+| `started_at`             | `TIMESTAMPTZ`   | Non         | —                                            |
+| `ends_at`                | `TIMESTAMPTZ`   | Non         | —                                            |
+| `override_amount`        | `NUMERIC(18,2)` | Non         | Montant de remplacement prévu                |
+| `override_duration_type` | `VARCHAR(50)`   | Non         | —                                            |
+| `override_n_months`      | `INT`           | Non         | —                                            |
+| `created_at`             | `TIMESTAMPTZ`   | Non         | `now()`                                      |
 
 La table existe dans `db/init.sql`, mais les contrôleurs revenus/dépenses et le calcul des prévisions **ne l'exploitent pas dans les chemins vérifiés**. Il s'agit d'une **capacité prévue dans le schéma**, et non d'une fonctionnalité de calcul d'exceptions à présenter comme opérationnelle en V1.
 
 ### 3.6 `plans` — offres d'abonnement
 
-| Colonne | Type SQL | Obligatoire | Contrainte / valeur par défaut |
-| --- | --- | --- | --- |
-| `id` | `UUID` | Oui | PK ; UUID v4 |
-| `plan_name` | `VARCHAR(100)` | Oui | — |
-| `max_accounts` | `INT` | Non | `1` dans le schéma SQL |
-| `max_expenses_per_account` | `INT` | Non | — |
-| `max_incomes_per_account` | `INT` | Non | — |
-| `price` | `NUMERIC(10,2)` | Oui | — |
-| `created_at` | `TIMESTAMPTZ` | Non | `now()` |
+| Colonne                    | Type SQL        | Obligatoire | Contrainte / valeur par défaut |
+| -------------------------- | --------------- | ----------- | ------------------------------ |
+| `id`                       | `UUID`          | Oui         | PK ; UUID v4                   |
+| `plan_name`                | `VARCHAR(100)`  | Oui         | —                              |
+| `max_accounts`             | `INT`           | Non         | `1` dans le schéma SQL         |
+| `max_expenses_per_account` | `INT`           | Non         | —                              |
+| `max_incomes_per_account`  | `INT`           | Non         | —                              |
+| `price`                    | `NUMERIC(10,2)` | Oui         | —                              |
+| `created_at`               | `TIMESTAMPTZ`   | Non         | `now()`                        |
 
 Le script d'initialisation **crée la table mais n'insère aucune offre**. Les limites du plan gratuit appliquées par le backend sont codées comme valeurs de secours dans `utils/subscription.ts` : **2 comptes**, **2 revenus par compte**, **7 dépenses par compte**. Ne pas confondre ce comportement avec `plans.max_accounts DEFAULT 1` du SQL.
 
 ### 3.7 `subscriptions` — abonnements
 
-| Colonne | Type SQL | Obligatoire | Contrainte / valeur par défaut |
-| --- | --- | --- | --- |
-| `id` | `UUID` | Oui | PK ; UUID v4 |
-| `user_id` | `UUID` | Oui | FK → `users.id` ; `ON DELETE CASCADE` |
-| `plan_id` | `UUID` | Oui | FK → `plans.id` ; suppression du plan non configurée en cascade |
-| `status` | `VARCHAR(50)` | Oui | `CHECK` : `'active'`, `'canceled'`, `'trial'` |
-| `started_at` | `TIMESTAMPTZ` | Oui | — |
-| `ends_at` | `TIMESTAMPTZ` | Non | — |
-| `stripe_customer_id` | `VARCHAR(255)` | Non | — |
-| `stripe_subscription_id` | `VARCHAR(255)` | Non | — |
-| `created_at` | `TIMESTAMPTZ` | Non | `now()` |
+| Colonne                  | Type SQL       | Obligatoire | Contrainte / valeur par défaut                                  |
+| ------------------------ | -------------- | ----------- | --------------------------------------------------------------- |
+| `id`                     | `UUID`         | Oui         | PK ; UUID v4                                                    |
+| `user_id`                | `UUID`         | Oui         | FK → `users.id` ; `ON DELETE CASCADE`                           |
+| `plan_id`                | `UUID`         | Oui         | FK → `plans.id` ; suppression du plan non configurée en cascade |
+| `status`                 | `VARCHAR(50)`  | Oui         | `CHECK` : `'active'`, `'canceled'`, `'trial'`                   |
+| `started_at`             | `TIMESTAMPTZ`  | Oui         | —                                                               |
+| `ends_at`                | `TIMESTAMPTZ`  | Non         | —                                                               |
+| `stripe_customer_id`     | `VARCHAR(255)` | Non         | —                                                               |
+| `stripe_subscription_id` | `VARCHAR(255)` | Non         | —                                                               |
+| `created_at`             | `TIMESTAMPTZ`  | Non         | `now()`                                                         |
 
 Le modèle peut représenter un abonnement et les références d'un prestataire de paiement. **La présence de la table n'implique pas que les paiements Stripe soient actifs en production.** Lors de l'inscription, le backend ne crée pas de ligne `subscriptions` : l'utilisateur reçoit une désignation fonctionnelle « Free » par défaut.
 
@@ -254,14 +254,14 @@ Le modèle peut représenter un abonnement et les références d'un prestataire 
 
 ### 4.1 Relations matérialisées par des clés étrangères
 
-| Colonne enfant | Référence parent | À la suppression du parent |
-| --- | --- | --- |
-| `accounts.user_id` | `users.id` | `CASCADE` |
-| `subscriptions.user_id` | `users.id` | `CASCADE` |
-| `subscriptions.plan_id` | `plans.id` | `NO ACTION` (comportement par défaut) |
-| `transactions.account_id` | `accounts.id` | `CASCADE` |
-| `recurrence_rules.transaction_id` | `transactions.id` | `CASCADE` |
-| `transaction_exceptions.transaction_id` | `transactions.id` | `CASCADE` |
+| Colonne enfant                          | Référence parent  | À la suppression du parent            |
+| --------------------------------------- | ----------------- | ------------------------------------- |
+| `accounts.user_id`                      | `users.id`        | `CASCADE`                             |
+| `subscriptions.user_id`                 | `users.id`        | `CASCADE`                             |
+| `subscriptions.plan_id`                 | `plans.id`        | `NO ACTION` (comportement par défaut) |
+| `transactions.account_id`               | `accounts.id`     | `CASCADE`                             |
+| `recurrence_rules.transaction_id`       | `transactions.id` | `CASCADE`                             |
+| `transaction_exceptions.transaction_id` | `transactions.id` | `CASCADE`                             |
 
 **Conséquences importantes :**
 
@@ -286,10 +286,10 @@ Ne pas attribuer à PostgreSQL des validations qui ne figurent que dans le code 
 
 ### 5.1 Index explicitement créés
 
-| Nom | Table / colonnes | Usage probable |
-| --- | --- | --- |
-| `idx_accounts_user` | `accounts(user_id)` | Rechercher les comptes d'un utilisateur |
-| `idx_transactions_account_start` | `transactions(account_id, start_date)` | Lister les opérations par compte et date |
+| Nom                               | Table / colonnes                             | Usage probable                            |
+| --------------------------------- | -------------------------------------------- | ----------------------------------------- |
+| `idx_accounts_user`               | `accounts(user_id)`                          | Rechercher les comptes d'un utilisateur   |
+| `idx_transactions_account_start`  | `transactions(account_id, start_date)`       | Lister les opérations par compte et date  |
 | `idx_transactions_income_account` | `transactions(transaction_type, account_id)` | Filtrer les opérations par type et compte |
 
 Les index nécessaires aux PK et à l'unicité de l'e-mail sont également créés automatiquement par PostgreSQL. L'index `idx_transactions_income_account` concerne en pratique les deux types (`income` et `expense`) ; ce n'est **pas** un index partiel limité aux revenus.
@@ -319,11 +319,11 @@ Lors de `POST /api/auth/register`, après l'insertion de `users`, l'API crée `a
 
 ### 6.3 Quotas gratuits et plan Premium
 
-| Ressource | Limite gratuite appliquée par le backend | Point de contrôle |
-| --- | --- | --- |
-| Comptes | 2 par utilisateur | `POST /api/accounts` |
-| Revenus | 2 par compte | `POST /api/revenus` |
-| Dépenses | 7 par compte | `POST /api/expenses` |
+| Ressource | Limite gratuite appliquée par le backend | Point de contrôle    |
+| --------- | ---------------------------------------- | -------------------- |
+| Comptes   | 2 par utilisateur                        | `POST /api/accounts` |
+| Revenus   | 2 par compte                             | `POST /api/revenus`  |
+| Dépenses  | 7 par compte                             | `POST /api/expenses` |
 
 Les contrôleurs comparent les compteurs aux plafonds **à la création**. Pour les revenus et dépenses, `utils/subscription.ts` applique les limites d'une offre active (ou les valeurs par défaut) et traite `Premium` comme illimité. Pour les comptes, la route vérifie directement un abonnement actif `Premium` et la limite gratuite de deux comptes.
 
@@ -452,7 +452,7 @@ La route prend un paramètre facultatif `target_date=YYYY-MM-DD` et choisit envi
 5. Ajouter les revenus, retrancher les dépenses, puis appliquer les intérêts nets du mois.
 6. Produire les détails mensuels, le solde projeté par compte et les sommes globales.
 
-Formule du mois *m* utilisée par le code :
+Formule du mois _m_ utilisée par le code :
 
 ```text
 S_m_apres_operations = S_m_debut + revenus_m - depenses_m
@@ -466,13 +466,13 @@ Le résultat JSON comprend `target_date`, `accounts[]` avec `starting_balance`, 
 
 ### 8.4 Différences à ne pas masquer
 
-| Aspect | `GET /api/accounts` | `GET /api/previsions` |
-| --- | --- | --- |
-| Point de départ | `accounts.balance` **plus** sommes des lignes de transactions | `accounts.balance` **stocké** |
-| Opérations récurrentes | Chaque ligne une seule fois | Occurrences générées selon `recurrence_rules` |
-| Fenêtre temporelle | Aucun filtre de date sur l'agrégation | Boucle mensuelle depuis le mois courant jusqu'à la cible |
-| Intérêts | Projection isolée dans `current_balance` / `forecast_12m` | Intérêts calculés après les opérations de chaque mois |
-| Exceptions | Non exploitées | Non exploitées |
+| Aspect                 | `GET /api/accounts`                                           | `GET /api/previsions`                                    |
+| ---------------------- | ------------------------------------------------------------- | -------------------------------------------------------- |
+| Point de départ        | `accounts.balance` **plus** sommes des lignes de transactions | `accounts.balance` **stocké**                            |
+| Opérations récurrentes | Chaque ligne une seule fois                                   | Occurrences générées selon `recurrence_rules`            |
+| Fenêtre temporelle     | Aucun filtre de date sur l'agrégation                         | Boucle mensuelle depuis le mois courant jusqu'à la cible |
+| Intérêts               | Projection isolée dans `current_balance` / `forecast_12m`     | Intérêts calculés après les opérations de chaque mois    |
+| Exceptions             | Non exploitées                                                | Non exploitées                                           |
 
 **Conséquence :** les chiffres des deux routes peuvent diverger pour un même compte. Dans la projection, les occurrences antérieures au mois en cours sont générées mais ne sont **pas imputées aux mois simulés**, tandis que le solde de départ reste `accounts.balance`. Selon les données saisies, cela peut produire un écart notable avec le solde affiché par `/api/accounts`.
 
@@ -595,19 +595,19 @@ Pour modifier la structure dans une future version, prévoir des **migrations ve
 
 Ces constats décrivent des **risques ou limites visibles dans le code**, pas nécessairement des incidents observés sur le site de production.
 
-| Priorité indicative | Constat vérifié dans le code ou le schéma | Piste pour une future version |
-| --- | --- | --- |
-| Haute | `/api/accounts` et `/api/previsions` ne calculent pas le solde de la même façon | Définir une source de vérité pour solde initial, solde courant et historique |
-| Haute | `interval_count` n'a pas de `CHECK > 0` ; une valeur nulle ou non positive peut compromettre la génération d'occurrences | Ajouter contrainte SQL, validation applicative et garde dans la boucle |
-| Haute | Insertions `transactions` puis `recurrence_rules` sans transaction SQL explicite | Utiliser `BEGIN`/`COMMIT`/`ROLLBACK` sur le même client `pg` |
-| Moyenne | Une transaction peut avoir plusieurs règles en base malgré une logique supposant une seule règle | Évaluer `UNIQUE (transaction_id)` après audit des données existantes |
-| Moyenne | `transaction_exceptions` existe mais n'est pas intégré dans les prévisions vérifiées | Définir une vraie logique d'exceptions avant de l'exposer dans l'API |
-| Moyenne | Saisie des taux incohérente avec un commentaire SQL (`0.0250` contre `2.5`) | Fixer une convention unique, documenter et tester les conversions |
-| Moyenne | Les prévisions mensuelles utilisent des dates JavaScript et peuvent décaler certaines échéances | Définir une politique de récurrence calendaire, gérer les fins de mois et fuseaux |
-| Moyenne | Les champs `updated_at` ne sont pas tous actualisés lors des modifications dans les routes consultées | Ajouter une mise à jour explicite ou un trigger PostgreSQL |
-| Moyenne | La validation SQL des montants, des dates de fin et de l'ordre des bornes est incomplète | Ajouter des `CHECK`, avec migration après analyse des données |
-| Moyenne | `db/init.sql` décrit une création initiale, pas un système de migrations | Introduire des migrations versionnées avant les évolutions V2 |
-| Basse | Le modèle de tarifs offre une valeur par défaut `max_accounts=1`, tandis que l'API utilise 2 comptes gratuits | Unifier les règles métier et les valeurs de référence |
+| Priorité indicative | Constat vérifié dans le code ou le schéma                                                                                | Piste pour une future version                                                     |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| Haute               | `/api/accounts` et `/api/previsions` ne calculent pas le solde de la même façon                                          | Définir une source de vérité pour solde initial, solde courant et historique      |
+| Haute               | `interval_count` n'a pas de `CHECK > 0` ; une valeur nulle ou non positive peut compromettre la génération d'occurrences | Ajouter contrainte SQL, validation applicative et garde dans la boucle            |
+| Haute               | Insertions `transactions` puis `recurrence_rules` sans transaction SQL explicite                                         | Utiliser `BEGIN`/`COMMIT`/`ROLLBACK` sur le même client `pg`                      |
+| Moyenne             | Une transaction peut avoir plusieurs règles en base malgré une logique supposant une seule règle                         | Évaluer `UNIQUE (transaction_id)` après audit des données existantes              |
+| Moyenne             | `transaction_exceptions` existe mais n'est pas intégré dans les prévisions vérifiées                                     | Définir une vraie logique d'exceptions avant de l'exposer dans l'API              |
+| Moyenne             | Saisie des taux incohérente avec un commentaire SQL (`0.0250` contre `2.5`)                                              | Fixer une convention unique, documenter et tester les conversions                 |
+| Moyenne             | Les prévisions mensuelles utilisent des dates JavaScript et peuvent décaler certaines échéances                          | Définir une politique de récurrence calendaire, gérer les fins de mois et fuseaux |
+| Moyenne             | Les champs `updated_at` ne sont pas tous actualisés lors des modifications dans les routes consultées                    | Ajouter une mise à jour explicite ou un trigger PostgreSQL                        |
+| Moyenne             | La validation SQL des montants, des dates de fin et de l'ordre des bornes est incomplète                                 | Ajouter des `CHECK`, avec migration après analyse des données                     |
+| Moyenne             | `db/init.sql` décrit une création initiale, pas un système de migrations                                                 | Introduire des migrations versionnées avant les évolutions V2                     |
+| Basse               | Le modèle de tarifs offre une valeur par défaut `max_accounts=1`, tandis que l'API utilise 2 comptes gratuits            | Unifier les règles métier et les valeurs de référence                             |
 
 ### Évolutions envisagées, **non implémentées en V1**
 

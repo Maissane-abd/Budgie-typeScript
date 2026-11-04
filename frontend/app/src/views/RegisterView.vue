@@ -1,114 +1,98 @@
-<!-- src/views/RegisterView.vue --> 
+<!-- src/views/RegisterView.vue -->
 <template>
   <div class="app-main">
-  <section class="auth-card">
-    <h1 class="auth-title">Inscription</h1>
-    <p class="auth-subtitle">
-      Crée ton compte Budgie pour suivre tes comptes et tes prévisions.
-    </p>
+    <section class="auth-card">
+      <h1 class="auth-title">Inscription</h1>
+      <p class="auth-subtitle">Crée ton compte Budgie pour suivre tes comptes et tes prévisions.</p>
 
-    <form class="auth-form" @submit.prevent="handleRegister">
-      <div>
-        <div class="auth-label">Prénom</div>
-        <input
-          v-model="firstName"
-          type="text"
-          class="auth-input"
-          placeholder="Hamza"
-          required
-        />
+      <form class="auth-form" @submit.prevent="handleRegister">
+        <div>
+          <div class="auth-label">Prénom</div>
+          <input v-model="firstName" type="text" class="auth-input" placeholder="Hamza" required />
+        </div>
+        <div>
+          <div class="auth-label">Nom</div>
+          <input v-model="lastName" type="text" class="auth-input" placeholder="Meksem" required />
+        </div>
+
+        <div>
+          <div class="auth-label">Email</div>
+          <input
+            v-model="email"
+            type="email"
+            class="auth-input"
+            placeholder="exemple@mail.com"
+            required
+          />
+        </div>
+
+        <div>
+          <div class="auth-label">Mot de passe</div>
+          <input
+            v-model="password"
+            type="password"
+            class="auth-input"
+            placeholder="••••••••"
+            required
+          />
+        </div>
+
+        <div>
+          <div class="auth-label">Confirmer le mot de passe</div>
+          <input
+            v-model="passwordConfirm"
+            type="password"
+            class="auth-input"
+            placeholder="••••••••"
+            required
+          />
+        </div>
+
+        <p v-if="error" class="auth-error">{{ error }}</p>
+        <p v-if="success" class="auth-success">{{ success }}</p>
+
+        <button class="auth-button" type="submit" :disabled="loading">
+          {{ loading ? 'Création...' : 'Créer mon compte' }}
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        Déjà inscrit ?
+        <RouterLink class="auth-link" to="/login">Se connecter</RouterLink>
+        <br />
+        <span style="font-size: 11px"> En créant un compte, vous acceptez les CGU. </span>
       </div>
-      <div>
-        <div class="auth-label">Nom</div>
-        <input
-          v-model="lastName"
-          type="text"
-          class="auth-input"
-          placeholder="Meksem"
-          required
-        />
-      </div>
-
-      <div>
-        <div class="auth-label">Email</div>
-        <input
-          v-model="email"
-          type="email"
-          class="auth-input"
-          placeholder="exemple@mail.com"
-          required
-        />
-      </div>
-
-      <div>
-        <div class="auth-label">Mot de passe</div>
-        <input
-          v-model="password"
-          type="password"
-          class="auth-input"
-          placeholder="••••••••"
-          required
-        />
-      </div>
-
-      <div>
-        <div class="auth-label">Confirmer le mot de passe</div>
-        <input
-          v-model="passwordConfirm"
-          type="password"
-          class="auth-input"
-          placeholder="••••••••"
-          required
-        />
-      </div>
-
-      <p v-if="error" class="auth-error">{{ error }}</p>
-      <p v-if="success" class="auth-success">{{ success }}</p>
-
-      <button class="auth-button" type="submit" :disabled="loading">
-        {{ loading ? "Création..." : "Créer mon compte" }}
-      </button>
-    </form>
-
-    <div class="auth-footer">
-      Déjà inscrit ?
-      <RouterLink class="auth-link" to="/login">Se connecter</RouterLink>
-      <br />
-      <span style="font-size: 11px">
-        En créant un compte, vous acceptez les CGU.
-      </span>
-    </div>
-  </section>
+    </section>
   </div>
 </template>
 
 <script setup>
 import '../assets/main.css';
-import { ref } from "vue";
-import axios from "axios";
-import { RouterLink, useRouter } from "vue-router";
-import {API_BASE} from '@/config/api.js'
+import { ref } from 'vue';
+import axios from 'axios';
+import { RouterLink, useRouter } from 'vue-router';
+import { API_BASE } from '@/config/api.js';
 
 const router = useRouter();
 
-const firstName = ref("");
-const lastName = ref("");
-const email = ref("");
-const password = ref("");
-const passwordConfirm = ref("");
+const firstName = ref('');
+const lastName = ref('');
+const email = ref('');
+const password = ref('');
+const passwordConfirm = ref('');
 const loading = ref(false);
-const error = ref("");
-const success = ref("");
+const error = ref('');
+const success = ref('');
 
 // const API_BASE = "https://budgie-api-s1yz.onrender.com/api";
 // const API_BASE = "http://localhost:5001/api"
 
 async function handleRegister() {
-  error.value = "";
-  success.value = "";
+  error.value = '';
+  success.value = '';
 
   if (password.value !== passwordConfirm.value) {
-    error.value = "Les mots de passe ne correspondent pas.";
+    error.value = 'Les mots de passe ne correspondent pas.';
     return;
   }
 
@@ -121,16 +105,14 @@ async function handleRegister() {
       password: password.value,
     });
 
-    success.value = "Compte créé avec succès, redirection...";
+    success.value = 'Compte créé avec succès, redirection...';
     // petit délai puis redirection vers login
     setTimeout(() => {
-      router.push("/login");
+      router.push('/login');
     }, 800);
   } catch (err) {
     console.error(err);
-    error.value =
-      err.response?.data?.error ||
-      "Erreur lors de l'inscription. Réessaie plus tard.";
+    error.value = err.response?.data?.error || "Erreur lors de l'inscription. Réessaie plus tard.";
   } finally {
     loading.value = false;
   }
@@ -138,7 +120,7 @@ async function handleRegister() {
 </script>
 
 <style scoped>
-  /*AUTH CARD*/
+/*AUTH CARD*/
 
 .auth-card {
   width: 420px;
@@ -192,7 +174,8 @@ async function handleRegister() {
   font-size: 14px;
   outline: none;
   background: #f9fafb;
-  transition: border-color var(--transition-fast),
+  transition:
+    border-color var(--transition-fast),
     box-shadow var(--transition-fast),
     background var(--transition-fast);
 }
@@ -217,7 +200,8 @@ async function handleRegister() {
   cursor: pointer;
   margin-top: 10px;
   box-shadow: 0 10px 25px rgba(63, 43, 150, 0.35);
-  transition: background var(--transition-fast),
+  transition:
+    background var(--transition-fast),
     transform var(--transition-fast),
     box-shadow var(--transition-fast);
 }

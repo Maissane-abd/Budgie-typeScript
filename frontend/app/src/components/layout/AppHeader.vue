@@ -1,9 +1,18 @@
 <template>
   <header class="app-header">
-
     <div class="header-left">
       <button class="burger-btn" @click="$emit('toggle-sidebar')" title="Menu">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <line x1="3" y1="12" x2="21" y2="12"></line>
           <line x1="3" y1="6" x2="21" y2="6"></line>
           <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -15,32 +24,41 @@
 
     <div class="header-right">
       <button class="icon-btn logout-btn" title="Se déconnecter" @click="handleLogout">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
           <polyline points="16 17 21 12 16 7"></polyline>
           <line x1="21" y1="12" x2="9" y2="12"></line>
         </svg>
       </button>
     </div>
-
   </header>
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router'
-import { useUserStore } from '@/stores/userStore'
+import { useRouter } from 'vue-router';
+import { useUserStore } from '@/stores/userStore';
 
 // Déclaration de l'événement pour le parent (AppLayout)
-defineEmits(['toggle-sidebar'])
+defineEmits(['toggle-sidebar']);
 
-const router = useRouter()
-const userStore = useUserStore()
+const router = useRouter();
+const userStore = useUserStore();
 
 const handleLogout = () => {
-  localStorage.removeItem('budgie_token')
-  userStore.clearUser()
-  router.push('/login')
-}
+  localStorage.removeItem('budgie_token');
+  userStore.clearUser();
+  router.push('/login');
+};
 </script>
 
 <style scoped>

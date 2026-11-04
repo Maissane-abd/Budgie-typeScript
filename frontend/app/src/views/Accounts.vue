@@ -1,6 +1,5 @@
 <template>
   <div class="accounts-page">
-
     <div class="card header-card">
       <div class="header-top">
         <div>
@@ -9,8 +8,17 @@
         </div>
 
         <button class="btn-primary" @click="openCreateDrawer">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
           </svg>
@@ -19,44 +27,38 @@
       </div>
 
       <AccountsFilters
-          v-model:search="searchQuery"
-          v-model:sort="sortOrder"
-          v-model:type="selectedType"
-          :types="accountTypes"
+        v-model:search="searchQuery"
+        v-model:sort="sortOrder"
+        v-model:type="selectedType"
+        :types="accountTypes"
       />
     </div>
 
     <div class="card table-card">
-      <AccountsTable
-          :accounts="filteredAccounts"
-          @edit="openDrawer" 
-          @delete="deleteAccount"
-      />
+      <AccountsTable :accounts="filteredAccounts" @edit="openDrawer" @delete="deleteAccount" />
     </div>
 
     <AccountModal
-        :show="showDrawer"
-        :is-create="isCreate"
-        :form="form"
-        @update:form="form = $event"
-        @close="closeDrawer"
-        @save="isCreate ? createAccount() : updateAccount()"
-        @delete="deleteAccount"
+      :show="showDrawer"
+      :is-create="isCreate"
+      :form="form"
+      @update:form="form = $event"
+      @close="closeDrawer"
+      @save="isCreate ? createAccount() : updateAccount()"
+      @delete="deleteAccount"
     />
-
   </div>
 </template>
 
 <script setup>
-import {ref, onMounted, computed} from "vue";
-import {AccountsService} from "@/services/accounts.service.js";
-import {useRouter} from 'vue-router';
-import {useToast} from "vue-toastification";
+import { ref, onMounted, computed } from 'vue';
+import { AccountsService } from '@/services/accounts.service.js';
+import { useRouter } from 'vue-router';
+import { useToast } from 'vue-toastification';
 
-
-import AccountsFilters from "@/components/accounts/AccountsFilters.vue";
-import AccountsTable from "@/components/accounts/AccountsTable.vue";
-import AccountModal from "@/components/accounts/AccountModal.vue";
+import AccountsFilters from '@/components/accounts/AccountsFilters.vue';
+import AccountsTable from '@/components/accounts/AccountsTable.vue';
+import AccountModal from '@/components/accounts/AccountModal.vue';
 
 const router = useRouter();
 const toast = useToast();
@@ -68,9 +70,9 @@ const form = ref({});
 const isCreate = ref(false);
 
 /* ===== FILTRES ===== */
-const searchQuery = ref("");
-const sortOrder = ref("");
-const selectedType = ref("");
+const searchQuery = ref('');
+const sortOrder = ref('');
+const selectedType = ref('');
 
 /* ===== API ===== */
 const loadAccounts = async () => {
@@ -81,24 +83,24 @@ const loadAccounts = async () => {
       return;
     }
     const res = await AccountsService.getAll();
-    accounts.value = Array.isArray(res.data) ? res.data : (res.data.data || []);
+    accounts.value = Array.isArray(res.data) ? res.data : res.data.data || [];
   } catch (error) {
-    toast.error("Erreur chargement comptes:", error);
+    toast.error('Erreur chargement comptes:', error);
   }
 };
 
 /* ===== DRAWER ACTIONS ===== */
 const openDrawer = (acc) => {
   isCreate.value = false;
-  form.value = {...acc};
+  form.value = { ...acc };
   showDrawer.value = true;
 };
 
 const openCreateDrawer = () => {
   isCreate.value = true;
   form.value = {
-    account_name: "",
-    description: "",
+    account_name: '',
+    description: '',
     balance: 0,
     annual_interest_rate: 0,
     tax_rate: 0,
@@ -128,16 +130,14 @@ const createAccount = async () => {
     if (error.response) {
       if (error.response.status === 403 && error.response.data.limitReached) {
         toast.error(error.response.data.error);
-      }
-      else if (error.response.status === 400) {
-        toast.error("Veuillez vérifier les champs du formulaire.");
-      }
-      else {
-        toast.error("Une erreur est survenue : " + (error.response.data.error || "Inconnue"));
+      } else if (error.response.status === 400) {
+        toast.error('Veuillez vérifier les champs du formulaire.');
+      } else {
+        toast.error('Une erreur est survenue : ' + (error.response.data.error || 'Inconnue'));
       }
     } else {
       console.error(error);
-      toast.error("Erreur de connexion au serveur.");
+      toast.error('Erreur de connexion au serveur.');
     }
   }
 };
@@ -152,26 +152,26 @@ const updateAccount = async () => {
     closeDrawer();
     loadAccounts();
   } catch (e) {
-    toast.error("Erreur modification");
+    toast.error('Erreur modification');
   }
 };
 
 const deleteAccount = async (id) => {
   const accountId = id || form.value.id;
-  if (!confirm("Voulez-vous vraiment supprimer ce compte ?")) return;
+  if (!confirm('Voulez-vous vraiment supprimer ce compte ?')) return;
   try {
     await AccountsService.delete(accountId);
     if (showDrawer.value) closeDrawer();
     loadAccounts();
   } catch (e) {
-    toast.error("Erreur suppression");
+    toast.error('Erreur suppression');
   }
 };
 
 /* ===== COMPUTED ===== */
 const accountTypes = computed(() => {
   if (!accounts.value) return [];
-  return [...new Set(accounts.value.map(a => a.description).filter(Boolean))];
+  return [...new Set(accounts.value.map((a) => a.description).filter(Boolean))];
 });
 
 const filteredAccounts = computed(() => {
@@ -179,13 +179,13 @@ const filteredAccounts = computed(() => {
 
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase();
-    list = list.filter(a => a.account_name.toLowerCase().includes(q));
+    list = list.filter((a) => a.account_name.toLowerCase().includes(q));
   }
   if (selectedType.value) {
-    list = list.filter(a => a.description === selectedType.value);
+    list = list.filter((a) => a.description === selectedType.value);
   }
-  if (sortOrder.value === "asc") list.sort((a, b) => Number(a.balance) - Number(b.balance));
-  if (sortOrder.value === "desc") list.sort((a, b) => Number(b.balance) - Number(a.balance));
+  if (sortOrder.value === 'asc') list.sort((a, b) => Number(a.balance) - Number(b.balance));
+  if (sortOrder.value === 'desc') list.sort((a, b) => Number(b.balance) - Number(a.balance));
 
   return list;
 });
