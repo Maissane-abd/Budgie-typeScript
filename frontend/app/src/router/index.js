@@ -9,7 +9,6 @@ import Accounts from '../views/Accounts.vue'
 import Profile from '../views/Profiles.vue'
 import PrevisionsView from '../views/PrevisionsView.vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
-import AbonnementView from '../views/AbonnementView.vue'
 
 const routes = [
   {
@@ -41,11 +40,11 @@ const routes = [
         name: 'previsions',
         component: PrevisionsView
       },
-      {
-        path: '/abonnement',
-        name: 'abonnement',
-        component: AbonnementView
-      },
+      // {
+      //   path: '/abonnement',
+      //   name: 'abonnement',
+      //   component: AbonnementView
+      // },
       {
         path: '/profile',
         name: 'profile',

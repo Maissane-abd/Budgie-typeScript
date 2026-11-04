@@ -61,7 +61,7 @@
       </div>
     </section>
 
-    <section class="pricing-section">
+    <!-- <section class="pricing-section">
       <h2 class="section-title">Choisissez le plan qui vous convient</h2>
       <p class="section-subtitle">
         Budgie offre un plan gratuit pour commencer, et un plan Premium pour gérer vos finances sans aucune limite.
@@ -134,7 +134,7 @@
           <button class="btn-plan primary">Passer en Premium</button>
         </div>
       </div>
-    </section>
+    </section> -->
 
     <section class="features-section">
       <h2 class="section-title">Fonctionnalités principales</h2>
@@ -190,26 +190,26 @@ import { ref, computed } from 'vue';
 import { RouterLink } from 'vue-router';
 
 // --- LOGIC ---
-const billing = ref('monthly');
-const monthlyPrice = 4.99;
-const yearlyDiscount = 0.20;
+// const billing = ref('monthly');
+// const monthlyPrice = 4.99;
+// const yearlyDiscount = 0.20;
 
-const displayedPriceAmount = computed(() => {
-  if (billing.value === 'yearly') {
-    // Calcul mensuel avec réduction pour affichage marketing "4,99€ / mois" ou équivalent
-    // Ici, le code précédent affichait le prix annuel. Si tu veux afficher le prix MENSUEL équivalent :
-    // return (monthlyPrice * (1 - yearlyDiscount)).toFixed(2).replace('.', ',') + ' €';
+// const displayedPriceAmount = computed(() => {
+//   if (billing.value === 'yearly') {
+//     // Calcul mensuel avec réduction pour affichage marketing "4,99€ / mois" ou équivalent
+//     // Ici, le code précédent affichait le prix annuel. Si tu veux afficher le prix MENSUEL équivalent :
+//     // return (monthlyPrice * (1 - yearlyDiscount)).toFixed(2).replace('.', ',') + ' €';
 
-    // Si tu veux afficher le prix total annuel :
-    const annualTotal = (monthlyPrice * 12 * (1 - yearlyDiscount)).toFixed(2);
-    return annualTotal.replace('.', ',') + ' €';
-  }
-  return monthlyPrice.toString().replace('.', ',') + ' €';
-});
+//     // Si tu veux afficher le prix total annuel :
+//     const annualTotal = (monthlyPrice * 12 * (1 - yearlyDiscount)).toFixed(2);
+//     return annualTotal.replace('.', ',') + ' €';
+//   }
+//   return monthlyPrice.toString().replace('.', ',') + ' €';
+// });
 
-const displayedPricePeriod = computed(() => {
-  return billing.value === 'yearly' ? '/ an' : '/ mois';
-});
+// const displayedPricePeriod = computed(() => {
+//   return billing.value === 'yearly' ? '/ an' : '/ mois';
+// });
 
 </script>
 

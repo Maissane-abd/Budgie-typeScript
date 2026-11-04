@@ -4,7 +4,7 @@
     <h1 class="auth-title">Connexion</h1>
     <p class="auth-subtitle">Ravi de te revoir</p>
 
-    <form class="auth-form" @submit.prevent="handleLogin">
+    <form class="auth-form" @submit.prevent="handleLogineLocal">
       <div>
         <div class="auth-label">Email</div>
         <input
@@ -65,6 +65,17 @@ const userStore = useUserStore();
 
 // const API_BASE = "https://budgie-api-s1yz.onrender.com/api";
 // const API_BASE = "http://localhost:5001/api"
+
+function handleLogineLocal () {
+  // Simulate a successful login for local testing
+  const token = "dummy_token";
+  const user = { email: email.value, name: "Test User" };
+  userStore.setUser(user);
+  localStorage.setItem("budgie_token", token);
+  success.value = "Connexion réussie ✅";
+  const redirectTo = route.query.redirect || "/revenus";
+  window.location.href = redirectTo;
+}
 
 async function handleLogin() {
   error.value = "";
