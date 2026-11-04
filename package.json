@@ -1,5 +1,31 @@
 {
   "dependencies": {
     "vue-toastification": "^2.0.0-rc.5"
-  }
+  },
+  "name": "budgie-typescript",
+  "version": "1.0.0",
+  "description": "<div align=\"center\">",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "devDependencies": {
+    "prettier": "3.9.10"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Maissane-abd/Budgie-typeScript.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Maissane-abd/Budgie-typeScript/issues"
+  },
+  "homepage": "https://github.com/Maissane-abd/Budgie-typeScript#readme"
 }
