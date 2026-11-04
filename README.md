@@ -29,6 +29,7 @@
 - [Architecture](#-architecture)
 - [Installation locale](#-installation-locale)
 - [Commandes utiles](#-commandes-utiles)
+- [Vérifications locales](#vérifications-locales)
 - [CI/CD et déploiement](#-cicd-et-déploiement)
 - [Sécurité](#-sécurité)
 - [Roadmap](#-roadmap)
@@ -250,6 +251,31 @@ docker compose down
 ```
 
 La commande `docker compose down` **ne supprime pas les volumes nommés** par défaut. Attention : `docker compose down -v` supprime également les volumes gérés par Compose, ce qui peut entraîner la perte des données locales PostgreSQL.
+
+## Vérifications locales
+
+Avant d’ouvrir une Pull Request, exécuter les vérifications suivantes
+depuis la racine du dépôt, après installation des dépendances.
+
+### Backend
+
+```bash
+npm --prefix backend run lint
+npm --prefix backend run typecheck
+npm --prefix backend test
+npm --prefix backend run build
+```
+
+### Frontend
+
+```bash
+npm --prefix frontend/app run lint
+npm --prefix frontend/app test
+npm --prefix frontend/app run build
+```
+
+Le frontend ne dispose pas encore de script `typecheck`. Ajouter cette vérification
+lorsque le contrôle des types sera configuré.
 
 ## 🔄 CI/CD et déploiement
 
