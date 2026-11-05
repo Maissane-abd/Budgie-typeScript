@@ -1,5 +1,7 @@
 ## Issue liée
 
+Convention PR : `Fix BUD-0xx: describe`;
+
 Référence : BUD-___ / GitHub #___
 
 ## Pourquoi ?
