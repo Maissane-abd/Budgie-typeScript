@@ -1,6 +1,5 @@
 // controllers/revenusController.js
 import db from '../models/db.js';
-import { checkIncomeLimit } from '../utils/subscription.js';
 export const getAll = async (req, res) => {
     if (!req.user) {
         res.status(401).json({ message: 'Utilisateur non authentifié' });
@@ -78,16 +77,16 @@ export const create = async (req, res) => {
         return;
     }
     // Vérifier la limite de revenus par compte
-    const limitCheck = await checkIncomeLimit(req.user.id, account_id);
-    if (limitCheck.limitReached) {
-        res.status(403).json({
-            message: `Limite de revenus atteinte. Vous avez atteint la limite de ${limitCheck.maxCount} revenus par compte du plan gratuit. Abonnez-vous au plan Premium pour des revenus illimités.`,
-            limitReached: true,
-            currentCount: limitCheck.currentCount,
-            maxCount: limitCheck.maxCount
-        });
-        return;
-    }
+    // const limitCheck = await checkIncomeLimit(req.user.id, account_id);
+    // if (limitCheck.limitReached) {
+    //    res.status(403).json({
+    //     message: `Limite de revenus atteinte. Vous avez atteint la limite de ${limitCheck.maxCount} revenus par compte du plan gratuit. Abonnez-vous au plan Premium pour des revenus illimités.`,
+    //     limitReached: true,
+    //     currentCount: limitCheck.currentCount,
+    //     maxCount: limitCheck.maxCount
+    //   });
+    //   return;
+    // }
     // Insertion du nouveau revenu
     const { rows: transactionRows } = await db.query(`INSERT INTO transactions (
         account_id,
