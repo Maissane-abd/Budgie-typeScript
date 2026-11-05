@@ -10,10 +10,7 @@
       </div>
     </div>
 
-    <PrevisionsChart
-      :monthly-details="account.monthly_details"
-      :max-value="maxMonthlyValue"
-    />
+    <PrevisionsChart :monthly-details="account.monthly_details" :max-value="maxMonthlyValue" />
 
     <PrevisionsTable :monthly-details="account.monthly_details" />
   </div>
@@ -37,7 +34,7 @@ defineProps({
 function formatCurrency(amount) {
   return new Intl.NumberFormat('fr-FR', {
     style: 'currency',
-    currency: 'EUR'
+    currency: 'EUR',
   }).format(amount);
 }
 </script>
@@ -53,8 +50,14 @@ function formatCurrency(amount) {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .account-header {
@@ -97,4 +100,3 @@ function formatCurrency(amount) {
   }
 }
 </style>
-

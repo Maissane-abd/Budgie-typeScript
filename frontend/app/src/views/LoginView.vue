@@ -1,10 +1,10 @@
-<!-- src/views/LoginView.vue -->  
+<!-- src/views/LoginView.vue -->
 <template>
   <section class="auth-card">
     <h1 class="auth-title">Connexion</h1>
     <p class="auth-subtitle">Ravi de te revoir</p>
 
-    <form class="auth-form" @submit.prevent="handleLogin">
+    <form class="auth-form" @submit.prevent="handleLogineLocal">
       <div>
         <div class="auth-label">Email</div>
         <input
@@ -31,44 +31,51 @@
       <p v-if="success" class="auth-success">{{ success }}</p>
 
       <button class="auth-button" type="submit" :disabled="loading">
-        {{ loading ? "Connexion..." : "Se connecter" }}
+        {{ loading ? 'Connexion...' : 'Se connecter' }}
       </button>
     </form>
 
     <div class="auth-footer">
-      <RouterLink class="auth-link" to="/reset-password">
-        Mot de passe oublié ?
-      </RouterLink>
+      <RouterLink class="auth-link" to="/reset-password"> Mot de passe oublié ? </RouterLink>
       <br />
       <span>Pas encore de compte ? </span>
-      <RouterLink class="auth-link" to="/register">
-        Créer un compte
-      </RouterLink>
+      <RouterLink class="auth-link" to="/register"> Créer un compte </RouterLink>
     </div>
   </section>
 </template>
 
 <script setup>
-import { ref } from "vue";
-import axios from "axios";
-import { RouterLink, useRoute } from "vue-router";
-import { useUserStore } from "@/stores/userStore";
-import { API_BASE } from "@/config/api";
+import { ref } from 'vue';
+import axios from 'axios';
+import { RouterLink, useRoute } from 'vue-router';
+import { useUserStore } from '@/stores/userStore';
+import { API_BASE } from '@/config/api';
 
-const email = ref("");
-const password = ref("");
+const email = ref('');
+const password = ref('');
 const loading = ref(false);
-const error = ref("");
-const success = ref("");
+const error = ref('');
+const success = ref('');
 const route = useRoute();
 const userStore = useUserStore();
 
 // const API_BASE = "https://budgie-api-s1yz.onrender.com/api";
 // const API_BASE = "http://localhost:5001/api"
 
+function handleLogineLocal() {
+  // Simulate a successful login for local testing
+  const token = 'dummy_token';
+  const user = { email: email.value, name: 'Test User' };
+  userStore.setUser(user);
+  localStorage.setItem('budgie_token', token);
+  success.value = 'Connexion réussie ✅';
+  const redirectTo = route.query.redirect || '/revenus';
+  window.location.href = redirectTo;
+}
+
 async function handleLogin() {
-  error.value = "";
-  success.value = "";
+  error.value = '';
+  success.value = '';
   loading.value = true;
 
   try {
@@ -81,19 +88,17 @@ async function handleLogin() {
     const user = res.data?.user;
     if (token) {
       userStore.setUser(res.data.user);
-      localStorage.setItem("budgie_token", token);
+      localStorage.setItem('budgie_token', token);
       userStore.setUser(user);
-      success.value = "Connexion réussie ✅";
+      success.value = 'Connexion réussie ✅';
       // Rediriger vers la page d'origine ou la page d'accueil
-      const redirectTo = route.query.redirect || "/revenus";
+      const redirectTo = route.query.redirect || '/revenus';
       window.location.href = redirectTo;
     }
-    
   } catch (err) {
     console.error(err);
     error.value =
-      err.response?.data?.error ||
-      "Erreur lors de la connexion. Vérifie tes identifiants.";
+      err.response?.data?.error || 'Erreur lors de la connexion. Vérifie tes identifiants.';
   } finally {
     loading.value = false;
   }
@@ -101,8 +106,7 @@ async function handleLogin() {
 </script>
 
 <style scoped>
-
-  /*AUTH CARD*/
+/*AUTH CARD*/
 
 .auth-card {
   margin: auto;
@@ -156,7 +160,8 @@ async function handleLogin() {
   font-size: 14px;
   outline: none;
   background: #f9fafb;
-  transition: border-color var(--transition-fast),
+  transition:
+    border-color var(--transition-fast),
     box-shadow var(--transition-fast),
     background var(--transition-fast);
 }
@@ -181,7 +186,8 @@ async function handleLogin() {
   cursor: pointer;
   margin-top: 10px;
   box-shadow: 0 10px 25px rgba(63, 43, 150, 0.35);
-  transition: background var(--transition-fast),
+  transition:
+    background var(--transition-fast),
     transform var(--transition-fast),
     box-shadow var(--transition-fast);
 }

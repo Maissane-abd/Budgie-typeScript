@@ -62,4 +62,3 @@ defineEmits(['update:modelValue']);
   box-shadow: 0 4px 6px -1px rgba(63, 43, 150, 0.2);
 }
 </style>
-

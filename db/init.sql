@@ -12,30 +12,6 @@ CREATE TABLE users (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Table des Plans d'abonnement
-CREATE TABLE plans (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  plan_name VARCHAR(100) NOT NULL,
-  max_accounts INT DEFAULT 1,
-  max_expenses_per_account INT,
-  max_incomes_per_account INT,
-  price NUMERIC(10,2) NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- Table des Abonnements
-CREATE TABLE subscriptions (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  plan_id UUID NOT NULL REFERENCES plans(id),
-  status VARCHAR(50) NOT NULL CHECK (status IN ('active','canceled','trial')),
-  started_at TIMESTAMPTZ NOT NULL,
-  ends_at TIMESTAMPTZ,
-  stripe_customer_id VARCHAR(255),
-  stripe_subscription_id VARCHAR(255),
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
 -- Table des Comptes Bancaires
 CREATE TABLE accounts (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

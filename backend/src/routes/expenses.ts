@@ -4,7 +4,7 @@ import { create, getAll, getById, update, remove } from '../controllers/expenses
 import { requireAuth } from './auth.js';
 import type { Router } from 'express';
 
-const router:Router = express.Router();
+const router: Router = express.Router();
 
 // Routes for expenses
 router.post('/', requireAuth, create);

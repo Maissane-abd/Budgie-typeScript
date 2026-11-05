@@ -20,11 +20,11 @@ Ce guide explique comment récupérer et démarrer **Budgie V1** sur un poste de
 
 L'application utilise trois services déclarés dans [`compose.yml`](../compose.yml) :
 
-| Service Docker | Rôle | Port publié en local |
-|---|---|---|
-| `db` | PostgreSQL 15 et données financières | `5432` |
-| `backend` | API REST Express / TypeScript | `5001` |
-| `frontend` | Application Vue distribuée par Nginx | `80` |
+| Service Docker | Rôle                                 | Port publié en local |
+| -------------- | ------------------------------------ | -------------------- |
+| `db`           | PostgreSQL 15 et données financières | `5432`               |
+| `backend`      | API REST Express / TypeScript        | `5001`               |
+| `frontend`     | Application Vue distribuée par Nginx | `80`                 |
 
 Le service `backend` communique avec PostgreSQL via le nom de service Docker `db`. La configuration locale **ne doit pas** utiliser le fichier [`compose.production.yml`](../compose.production.yml), qui est adapté au serveur OVH, au domaine `monbudgie.fr` et à ses certificats TLS.
 
@@ -68,10 +68,10 @@ Les commandes suivantes doivent être exécutées **à la racine du dépôt**, l
 
 Le dépôt possède **deux fichiers `.env.example`** :
 
-| Fichier existant | Utilisation |
-|---|---|
-| [`.env.example`](../.env.example) | Variables partagées et substitution `${...}` dans Docker Compose : PostgreSQL, `JWT_SECRET`, etc. |
-| [`backend/.env.example`](../backend/.env.example) | Variables spécifiques au serveur Express : `PORT`, `JWT_SECRET` et `JWT_EXPIRES_IN`. |
+| Fichier existant                                  | Utilisation                                                                                       |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| [`.env.example`](../.env.example)                 | Variables partagées et substitution `${...}` dans Docker Compose : PostgreSQL, `JWT_SECRET`, etc. |
+| [`backend/.env.example`](../backend/.env.example) | Variables spécifiques au serveur Express : `PORT`, `JWT_SECRET` et `JWT_EXPIRES_IN`.              |
 
 Il **n'est pas nécessaire d'en créer un nouveau** pour suivre ce guide.
 
@@ -198,12 +198,12 @@ docker compose restart backend
 
 Si la construction et le démarrage ont réussi :
 
-| Service | Adresse locale | Résultat attendu |
-|---|---|---|
-| Interface Vue | <http://localhost> | Page d'accueil Budgie |
-| Backend Express | <http://localhost:5001/> | `Hello World from backend!` |
-| API, via Nginx | <http://localhost/api/auth/me> | Réponse JSON `401` sans JWT (route protégée) |
-| PostgreSQL | Service Docker `db` (port publié `5432`) | Base disponible |
+| Service         | Adresse locale                           | Résultat attendu                             |
+| --------------- | ---------------------------------------- | -------------------------------------------- |
+| Interface Vue   | <http://localhost>                       | Page d'accueil Budgie                        |
+| Backend Express | <http://localhost:5001/>                 | `Hello World from backend!`                  |
+| API, via Nginx  | <http://localhost/api/auth/me>           | Réponse JSON `401` sans JWT (route protégée) |
+| PostgreSQL      | Service Docker `db` (port publié `5432`) | Base disponible                              |
 
 Pour tester le backend avec `curl` :
 
@@ -224,16 +224,16 @@ La seconde commande doit lister les tables créées au premier démarrage par `d
 
 ## 7. Commandes utiles
 
-| Besoin | Commande à lancer à la racine |
-|---|---|
-| Voir les conteneurs | `docker compose ps` |
-| Démarrer | `docker compose up -d` |
-| Reconstruire après modification | `docker compose up --build -d` |
-| Afficher les logs | `docker compose logs -f --tail=100` |
-| Logs backend uniquement | `docker compose logs -f backend` |
-| Redémarrer le backend | `docker compose restart backend` |
-| Arrêter sans supprimer les données | `docker compose down` |
-| Voir les volumes Docker | `docker volume ls` |
+| Besoin                             | Commande à lancer à la racine       |
+| ---------------------------------- | ----------------------------------- |
+| Voir les conteneurs                | `docker compose ps`                 |
+| Démarrer                           | `docker compose up -d`              |
+| Reconstruire après modification    | `docker compose up --build -d`      |
+| Afficher les logs                  | `docker compose logs -f --tail=100` |
+| Logs backend uniquement            | `docker compose logs -f backend`    |
+| Redémarrer le backend              | `docker compose restart backend`    |
+| Arrêter sans supprimer les données | `docker compose down`               |
+| Voir les volumes Docker            | `docker volume ls`                  |
 
 **Ne pas exécuter `docker compose down -v` par habitude : cette option supprime aussi les volumes de la pile et donc les données PostgreSQL locales.**
 

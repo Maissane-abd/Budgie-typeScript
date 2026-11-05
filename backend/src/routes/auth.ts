@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import db from '../models/db.js';
 import type { Request, Response, NextFunction } from 'express';
-import type {Router} from 'express';
+import type { Router } from 'express';
 
 type User = {
   id: string;
@@ -14,7 +14,7 @@ type User = {
   email: string;
 };
 
-const router:Router = express.Router();
+const router: Router = express.Router();
 
 function getEnvVariable(name: string): string {
   const value: string | undefined = process.env[name];
@@ -26,31 +26,24 @@ function getEnvVariable(name: string): string {
   return value;
 }
 
-const JWT_SECRET:string = getEnvVariable("JWT_SECRET");
+const JWT_SECRET: string = getEnvVariable('JWT_SECRET');
 
-
-function createToken(user:User): string {
-
-  
-  return jwt.sign(
-      { id: user.id, email: user.email },
-      JWT_SECRET,
-      { expiresIn: "1d" }
-  );
+function createToken(user: User): string {
+  return jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1d' });
 }
 
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
-  const authHeader:string = req.headers.authorization || "";
-  const token:string = authHeader.split(" ")[1];
+  const authHeader: string = req.headers.authorization || '';
+  const token: string = authHeader.split(' ')[1];
 
-  if (!token) return res.status(401).json({ error: "Token manquant" });
+  if (!token) return res.status(401).json({ error: 'Token manquant' });
 
   try {
-    const decoded:string | jwt.JwtPayload = jwt.verify(token, JWT_SECRET);
+    const decoded: string | jwt.JwtPayload = jwt.verify(token, JWT_SECRET);
     req.user = { id: (decoded as any).id, email: (decoded as any).email };
     next();
   } catch (err) {
-    res.status(401).json({ error: "Token invalide" });
+    res.status(401).json({ error: 'Token invalide' });
   }
 }
 
@@ -66,108 +59,105 @@ const queryUser = `
   WHERE u.id = $1
 `;
 
-router.post("/register", async (req: Request<User>, res: Response) => {
+router.post('/register', async (req: Request<User>, res: Response) => {
   const { first_name, last_name, email, password } = req.body;
 
   if (!first_name || !last_name || !email || !password) {
-    return res.status(400).json({ error: "Champs requis" });
+    return res.status(400).json({ error: 'Champs requis' });
   }
 
   try {
-    const { rows: existing } = await db.query("SELECT id FROM users WHERE email = $1", [email]);
-    if (existing.length > 0) return res.status(409).json({ error: "Email déjà utilisé" });
+    const { rows: existing } = await db.query('SELECT id FROM users WHERE email = $1', [email]);
+    if (existing.length > 0) return res.status(409).json({ error: 'Email déjà utilisé' });
 
     const hash: string = await bcrypt.hash(password, 10);
 
     const { rows } = await db.query(
-        "INSERT INTO users (first_name, last_name, email, password_hash) VALUES ($1, $2, $3, $4) RETURNING id, first_name, last_name, email",
-        [first_name, last_name, email, hash]
+      'INSERT INTO users (first_name, last_name, email, password_hash) VALUES ($1, $2, $3, $4) RETURNING id, first_name, last_name, email',
+      [first_name, last_name, email, hash],
     );
     const user = rows[0];
 
     await db.query(
-        "INSERT INTO accounts (user_id, account_name, created_on, currency) VALUES ($1, 'Compte Principal', CURRENT_DATE, 'EUR')",
-        [user.id]
+      "INSERT INTO accounts (user_id, account_name, created_on, currency) VALUES ($1, 'Compte Principal', CURRENT_DATE, 'EUR')",
+      [user.id],
     );
 
-    const token:string = createToken(user);
+    const token: string = createToken(user);
     res.status(201).json({ user: { ...user, plan_name: 'Free' }, token });
-
   } catch (err) {
-     console.error("REGISTER ERROR: ", err);
-    res.status(500).json({ error: "Erreur serveur pour le register" });
+    console.error('REGISTER ERROR: ', err);
+    res.status(500).json({ error: 'Erreur serveur pour le register' });
   }
 });
 
-router.post("/login", async (req: Request<{ email: string; password: string }>, res: Response) => {
+router.post('/login', async (req: Request<{ email: string; password: string }>, res: Response) => {
   const { email, password } = req.body;
-  if (!email || !password) return res.status(400).json({ error: "Champs requis" });
+  if (!email || !password) return res.status(400).json({ error: 'Champs requis' });
 
   try {
-    const { rows } = await db.query("SELECT * FROM users WHERE email = $1", [email]);
+    const { rows } = await db.query('SELECT * FROM users WHERE email = $1', [email]);
     const baseUser = rows[0];
 
     if (!baseUser || !(await bcrypt.compare(password, baseUser.password_hash))) {
-      return res.status(401).json({ error: "Identifiants invalides" });
+      return res.status(401).json({ error: 'Identifiants invalides' });
     }
 
     const { rows: fullUser } = await db.query(queryUser, [baseUser.id]);
     const user = fullUser[0];
-    const token:string = createToken(user);
+    const token: string = createToken(user);
 
     res.json({ user, token });
-
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Erreur serveur" });
+    res.status(500).json({ error: 'Erreur serveur' });
   }
 });
 
-router.get("/me", requireAuth, async (req: Request, res: Response) => {
-  if (!req.user) return res.status(401).json({ error: "Utilisateur non authentifié" });
+router.get('/me', requireAuth, async (req: Request, res: Response) => {
+  if (!req.user) return res.status(401).json({ error: 'Utilisateur non authentifié' });
   try {
     const { rows } = await db.query(queryUser, [req.user.id]);
-    if (!rows.length) return res.status(404).json({ error: "Utilisateur introuvable" });
+    if (!rows.length) return res.status(404).json({ error: 'Utilisateur introuvable' });
     res.json(rows[0]);
   } catch (err) {
-    res.status(500).json({ error: "Erreur serveur" });
+    res.status(500).json({ error: 'Erreur serveur' });
   }
 });
 
-router.put("/me", requireAuth, async (req: Request<Partial<User>>, res: Response) => {
+router.put('/me', requireAuth, async (req: Request<Partial<User>>, res: Response) => {
   const { first_name, last_name, email } = req.body;
-  if (!req.user) return res.status(401).json({ error: "Utilisateur non authentifié" });
+  if (!req.user) return res.status(401).json({ error: 'Utilisateur non authentifié' });
   try {
     await db.query(
-        `UPDATE users 
+      `UPDATE users 
        SET first_name = COALESCE($1, first_name), 
            last_name = COALESCE($2, last_name), 
            email = COALESCE($3, email), 
            updated_at = NOW() 
        WHERE id = $4`,
-        [first_name, last_name, email, req.user.id]
+      [first_name, last_name, email, req.user.id],
     );
 
     const { rows } = await db.query(queryUser, [req.user.id]);
     res.json(rows[0]);
-
   } catch (err) {
-    if (err instanceof Error && err.message.includes("duplicate key value")) {
-     return res.status(409).json({ error: "Email déjà utilisé" });
+    if (err instanceof Error && err.message.includes('duplicate key value')) {
+      return res.status(409).json({ error: 'Email déjà utilisé' });
     }
     console.error(err);
-    res.status(500).json({ error: "Erreur serveur" });
+    res.status(500).json({ error: 'Erreur serveur' });
   }
 });
 
-router.delete("/me", requireAuth, async (req: Request, res: Response) => {
-  if (!req.user) return res.status(401).json({ error: "Utilisateur non authentifié" });
+router.delete('/me', requireAuth, async (req: Request, res: Response) => {
+  if (!req.user) return res.status(401).json({ error: 'Utilisateur non authentifié' });
   try {
     await db.query('DELETE FROM users WHERE id = $1', [req.user.id]);
     res.status(204).send();
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Erreur suppression" });
+    res.status(500).json({ error: 'Erreur suppression' });
   }
 });
 

@@ -18,7 +18,7 @@
         class="summary-value"
         :class="{
           positive: evolution >= 0,
-          negative: evolution < 0
+          negative: evolution < 0,
         }"
       >
         {{ formatCurrency(evolution) }}
@@ -46,7 +46,7 @@ defineProps({
 function formatCurrency(amount) {
   return new Intl.NumberFormat('fr-FR', {
     style: 'currency',
-    currency: 'EUR'
+    currency: 'EUR',
   }).format(amount);
 }
 </script>
@@ -99,4 +99,3 @@ function formatCurrency(amount) {
   color: #dc2626;
 }
 </style>
-

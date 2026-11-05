@@ -26,11 +26,11 @@
 
 ### 1.1. URL de base
 
-| Environnement | URL | Précision |
-| --- | --- | --- |
-| Production | `https://monbudgie.fr/api` | Chemin `/api` transmis à Express par Nginx (`proxy_pass http://backend:5001`). |
-| Backend local (exposition par `compose.yml`) | `http://localhost:5001/api` | Port Docker exposé par défaut dans la configuration locale. |
-| Frontend local via Nginx | `http://localhost/api` | Dépend de la configuration Nginx locale embarquée dans l'image frontend. |
+| Environnement                                | URL                         | Précision                                                                      |
+| -------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------ |
+| Production                                   | `https://monbudgie.fr/api`  | Chemin `/api` transmis à Express par Nginx (`proxy_pass http://backend:5001`). |
+| Backend local (exposition par `compose.yml`) | `http://localhost:5001/api` | Port Docker exposé par défaut dans la configuration locale.                    |
+| Frontend local via Nginx                     | `http://localhost/api`      | Dépend de la configuration Nginx locale embarquée dans l'image frontend.       |
 
 Les routes listées ici incluent le préfixe `/api`, sauf `GET /` qui est une route de test Express. La route `GET /` n'est **pas** le contenu de la page d'accueil du domaine public : Nginx sert normalement l'application Vue sur `/`.
 
@@ -59,18 +59,18 @@ Authorization: Bearer <JWT>
 
 ### 1.4. Codes HTTP usuels
 
-| Code | Signification dans cette API |
-| --- | --- |
-| `200` | Lecture, modification ou opération aboutie. |
-| `201` | Ressource créée. |
-| `204` | Suppression réussie, sans contenu. |
-| `400` | Champs manquants/invalides, ou webhook Stripe mal configuré/signé. |
-| `401` | Jeton manquant/invalide ou identifiants erronés. |
-| `403` | Ressource non autorisée ou limite du plan gratuit atteinte. |
-| `404` | Ressource introuvable ou n'appartenant pas à l'utilisateur. |
-| `409` | E-mail déjà utilisé. |
+| Code  | Signification dans cette API                                                                                  |
+| ----- | ------------------------------------------------------------------------------------------------------------- |
+| `200` | Lecture, modification ou opération aboutie.                                                                   |
+| `201` | Ressource créée.                                                                                              |
+| `204` | Suppression réussie, sans contenu.                                                                            |
+| `400` | Champs manquants/invalides, ou webhook Stripe mal configuré/signé.                                            |
+| `401` | Jeton manquant/invalide ou identifiants erronés.                                                              |
+| `403` | Ressource non autorisée ou limite du plan gratuit atteinte.                                                   |
+| `404` | Ressource introuvable ou n'appartenant pas à l'utilisateur.                                                   |
+| `409` | E-mail déjà utilisé.                                                                                          |
 | `500` | Erreur serveur ; peut aussi résulter de valeurs rejetées par PostgreSQL et insuffisamment validées par l'API. |
-| `503` | Fonction Stripe non configurée (sur certains endpoints). |
+| `503` | Fonction Stripe non configurée (sur certains endpoints).                                                      |
 
 **Attention :** les réponses et statuts varient par endpoint. Les codes mentionnés ci-dessous sont ceux explicitement définis dans les handlers, plus `401` du middleware pour les routes protégées. Ce n'est pas une garantie que toute erreur inattendue sera correctement formatée.
 
@@ -80,34 +80,34 @@ Authorization: Bearer <JWT>
 
 **26 points d'entrée** : 25 routes sous `/api`, plus la route technique Express `GET /`.
 
-| Domaine | Méthode | Endpoint | Authentification | Opération |
-| --- | --- | --- | --- | --- |
-| Auth | `POST` | `/api/auth/register` | Non | Inscription et création du compte principal |
-| Auth | `POST` | `/api/auth/login` | Non | Connexion |
-| Auth | `GET` | `/api/auth/me` | JWT | Profil connecté |
-| Auth | `PUT` | `/api/auth/me` | JWT | Modifier son profil |
-| Auth | `DELETE` | `/api/auth/me` | JWT | Supprimer son profil |
-| Comptes | `GET` | `/api/accounts` | JWT | Lister ses comptes et soldes calculés |
-| Comptes | `POST` | `/api/accounts` | JWT | Créer un compte |
-| Comptes | `PUT` | `/api/accounts/:id` | JWT | Modifier un compte |
-| Comptes | `DELETE` | `/api/accounts/:id` | JWT | Supprimer un compte |
-| Revenus | `GET` | `/api/revenus` | JWT | Lister ses revenus |
-| Revenus | `GET` | `/api/revenus/:id` | JWT | Consulter un revenu |
-| Revenus | `POST` | `/api/revenus` | JWT | Créer un revenu |
-| Revenus | `PUT` | `/api/revenus/:id` | JWT | Modifier un revenu |
-| Revenus | `DELETE` | `/api/revenus/:id` | JWT | Supprimer un revenu |
-| Dépenses | `GET` | `/api/expenses` | JWT | Lister ses dépenses |
-| Dépenses | `GET` | `/api/expenses/:id` | JWT | Consulter une dépense |
-| Dépenses | `POST` | `/api/expenses` | JWT | Créer une dépense |
-| Dépenses | `PUT` | `/api/expenses/:id` | JWT | Modifier une dépense |
-| Dépenses | `DELETE` | `/api/expenses/:id` | JWT | Supprimer une dépense |
-| Prévisions | `GET` | `/api/previsions` | JWT | Prévisions par compte et total |
-| Paiements | `POST` | `/api/payments/checkout` | JWT | Démarrer Stripe Checkout |
-| Paiements | `GET` | `/api/payments/subscription` | JWT | Lire l'abonnement actif |
-| Paiements | `PUT` | `/api/payments/subscription` | JWT | Changer le tarif Stripe |
-| Paiements | `DELETE` | `/api/payments/subscription` | JWT | Annuler l'abonnement |
-| Webhook | `POST` | `/api/webhook` | Signature Stripe | Réception des événements Stripe |
-| Technique | `GET` | `/` | Non | Test HTTP côté backend |
+| Domaine    | Méthode  | Endpoint                     | Authentification | Opération                                   |
+| ---------- | -------- | ---------------------------- | ---------------- | ------------------------------------------- |
+| Auth       | `POST`   | `/api/auth/register`         | Non              | Inscription et création du compte principal |
+| Auth       | `POST`   | `/api/auth/login`            | Non              | Connexion                                   |
+| Auth       | `GET`    | `/api/auth/me`               | JWT              | Profil connecté                             |
+| Auth       | `PUT`    | `/api/auth/me`               | JWT              | Modifier son profil                         |
+| Auth       | `DELETE` | `/api/auth/me`               | JWT              | Supprimer son profil                        |
+| Comptes    | `GET`    | `/api/accounts`              | JWT              | Lister ses comptes et soldes calculés       |
+| Comptes    | `POST`   | `/api/accounts`              | JWT              | Créer un compte                             |
+| Comptes    | `PUT`    | `/api/accounts/:id`          | JWT              | Modifier un compte                          |
+| Comptes    | `DELETE` | `/api/accounts/:id`          | JWT              | Supprimer un compte                         |
+| Revenus    | `GET`    | `/api/revenus`               | JWT              | Lister ses revenus                          |
+| Revenus    | `GET`    | `/api/revenus/:id`           | JWT              | Consulter un revenu                         |
+| Revenus    | `POST`   | `/api/revenus`               | JWT              | Créer un revenu                             |
+| Revenus    | `PUT`    | `/api/revenus/:id`           | JWT              | Modifier un revenu                          |
+| Revenus    | `DELETE` | `/api/revenus/:id`           | JWT              | Supprimer un revenu                         |
+| Dépenses   | `GET`    | `/api/expenses`              | JWT              | Lister ses dépenses                         |
+| Dépenses   | `GET`    | `/api/expenses/:id`          | JWT              | Consulter une dépense                       |
+| Dépenses   | `POST`   | `/api/expenses`              | JWT              | Créer une dépense                           |
+| Dépenses   | `PUT`    | `/api/expenses/:id`          | JWT              | Modifier une dépense                        |
+| Dépenses   | `DELETE` | `/api/expenses/:id`          | JWT              | Supprimer une dépense                       |
+| Prévisions | `GET`    | `/api/previsions`            | JWT              | Prévisions par compte et total              |
+| Paiements  | `POST`   | `/api/payments/checkout`     | JWT              | Démarrer Stripe Checkout                    |
+| Paiements  | `GET`    | `/api/payments/subscription` | JWT              | Lire l'abonnement actif                     |
+| Paiements  | `PUT`    | `/api/payments/subscription` | JWT              | Changer le tarif Stripe                     |
+| Paiements  | `DELETE` | `/api/payments/subscription` | JWT              | Annuler l'abonnement                        |
+| Webhook    | `POST`   | `/api/webhook`               | Signature Stripe | Réception des événements Stripe             |
+| Technique  | `GET`    | `/`                          | Non              | Test HTTP côté backend                      |
 
 > Les routes Stripe sont **présentes dans le code**, mais les paiements sont optionnels et désactivés sans `STRIPE_SECRET_KEY`. Leur mise à disposition effective au public n'est pas confirmée. Le webhook défini dans `webhook.ts` est monté sur `/api/webhook`, **pas** sur `/api/payments/webhook`.
 
@@ -121,12 +121,12 @@ Source : [`backend/src/routes/auth.ts`](../backend/src/routes/auth.ts).
 
 **Authentification :** aucune. **Body JSON :**
 
-| Champ | Type | Obligatoire | Validation réellement implémentée |
-| --- | --- | --- | --- |
-| `first_name` | chaîne | Oui | Valeur truthy ; pas de contrôle de format explicite. |
-| `last_name` | chaîne | Oui | Valeur truthy. |
-| `email` | chaîne | Oui | Valeur truthy ; unicité contrôlée par requête puis contrainte SQL. |
-| `password` | chaîne | Oui | Valeur truthy ; aucune politique de longueur/complexité explicite. |
+| Champ        | Type   | Obligatoire | Validation réellement implémentée                                  |
+| ------------ | ------ | ----------- | ------------------------------------------------------------------ |
+| `first_name` | chaîne | Oui         | Valeur truthy ; pas de contrôle de format explicite.               |
+| `last_name`  | chaîne | Oui         | Valeur truthy.                                                     |
+| `email`      | chaîne | Oui         | Valeur truthy ; unicité contrôlée par requête puis contrainte SQL. |
+| `password`   | chaîne | Oui         | Valeur truthy ; aucune politique de longueur/complexité explicite. |
 
 **Exemple de requête :**
 
@@ -239,18 +239,18 @@ Source : [`backend/src/routes/accounts.ts`](../backend/src/routes/accounts.ts).
 
 **Structure d'un compte** (extrait des champs renvoyables) :
 
-| Champ | Type logique | Description |
-| --- | --- | --- |
-| `id`, `user_id` | UUID | Identifiant du compte et de son propriétaire. |
-| `account_name` | chaîne | Nom affiché. |
-| `description` | chaîne/null | Description libre. |
-| `created_on` | date | Date de création déclarée. |
-| `currency` | code sur 3 caractères | `EUR` par défaut. |
-| `balance` | montant | Solde initial stocké ; **dans GET liste**, il est remplacé par solde initial + revenus − dépenses. |
-| `annual_interest_rate` | numérique | Pourcentage annuel utilisé par les calculs. |
-| `tax_rate` | numérique | Pourcentage d'impôt appliqué aux intérêts. |
-| `current_balance` | nombre calculé | `balance` décoré avec un mois d'intérêts nets ; ne représente pas forcément une position bancaire instantanée. |
-| `forecast_12m` | nombre calculé | Projection d'intérêts composés sur 12 mois, sans logique complète des transactions récurrentes. |
+| Champ                  | Type logique          | Description                                                                                                    |
+| ---------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `id`, `user_id`        | UUID                  | Identifiant du compte et de son propriétaire.                                                                  |
+| `account_name`         | chaîne                | Nom affiché.                                                                                                   |
+| `description`          | chaîne/null           | Description libre.                                                                                             |
+| `created_on`           | date                  | Date de création déclarée.                                                                                     |
+| `currency`             | code sur 3 caractères | `EUR` par défaut.                                                                                              |
+| `balance`              | montant               | Solde initial stocké ; **dans GET liste**, il est remplacé par solde initial + revenus − dépenses.             |
+| `annual_interest_rate` | numérique             | Pourcentage annuel utilisé par les calculs.                                                                    |
+| `tax_rate`             | numérique             | Pourcentage d'impôt appliqué aux intérêts.                                                                     |
+| `current_balance`      | nombre calculé        | `balance` décoré avec un mois d'intérêts nets ; ne représente pas forcément une position bancaire instantanée. |
+| `forecast_12m`         | nombre calculé        | Projection d'intérêts composés sur 12 mois, sans logique complète des transactions récurrentes.                |
 
 ### 4.1. `GET /api/accounts` — Liste des comptes
 
@@ -284,15 +284,15 @@ Source : [`backend/src/routes/accounts.ts`](../backend/src/routes/accounts.ts).
 
 **Authentification :** JWT requis.
 
-| Champ | Type | Obligatoire | Défaut / remarque |
-| --- | --- | --- | --- |
-| `account_name` | chaîne | Oui | Présence truthy uniquement. |
-| `created_on` | date `YYYY-MM-DD` | Oui | Présence truthy ; date validée ensuite par PostgreSQL. |
-| `description` | chaîne/null | Non | `null`. |
-| `currency` | chaîne | Non | `EUR`. |
-| `balance` | numérique | Non | `0`. |
-| `annual_interest_rate` | numérique | Non | `0`. |
-| `tax_rate` | numérique | Non | `0`. |
+| Champ                  | Type              | Obligatoire | Défaut / remarque                                      |
+| ---------------------- | ----------------- | ----------- | ------------------------------------------------------ |
+| `account_name`         | chaîne            | Oui         | Présence truthy uniquement.                            |
+| `created_on`           | date `YYYY-MM-DD` | Oui         | Présence truthy ; date validée ensuite par PostgreSQL. |
+| `description`          | chaîne/null       | Non         | `null`.                                                |
+| `currency`             | chaîne            | Non         | `EUR`.                                                 |
+| `balance`              | numérique         | Non         | `0`.                                                   |
+| `annual_interest_rate` | numérique         | Non         | `0`.                                                   |
+| `tax_rate`             | numérique         | Non         | `0`.                                                   |
 
 **Exemple de requête :**
 
@@ -370,17 +370,17 @@ Sources : [`backend/src/routes/revenus.ts`](../backend/src/routes/revenus.ts), [
 
 Les revenus utilisent la table commune `transactions` avec `transaction_type = "income"`.
 
-| Champ | Type | POST | PUT | Remarque |
-| --- | --- | --- | --- | --- |
-| `account_id` | UUID | Obligatoire | Non accepté dans le handler | Compte propriétaire du revenu ; contrôlé à la création. |
-| `transaction_name` | chaîne | Obligatoire | Obligatoire | Nom du revenu. |
-| `amount` | nombre positif | Obligatoire | Obligatoire | `0` et les valeurs négatives sont rejetés. |
-| `start_date` | date `YYYY-MM-DD` | Obligatoire | Obligatoire | Date de début. |
-| `description` | chaîne/null | Facultatif | Facultatif | Non validé côté API. |
-| `duration_type` | `one_time`, `recurring` ou `null` | Facultatif | Facultatif | Le code déclenche la récurrence si la valeur est exactement `recurring`. |
-| `interval_count` | entier positif | Si récurrent | Si récurrent | Vérification de présence et `>= 1`, pas de validation stricte du type entier. |
-| `interval_unit` | `day`, `month`, `year` | Si récurrent | Si récurrent | Valeurs autorisées par contrainte PostgreSQL. |
-| `end_date` | date/null | Facultatif | Facultatif | `""` transformé en `null`. |
+| Champ              | Type                              | POST         | PUT                         | Remarque                                                                      |
+| ------------------ | --------------------------------- | ------------ | --------------------------- | ----------------------------------------------------------------------------- |
+| `account_id`       | UUID                              | Obligatoire  | Non accepté dans le handler | Compte propriétaire du revenu ; contrôlé à la création.                       |
+| `transaction_name` | chaîne                            | Obligatoire  | Obligatoire                 | Nom du revenu.                                                                |
+| `amount`           | nombre positif                    | Obligatoire  | Obligatoire                 | `0` et les valeurs négatives sont rejetés.                                    |
+| `start_date`       | date `YYYY-MM-DD`                 | Obligatoire  | Obligatoire                 | Date de début.                                                                |
+| `description`      | chaîne/null                       | Facultatif   | Facultatif                  | Non validé côté API.                                                          |
+| `duration_type`    | `one_time`, `recurring` ou `null` | Facultatif   | Facultatif                  | Le code déclenche la récurrence si la valeur est exactement `recurring`.      |
+| `interval_count`   | entier positif                    | Si récurrent | Si récurrent                | Vérification de présence et `>= 1`, pas de validation stricte du type entier. |
+| `interval_unit`    | `day`, `month`, `year`            | Si récurrent | Si récurrent                | Valeurs autorisées par contrainte PostgreSQL.                                 |
+| `end_date`         | date/null                         | Facultatif   | Facultatif                  | `""` transformé en `null`.                                                    |
 
 **Modèle de création ponctuelle :**
 
@@ -625,9 +625,9 @@ Source : [`backend/src/routes/previsions.ts`](../backend/src/routes/previsions.t
 
 **JWT requis.** **Paramètre query :**
 
-| Paramètre | Type | Obligatoire | Défaut |
-| --- | --- | --- | --- |
-| `target_date` | Date, idéalement `YYYY-MM-DD` | Non | Date UTC calculée à `maintenant + 365 jours`. |
+| Paramètre     | Type                          | Obligatoire | Défaut                                        |
+| ------------- | ----------------------------- | ----------- | --------------------------------------------- |
+| `target_date` | Date, idéalement `YYYY-MM-DD` | Non         | Date UTC calculée à `maintenant + 365 jours`. |
 
 **Exemple :** `GET /api/previsions?target_date=2027-10-23`.
 
@@ -830,11 +830,11 @@ Hello World from backend!
 
 Les limites par défaut sont implémentées dans `utils/subscription.ts` et dans la création des comptes :
 
-| Ressource | Limite sans Premium | Contrôle |
-| --- | --- | --- |
-| Comptes financiers | 2 comptes au total | `POST /api/accounts`. |
-| Revenus | 2 par compte | `POST /api/revenus`. |
-| Dépenses | 7 par compte | `POST /api/expenses`. |
+| Ressource          | Limite sans Premium | Contrôle              |
+| ------------------ | ------------------- | --------------------- |
+| Comptes financiers | 2 comptes au total  | `POST /api/accounts`. |
+| Revenus            | 2 par compte        | `POST /api/revenus`.  |
+| Dépenses           | 7 par compte        | `POST /api/expenses`. |
 
 Les plafonds sont testés **à la création** ; les modifications et lectures restent accessibles. Un abonnement Premium actif et non expiré peut lever ces limites en fonction des règles codées. La V1 garde ces vérifications même lorsque les routes de paiement Stripe sont désactivées.
 
@@ -929,18 +929,18 @@ curl -i 'http://localhost:5001/api/previsions?target_date=2027-10-23' \
 
 ### 11.7. Matrice de tests fonctionnels à exécuter
 
-| Scénario | Attendu selon le code | Statut de validation |
-| --- | --- | --- |
-| `GET /api/accounts` sans JWT | `401 Token manquant` | À exécuter localement |
-| `POST /api/auth/register` incomplet | `400 Champs requis` | À exécuter localement |
-| Connexion avec mauvais mot de passe | `401 Identifiants invalides` | À exécuter localement |
-| `GET /api/auth/me` valide | `200` profil | À exécuter localement |
-| Création d'un 3e compte gratuit | `403` et `limitReached: true` | À exécuter localement |
-| Création d'un revenu avec compte d'autrui | `403 Compte non autorisé` | À exécuter en environnement isolé avec deux comptes tests |
-| `GET /api/revenus/:id` d'autrui | `404 Revenu non trouvé` | À exécuter en environnement isolé |
-| Récurrence mensuelle valide | `201` transaction et règle en base | À exécuter localement |
-| Prévision avec date cible | `200` `accounts` et totaux | À exécuter et vérifier numériquement |
-| Webhook Stripe signé | Selon configuration Stripe | À tester avec Stripe CLI *en environnement dédié* |
+| Scénario                                  | Attendu selon le code              | Statut de validation                                      |
+| ----------------------------------------- | ---------------------------------- | --------------------------------------------------------- |
+| `GET /api/accounts` sans JWT              | `401 Token manquant`               | À exécuter localement                                     |
+| `POST /api/auth/register` incomplet       | `400 Champs requis`                | À exécuter localement                                     |
+| Connexion avec mauvais mot de passe       | `401 Identifiants invalides`       | À exécuter localement                                     |
+| `GET /api/auth/me` valide                 | `200` profil                       | À exécuter localement                                     |
+| Création d'un 3e compte gratuit           | `403` et `limitReached: true`      | À exécuter localement                                     |
+| Création d'un revenu avec compte d'autrui | `403 Compte non autorisé`          | À exécuter en environnement isolé avec deux comptes tests |
+| `GET /api/revenus/:id` d'autrui           | `404 Revenu non trouvé`            | À exécuter en environnement isolé                         |
+| Récurrence mensuelle valide               | `201` transaction et règle en base | À exécuter localement                                     |
+| Prévision avec date cible                 | `200` `accounts` et totaux         | À exécuter et vérifier numériquement                      |
+| Webhook Stripe signé                      | Selon configuration Stripe         | À tester avec Stripe CLI _en environnement dédié_         |
 
 ---
 

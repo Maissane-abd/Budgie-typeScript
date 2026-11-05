@@ -9,32 +9,23 @@
       <div class="modal-body">
         <div class="form-group">
           <label>Nom</label>
-          <input
-              v-model="form.transaction_name"
-              type="text"
-              placeholder="Ex: Salaire"
-              autofocus
-          />
+          <input v-model="form.transaction_name" type="text" placeholder="Ex: Salaire" autofocus />
         </div>
 
         <div class="form-group">
           <label>Montant (€)</label>
-          <input
-              v-model.number="form.amount"
-              type="number"
-              placeholder="0.00"
-          />
+          <input v-model.number="form.amount" type="number" placeholder="0.00" />
         </div>
 
         <div class="form-group">
           <label>Type de revenu</label>
           <div class="radio-group">
             <label class="radio-label">
-              <input type="radio" value="once" v-model="form.duration_type">
+              <input type="radio" value="once" v-model="form.duration_type" />
               <span>Ponctuel</span>
             </label>
             <label class="radio-label">
-              <input type="radio" value="recurring" v-model="form.duration_type">
+              <input type="radio" value="recurring" v-model="form.duration_type" />
               <span>Récurrent</span>
             </label>
           </div>
@@ -54,20 +45,20 @@
         <div class="row-dates">
           <div class="form-group half">
             <label>Date de début</label>
-            <input type="date" v-model="form.start_date"/>
+            <input type="date" v-model="form.start_date" />
           </div>
 
           <div class="form-group half" v-if="form.duration_type === 'recurring'">
             <label>Date de fin (opt.)</label>
-            <input type="date" v-model="form.end_date"/>
+            <input type="date" v-model="form.end_date" />
           </div>
         </div>
 
         <div class="form-group" v-if="form.duration_type === 'recurring'">
           <label>Répéter tous les...</label>
           <div class="row-dates">
-            <input type="number" min="1" v-model.number="form.interval_count" style="width: 80px;"/>
-            <select v-model="form.interval_unit" style="flex: 1;">
+            <input type="number" min="1" v-model.number="form.interval_count" style="width: 80px" />
+            <select v-model="form.interval_unit" style="flex: 1">
               <option value="day">Jour(s)</option>
               <option value="month">Mois</option>
               <option value="year">Année(s)</option>
@@ -85,19 +76,19 @@
 </template>
 
 <script setup>
-import {reactive, onMounted, ref} from 'vue';
+import { reactive, onMounted, ref } from 'vue';
 import axios from 'axios';
-import {useToast} from "vue-toastification";
+import { useToast } from 'vue-toastification';
 
 defineProps({
-  show: Boolean
+  show: Boolean,
 });
 
 const emit = defineEmits(['save', 'close']);
 const toast = useToast();
 
 const accounts = ref([]);
-const API_URL = "/api";
+const API_URL = '/api';
 
 const form = reactive({
   transaction_name: '',
@@ -108,26 +99,26 @@ const form = reactive({
   duration_type: 'once',
   interval_count: 1,
   interval_unit: 'month',
-  end_date: ''
+  end_date: '',
 });
 
 // Récupérer les comptes pour le select
 const fetchAccounts = async () => {
-  const token = localStorage.getItem("budgie_token");
+  const token = localStorage.getItem('budgie_token');
   if (!token) return;
 
   try {
     const res = await axios.get(`${API_URL}/accounts`, {
-      headers: {Authorization: `Bearer ${token}`}
+      headers: { Authorization: `Bearer ${token}` },
     });
-    accounts.value = Array.isArray(res.data) ? res.data : (res.data.data || []);
+    accounts.value = Array.isArray(res.data) ? res.data : res.data.data || [];
 
     // Sélectionner le premier compte par défaut s'il n'y en a pas de choisi
     if (accounts.value.length > 0 && !form.account_id) {
       form.account_id = accounts.value[0].id;
     }
   } catch (err) {
-    console.error("Erreur récupération comptes :", err);
+    console.error('Erreur récupération comptes :', err);
   }
 };
 
@@ -137,7 +128,7 @@ onMounted(() => {
 
 const save = () => {
   if (!form.transaction_name || !form.amount || !form.start_date || !form.account_id) {
-    toast.error("Veuillez remplir les champs obligatoires (Nom, Montant, Compte, Date).");
+    toast.error('Veuillez remplir les champs obligatoires (Nom, Montant, Compte, Date).');
     return;
   }
 
@@ -148,7 +139,7 @@ const save = () => {
     form.interval_unit = null;
   }
 
-  emit('save', {...form});
+  emit('save', { ...form });
 
   // Reset form after save (optionnel, dépend si le parent détruit la modale ou la cache)
   form.transaction_name = '';
@@ -235,7 +226,10 @@ const save = () => {
   font-weight: 500;
 }
 
-input[type="text"], input[type="number"], input[type="date"], select {
+input[type='text'],
+input[type='number'],
+input[type='date'],
+select {
   width: 100%;
   padding: 12px;
   border: 1px solid #e5e7eb;
@@ -246,7 +240,8 @@ input[type="text"], input[type="number"], input[type="date"], select {
   transition: border-color 0.2s;
 }
 
-input:focus, select:focus {
+input:focus,
+select:focus {
   border-color: #5409c4;
   box-shadow: 0 0 0 3px rgba(84, 9, 196, 0.1);
 }
@@ -343,7 +338,10 @@ input:focus, select:focus {
     gap: 10px;
   }
 
-  .btn-submit, .btn-cancel, .btn-delete, .btn-save {
+  .btn-submit,
+  .btn-cancel,
+  .btn-delete,
+  .btn-save {
     width: 100%;
     margin: 0;
   }

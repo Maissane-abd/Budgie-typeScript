@@ -1,21 +1,20 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
-import LoginView from '../views/LoginView.vue'
-import RegisterView from '../views/RegisterView.vue'
-import ResetPasswordView from '../views/ResetPasswordView.vue'
-import Revenus from '../views/Revenus.vue'
-import Depenses from '../views/Depenses.vue'
-import Accounts from '../views/Accounts.vue'
-import Profile from '../views/Profiles.vue'
-import PrevisionsView from '../views/PrevisionsView.vue'
-import AppLayout from '@/components/layout/AppLayout.vue'
-import AbonnementView from '../views/AbonnementView.vue'
+import { createRouter, createWebHistory } from 'vue-router';
+import HomeView from '../views/HomeView.vue';
+import LoginView from '../views/LoginView.vue';
+import RegisterView from '../views/RegisterView.vue';
+import ResetPasswordView from '../views/ResetPasswordView.vue';
+import Revenus from '../views/Revenus.vue';
+import Depenses from '../views/Depenses.vue';
+import Accounts from '../views/Accounts.vue';
+import Profile from '../views/Profiles.vue';
+import PrevisionsView from '../views/PrevisionsView.vue';
+import AppLayout from '@/components/layout/AppLayout.vue';
 
 const routes = [
   {
     path: '/',
     name: 'home',
-    component: HomeView
+    component: HomeView,
   },
   {
     path: '/',
@@ -24,55 +23,55 @@ const routes = [
       {
         path: 'revenus',
         name: 'revenus',
-        component: Revenus
+        component: Revenus,
       },
       {
         path: '/depenses',
         name: 'depenses',
-        component: Depenses
+        component: Depenses,
       },
       {
         path: '/accounts',
         name: 'accounts',
-        component: Accounts
+        component: Accounts,
       },
       {
         path: 'previsions',
         name: 'previsions',
-        component: PrevisionsView
+        component: PrevisionsView,
       },
-      {
-        path: '/abonnement',
-        name: 'abonnement',
-        component: AbonnementView
-      },
+      // {
+      //   path: '/abonnement',
+      //   name: 'abonnement',
+      //   component: AbonnementView
+      // },
       {
         path: '/profile',
         name: 'profile',
-        component: Profile
-      }
-    ]
+        component: Profile,
+      },
+    ],
   },
   {
     path: '/login',
     name: 'login',
-    component: LoginView
+    component: LoginView,
   },
   {
     path: '/register',
     name: 'register',
-    component: RegisterView
+    component: RegisterView,
   },
   {
     path: '/reset-password',
     name: 'reset-password',
-    component: ResetPasswordView
-  }
-]
+    component: ResetPasswordView,
+  },
+];
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes
-})
+  routes,
+});
 
-export default router
+export default router;

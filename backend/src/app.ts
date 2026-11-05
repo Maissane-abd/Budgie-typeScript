@@ -1,7 +1,7 @@
-import "dotenv/config";
-import express from "express";
-import type { Express, Request, Response } from "express";
-import cors from "cors";
+import 'dotenv/config';
+import express from 'express';
+import type { Express, Request, Response } from 'express';
+import cors from 'cors';
 
 import revenusRoutes from "./routes/revenus.js";
 import authRoutes from "./routes/auth.js";
@@ -11,17 +11,15 @@ import previsionsRoutes from "./routes/previsions.js";
 
 
 
-const app:Express = express();
+const app: Express = express();
 
 // Middlewares
-app.use(cors({
-  origin: [
-    "http:localhost:80", 
-    "https://budgie.com"],
-  methods: [
-    "GET", "POST", "PUT", "DELETE"
-  ]
-}));
+app.use(
+  cors({
+    origin: ['http:localhost:80', 'https://budgie.com'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  }),
+);
 app.use(express.json());
 
 // Routes
@@ -33,8 +31,12 @@ app.use("/api/previsions", previsionsRoutes);
 
 
 // Test route
-app.get("/", (req:Request, res:Response) => {
-  res.send("Hello World from backend!");
+app.get('/', (req: Request, res: Response) => {
+  res.send('Hello World from backend!');
+});
+
+app.get("/health", (req:Request, res:Response) => {
+  res.status(200).send("OK");
 });
 
 app.get("/health", (req:Request, res:Response) => {

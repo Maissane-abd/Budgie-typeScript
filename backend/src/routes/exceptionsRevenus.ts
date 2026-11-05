@@ -1,8 +1,13 @@
 import express from 'express';
 import type { Router } from 'express';
-import { create, getByTransaction, update, deleteException } from '../controllers/exceptionsController.js';
+import {
+  create,
+  getByTransaction,
+  update,
+  deleteException,
+} from '../controllers/exceptionsController.js';
 
-const router:Router = express.Router();
+const router: Router = express.Router();
 
 router.post('/', create);
 router.get('/revenu/:revenuId', getByTransaction);

@@ -1,5 +1,37 @@
 {
   "dependencies": {
     "vue-toastification": "^2.0.0-rc.5"
-  }
+  },
+  "name": "budgie-typescript",
+  "version": "1.0.0",
+  "description": "<div align=\"center\">",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "devDependencies": {
+    "prettier": "3.9.10"
+  },
+  "scripts": {
+    "test": "npm --prefix backend run test && npm --prefix frontend/app run test",
+    "test:backend": "npm --prefix backend run test",
+    "test:frontend": "npm --prefix frontend/app run test",
+    "build": "npm --prefix backend run build && npm --prefix frontend/app run build",
+    "lint": "npm --prefix backend run lint && npm --prefix frontend/app run lint",
+    "lint:fix": "npm --prefix backend run lint:fix && npm --prefix frontend/app run lint:fix",
+    "typecheck": "npm --prefix backend run typecheck",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Maissane-abd/Budgie-typeScript.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Maissane-abd/Budgie-typeScript/issues"
+  },
+  "homepage": "https://github.com/Maissane-abd/Budgie-typeScript#readme"
 }

@@ -1,6 +1,5 @@
 <template>
   <div class="depenses-container">
-
     <div class="card header-card">
       <div class="header-top">
         <div>
@@ -8,8 +7,17 @@
           <p class="page-subtitle">Suivez et gérez vos dépenses</p>
         </div>
         <button class="btn-primary" @click="showCreateModal = true">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
           </svg>
@@ -18,52 +26,50 @@
       </div>
 
       <DepensesFilters
-          v-model:search="search"
-          v-model:sort="filters.sort"
-          v-model:account="filters.account"
-          :accounts="accounts"
+        v-model:search="search"
+        v-model:sort="filters.sort"
+        v-model:account="filters.account"
+        :accounts="accounts"
       />
     </div>
 
     <div class="card table-card">
       <DepensesTable
-          :expenses="filteredExpenses"
-          :loading="isLoading"
-          @delete="deleteExpense"
-          @edit="openEditModal"
+        :expenses="filteredExpenses"
+        :loading="isLoading"
+        @delete="deleteExpense"
+        @edit="openEditModal"
       />
     </div>
 
     <DepenseCreateModal
-        :show="showCreateModal"
-        @close="showCreateModal = false"
-        @save="handleCreate"
+      :show="showCreateModal"
+      @close="showCreateModal = false"
+      @save="handleCreate"
     />
 
     <DepenseUpdateModal
-        :show="showUpdateModal"
-        :expenseToEdit="expenseToEdit"
-        @close="showUpdateModal = false"
-        @updated="handleUpdate"
+      :show="showUpdateModal"
+      :expenseToEdit="expenseToEdit"
+      @close="showUpdateModal = false"
+      @updated="handleUpdate"
     />
-
   </div>
 </template>
 
 <script setup>
-import {ref, onMounted, computed} from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
-import {useToast} from "vue-toastification";
+import { useToast } from 'vue-toastification';
 import { API_BASE } from '@/config/api.js';
 
 import DepensesTable from '../components/depenses/DepensesTable.vue';
 import DepenseCreateModal from '../components/depenses/DepenseCreateModal.vue';
 import DepensesFilters from '../components/depenses/DepensesFilters.vue';
 import DepenseUpdateModal from '../components/depenses/DepenseUpdateModal.vue';
-import {useRouter} from "vue-router";
+import { useRouter } from 'vue-router';
 
 const toast = useToast();
-
 
 const router = useRouter();
 
@@ -78,11 +84,10 @@ const expenseToEdit = ref(null);
 const search = ref('');
 const filters = ref({
   account: '',
-  sort: 'date_desc'
+  sort: 'date_desc',
 });
 
 // const API_BASE = "https://budgie-api-s1yz.onrender.com/api";
-
 
 const fetchData = async () => {
   const token = localStorage.getItem('budgie_token');
@@ -93,55 +98,63 @@ const fetchData = async () => {
 
   isLoading.value = true;
   try {
-    const resExp = await axios.get(`${API_BASE}/expenses`, {headers: {Authorization: `Bearer ${token}`}});
-    expenses.value = Array.isArray(resExp.data) ? resExp.data : (resExp.data.data || []);
+    const resExp = await axios.get(`${API_BASE}/expenses`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    expenses.value = Array.isArray(resExp.data) ? resExp.data : resExp.data.data || [];
 
-    const resAcc = await axios.get(`${API_BASE}/accounts`, {headers: {Authorization: `Bearer ${token}`}});
-    accounts.value = Array.isArray(resAcc.data) ? resAcc.data : (resAcc.data.data || []);
+    const resAcc = await axios.get(`${API_BASE}/accounts`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    accounts.value = Array.isArray(resAcc.data) ? resAcc.data : resAcc.data.data || [];
   } catch (err) {
-    console.error("Erreur API :", err);
+    console.error('Erreur API :', err);
   } finally {
     isLoading.value = false;
   }
 };
 
 const handleCreate = async (newExpense) => {
-  const token = localStorage.getItem("budgie_token");
+  const token = localStorage.getItem('budgie_token');
   try {
-    await axios.post(`${API_BASE}/expenses`, newExpense, {headers: {Authorization: `Bearer ${token}`}});
+    await axios.post(`${API_BASE}/expenses`, newExpense, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     showCreateModal.value = false;
     fetchData();
-    toast.success("Dépense ajoutée avec succès !");
+    toast.success('Dépense ajoutée avec succès !');
   } catch (err) {
-    const errorMessage = err.response?.data?.message || "Erreur lors de la création de la dépense";
+    const errorMessage = err.response?.data?.message || 'Erreur lors de la création de la dépense';
     toast.error(errorMessage);
   }
 };
 
 const openEditModal = (expense) => {
   expenseToEdit.value = expense; // On passe la donnée à la modal
-  showUpdateModal.value = true;  // On affiche la modal
+  showUpdateModal.value = true; // On affiche la modal
 };
 
-const handleUpdate = async ({id, data}) => {
-  const token = localStorage.getItem("budgie_token");
+const handleUpdate = async ({ id, data }) => {
+  const token = localStorage.getItem('budgie_token');
   try {
     await axios.put(`${API_BASE}/expenses/${id}`, data, {
-      headers: {Authorization: `Bearer ${token}`}
+      headers: { Authorization: `Bearer ${token}` },
     });
     showUpdateModal.value = false;
     fetchData();
   } catch (err) {
     console.error(err);
-    alert("Erreur lors de la modification");
+    alert('Erreur lors de la modification');
   }
 };
 
 const deleteExpense = async (id) => {
-  if (!confirm("Voulez-vous vraiment supprimer cette dépense ?")) return;
-  const token = localStorage.getItem("budgie_token");
+  if (!confirm('Voulez-vous vraiment supprimer cette dépense ?')) return;
+  const token = localStorage.getItem('budgie_token');
   try {
-    await axios.delete(`${API_BASE}/expenses/${id}`, {headers: {Authorization: `Bearer ${token}`}});
+    await axios.delete(`${API_BASE}/expenses/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     fetchData();
   } catch (err) {
     console.error(err);
@@ -153,11 +166,11 @@ const filteredExpenses = computed(() => {
 
   if (search.value) {
     const s = search.value.toLowerCase();
-    result = result.filter(e => e.transaction_name.toLowerCase().includes(s));
+    result = result.filter((e) => e.transaction_name.toLowerCase().includes(s));
   }
 
   if (filters.value.account) {
-    result = result.filter(e => e.account_id === filters.value.account);
+    result = result.filter((e) => e.account_id === filters.value.account);
   }
 
   switch (filters.value.sort) {

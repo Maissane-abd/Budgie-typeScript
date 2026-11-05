@@ -21,7 +21,7 @@
           height="18"
           viewBox="0 0 24 24"
           fill="none"
-          :stroke="feature.disabled ? '#d1d5db' : (isPremium ? '#7c3aed' : '#8b5cf6')"
+          :stroke="feature.disabled ? '#d1d5db' : isPremium ? '#7c3aed' : '#8b5cf6'"
           stroke-width="3"
           stroke-linecap="round"
           stroke-linejoin="round"
@@ -37,7 +37,7 @@
     </ul>
 
     <div class="spacer"></div>
-    
+
     <div v-if="isPremium && hasActiveSubscription" class="subscription-actions">
       <button class="btn-plan secondary" disabled>Plan actif</button>
       <button
@@ -62,13 +62,9 @@
       @click="$emit('subscribe')"
       :disabled="loadingCheckout"
     >
-      {{ loadingCheckout ? 'Redirection...' : 'S\'abonner maintenant' }}
+      {{ loadingCheckout ? 'Redirection...' : "S'abonner maintenant" }}
     </button>
-    <button
-      v-else-if="!hasActiveSubscription"
-      class="btn-plan secondary"
-      disabled
-    >
+    <button v-else-if="!hasActiveSubscription" class="btn-plan secondary" disabled>
       Plan actuel
     </button>
   </div>
@@ -261,4 +257,3 @@ defineEmits(['subscribe', 'update', 'cancel']);
   }
 }
 </style>
-
