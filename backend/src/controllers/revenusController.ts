@@ -1,7 +1,6 @@
 // controllers/revenusController.js
 import db from '../models/db.js';
 import { v4 as uuidv4 } from 'uuid';
-import { checkIncomeLimit } from '../utils/subscription.js';
 import { Request, Response } from 'express';
 
 export const getAll = async (req: Request, res: Response): Promise<void> => {
@@ -115,16 +114,16 @@ export const create = async (req: Request, res: Response): Promise<void> => {
   }
 
   // Vérifier la limite de revenus par compte
-  const limitCheck = await checkIncomeLimit(req.user.id, account_id);
-  if (limitCheck.limitReached) {
-    res.status(403).json({
-      message: `Limite de revenus atteinte. Vous avez atteint la limite de ${limitCheck.maxCount} revenus par compte du plan gratuit. Abonnez-vous au plan Premium pour des revenus illimités.`,
-      limitReached: true,
-      currentCount: limitCheck.currentCount,
-      maxCount: limitCheck.maxCount,
-    });
-    return;
-  }
+  // const limitCheck = await checkIncomeLimit(req.user.id, account_id);
+  // if (limitCheck.limitReached) {
+  //    res.status(403).json({
+  //     message: `Limite de revenus atteinte. Vous avez atteint la limite de ${limitCheck.maxCount} revenus par compte du plan gratuit. Abonnez-vous au plan Premium pour des revenus illimités.`,
+  //     limitReached: true,
+  //     currentCount: limitCheck.currentCount,
+  //     maxCount: limitCheck.maxCount
+  //   });
+  //   return;
+  // }
 
   // Insertion du nouveau revenu
 
