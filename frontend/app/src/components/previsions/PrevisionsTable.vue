@@ -35,27 +35,23 @@
   </div>
 </template>
 
-<script setup>
-defineProps({
-  details: {
-    type: Array,
-    required: true,
-  },
-});
+<script setup lang="ts">
+import type { MonthlyDetail } from '@/types/models';
+defineProps<{ details: MonthlyDetail[] }>();
 
-function formatCurrency(amount) {
+function formatCurrency(amount: number | string | null | undefined) {
   return new Intl.NumberFormat('fr-FR', {
     style: 'currency',
     currency: 'EUR',
-  }).format(amount);
+  }).format(Number(amount ?? 0));
 }
 
-function formatMonthLong(date) {
+function formatMonthLong(date: string) {
   const d = new Date(date);
   return d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
 }
 
-function isCurrentMonth(date) {
+function isCurrentMonth(date: string) {
   const d = new Date(date);
   const now = new Date();
   return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();

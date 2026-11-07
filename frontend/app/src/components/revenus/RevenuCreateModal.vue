@@ -75,22 +75,21 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import type { Account, TransactionForm } from '@/types/models';
 import { reactive, onMounted, ref } from 'vue';
 import axios from 'axios';
 import { useToast } from 'vue-toastification';
 
-defineProps({
-  show: Boolean,
-});
+defineProps<{ show: boolean }>();
 
-const emit = defineEmits(['save', 'close']);
+const emit = defineEmits<{ save: [form: TransactionForm]; close: [] }>();
 const toast = useToast();
 
-const accounts = ref([]);
+const accounts = ref<Account[]>([]);
 const API_URL = '/api';
 
-const form = reactive({
+const form = reactive<TransactionForm>({
   transaction_name: '',
   amount: null,
   description: '',
@@ -108,7 +107,7 @@ const fetchAccounts = async () => {
   if (!token) return;
 
   try {
-    const res = await axios.get(`${API_URL}/accounts`, {
+    const res = await axios.get<Account[] | { data: Account[] }>(`${API_URL}/accounts`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     accounts.value = Array.isArray(res.data) ? res.data : res.data.data || [];

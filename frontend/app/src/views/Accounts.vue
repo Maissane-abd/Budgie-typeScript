@@ -50,9 +50,12 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+defineOptions({ name: 'AccountsView' });
+import type { Account, AccountForm, Id, ApiError } from '@/types/models';
+import axios from 'axios';
 import { ref, onMounted, computed } from 'vue';
-import { AccountsService } from '@/services/accounts.service.js';
+import { AccountsService } from '@/services/accounts.service';
 import { useRouter } from 'vue-router';
 import { useToast } from 'vue-toastification';
 
@@ -64,9 +67,16 @@ const router = useRouter();
 const toast = useToast();
 
 /* ===== STATE ===== */
-const accounts = ref([]);
+const accounts = ref<Account[]>([]);
 const showDrawer = ref(false);
-const form = ref({});
+const form = ref<AccountForm>({
+  account_name: '',
+  description: '',
+  balance: 0,
+  annual_interest_rate: 0,
+  tax_rate: 0,
+  created_on: '',
+});
 const isCreate = ref(false);
 
 /* ===== FILTRES ===== */
@@ -85,14 +95,20 @@ const loadAccounts = async () => {
     const res = await AccountsService.getAll();
     accounts.value = Array.isArray(res.data) ? res.data : res.data.data || [];
   } catch (error) {
-    toast.error('Erreur chargement comptes:', error);
+    console.error(error);
+    toast.error('Erreur chargement comptes');
   }
 };
 
 /* ===== DRAWER ACTIONS ===== */
-const openDrawer = (acc) => {
+const openDrawer = (acc: Account) => {
   isCreate.value = false;
-  form.value = { ...acc };
+  form.value = {
+    ...acc,
+    description: acc.description ?? '',
+    annual_interest_rate: acc.annual_interest_rate ?? 0,
+    tax_rate: acc.tax_rate ?? 0,
+  };
   showDrawer.value = true;
 };
 
@@ -127,7 +143,7 @@ const createAccount = async () => {
     closeDrawer();
     loadAccounts();
   } catch (error) {
-    if (error.response) {
+    if (axios.isAxiosError<ApiError>(error) && error.response) {
       if (error.response.status === 403 && error.response.data.limitReached) {
         toast.error(error.response.data.error);
       } else if (error.response.status === 400) {
@@ -143,27 +159,30 @@ const createAccount = async () => {
 };
 
 const updateAccount = async () => {
+  if (form.value.id === undefined) return;
   try {
     await AccountsService.update(form.value.id, {
       ...form.value,
+      balance: Number(form.value.balance),
       annual_interest_rate: Number(form.value.annual_interest_rate),
       tax_rate: Number(form.value.tax_rate),
     });
     closeDrawer();
     loadAccounts();
-  } catch (e) {
+  } catch {
     toast.error('Erreur modification');
   }
 };
 
-const deleteAccount = async (id) => {
-  const accountId = id || form.value.id;
+const deleteAccount = async (id?: Id) => {
+  const accountId = id ?? form.value.id;
+  if (accountId === undefined) return;
   if (!confirm('Voulez-vous vraiment supprimer ce compte ?')) return;
   try {
     await AccountsService.delete(accountId);
     if (showDrawer.value) closeDrawer();
     loadAccounts();
-  } catch (e) {
+  } catch {
     toast.error('Erreur suppression');
   }
 };
@@ -171,7 +190,13 @@ const deleteAccount = async (id) => {
 /* ===== COMPUTED ===== */
 const accountTypes = computed(() => {
   if (!accounts.value) return [];
-  return [...new Set(accounts.value.map((a) => a.description).filter(Boolean))];
+  return [
+    ...new Set(
+      accounts.value
+        .map((a) => a.description)
+        .filter((description): description is string => Boolean(description)),
+    ),
+  ];
 });
 
 const filteredAccounts = computed(() => {

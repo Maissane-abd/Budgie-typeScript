@@ -270,8 +270,7 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed } from 'vue';
+<script setup lang="ts">
 import { RouterLink } from 'vue-router';
 
 // --- LOGIC ---

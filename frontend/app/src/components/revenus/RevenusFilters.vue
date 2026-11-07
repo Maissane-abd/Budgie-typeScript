@@ -4,7 +4,9 @@
       <div class="input-wrapper">
         <select
           :value="account"
-          @change="$emit('update:account', $event.target.value)"
+          @change="
+            $emit('update:account', ($event.target as HTMLInputElement | HTMLSelectElement).value)
+          "
           class="custom-input"
         >
           <option value="">Tous les comptes</option>
@@ -29,7 +31,9 @@
       <div class="input-wrapper">
         <select
           :value="period"
-          @change="$emit('update:period', $event.target.value)"
+          @change="
+            $emit('update:period', ($event.target as HTMLInputElement | HTMLSelectElement).value)
+          "
           class="custom-input"
         >
           <option value="">Toute période</option>
@@ -53,7 +57,9 @@
       <div class="input-wrapper">
         <select
           :value="type"
-          @change="$emit('update:type', $event.target.value)"
+          @change="
+            $emit('update:type', ($event.target as HTMLInputElement | HTMLSelectElement).value)
+          "
           class="custom-input"
         >
           <option value="">Tous les types</option>
@@ -93,7 +99,9 @@
       <input
         type="text"
         :value="search"
-        @input="$emit('update:search', $event.target.value)"
+        @input="
+          $emit('update:search', ($event.target as HTMLInputElement | HTMLSelectElement).value)
+        "
         placeholder="Rechercher..."
         class="custom-input search-input"
       />
@@ -101,19 +109,25 @@
   </div>
 </template>
 
-<script setup>
-defineProps({
-  search: String,
-  account: String,
-  period: String,
-  type: String,
-  accounts: {
-    type: Array,
-    default: () => [],
-  },
-});
+<script setup lang="ts">
+import type { Account } from '@/types/models';
+withDefaults(
+  defineProps<{
+    search?: string;
+    account?: string;
+    period?: string;
+    type?: string;
+    accounts?: Account[];
+  }>(),
+  { accounts: () => [] },
+);
 
-defineEmits(['update:search', 'update:account', 'update:period', 'update:type']);
+defineEmits<{
+  'update:search': [value: string];
+  'update:account': [value: string];
+  'update:period': [value: string];
+  'update:type': [value: string];
+}>();
 </script>
 
 <style scoped>

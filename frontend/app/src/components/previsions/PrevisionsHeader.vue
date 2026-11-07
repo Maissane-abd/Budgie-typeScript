@@ -5,7 +5,7 @@
   </header>
 </template>
 
-<script setup>
+<script setup lang="ts">
 // Pas de logique nécessaire pour le moment
 </script>
 

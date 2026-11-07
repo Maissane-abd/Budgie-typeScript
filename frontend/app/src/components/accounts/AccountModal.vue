@@ -1,3 +1,14 @@
+<script setup lang="ts">
+import type { AccountForm } from '@/types/models';
+const props = defineProps<{ show: boolean; isCreate: boolean; form: AccountForm }>();
+const emit = defineEmits<{ close: []; save: []; delete: []; 'update:form': [form: AccountForm] }>();
+
+const update = (key: keyof AccountForm, val: string) =>
+  emit('update:form', { ...props.form, [key]: val });
+const formatDate = (d: string | null | undefined) =>
+  d ? new Date(d).toLocaleDateString('fr-FR') : '';
+</script>
+
 <template>
   <div v-if="show" class="modal-backdrop" @click.self="$emit('close')">
     <div class="modal-card">
@@ -12,7 +23,9 @@
           <input
             type="text"
             :value="form.account_name"
-            @input="update('account_name', $event.target.value)"
+            @input="
+              update('account_name', ($event.target as HTMLInputElement | HTMLSelectElement).value)
+            "
             placeholder="Ex: Compte Courant"
             autofocus
           />
@@ -23,7 +36,9 @@
           <input
             type="text"
             :value="form.description"
-            @input="update('description', $event.target.value)"
+            @input="
+              update('description', ($event.target as HTMLInputElement | HTMLSelectElement).value)
+            "
             placeholder="Ex: Courant, Epargne..."
           />
         </div>
@@ -33,7 +48,9 @@
           <input
             type="number"
             :value="form.balance"
-            @input="update('balance', $event.target.value)"
+            @input="
+              update('balance', ($event.target as HTMLInputElement | HTMLSelectElement).value)
+            "
             placeholder="0.00"
           />
         </div>
@@ -44,7 +61,12 @@
             <input
               type="number"
               :value="form.annual_interest_rate"
-              @input="update('annual_interest_rate', $event.target.value)"
+              @input="
+                update(
+                  'annual_interest_rate',
+                  ($event.target as HTMLInputElement | HTMLSelectElement).value,
+                )
+              "
               placeholder="0"
             />
           </div>
@@ -53,7 +75,9 @@
             <input
               type="number"
               :value="form.tax_rate"
-              @input="update('tax_rate', $event.target.value)"
+              @input="
+                update('tax_rate', ($event.target as HTMLInputElement | HTMLSelectElement).value)
+              "
               placeholder="0"
             />
           </div>
@@ -77,14 +101,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-const props = defineProps({ show: Boolean, isCreate: Boolean, form: Object });
-const emit = defineEmits(['close', 'save', 'delete', 'update:form']);
-
-const update = (key, val) => emit('update:form', { ...props.form, [key]: val });
-const formatDate = (d) => (d ? new Date(d).toLocaleDateString('fr-FR') : '');
-</script>
 
 <style scoped>
 /* --- STYLES MODALES STANDARD --- */

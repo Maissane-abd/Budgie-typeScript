@@ -23,7 +23,10 @@
           <td>
             <span class="badge">{{ acc.description || 'Autre' }}</span>
           </td>
-          <td class="amount" :class="{ positive: acc.balance >= 0, negative: acc.balance < 0 }">
+          <td
+            class="amount"
+            :class="{ positive: Number(acc.balance) >= 0, negative: Number(acc.balance) < 0 }"
+          >
             {{ Number(acc.balance).toFixed(2) }} €
           </td>
           <td class="text-muted">{{ acc.annual_interest_rate }}%</td>
@@ -70,11 +73,13 @@
   </div>
 </template>
 
-<script setup>
-defineProps({ accounts: Array });
-defineEmits(['edit', 'delete']);
+<script setup lang="ts">
+import type { Account, Id } from '@/types/models';
+defineProps<{ accounts: Account[] }>();
+defineEmits<{ edit: [account: Account]; delete: [id: Id] }>();
 
-const formatDate = (d) => (d ? new Date(d).toLocaleDateString('fr-FR') : '-');
+const formatDate = (d: string | null | undefined) =>
+  d ? new Date(d).toLocaleDateString('fr-FR') : '-';
 </script>
 
 <style scoped>

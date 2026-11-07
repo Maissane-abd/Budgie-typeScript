@@ -92,15 +92,13 @@
   </div>
 </template>
 
-<script setup>
-defineProps({
-  revenus: Array,
-  loading: Boolean,
-});
+<script setup lang="ts">
+import type { Transaction } from '@/types/models';
+withDefaults(defineProps<{ revenus: Transaction[]; loading?: boolean }>(), { loading: false });
 
-defineEmits(['select']); // 'select' ouvre la modale d'édition
+defineEmits<{ select: [revenu: Transaction] }>(); // 'select' ouvre la modale d'édition
 
-const formatDate = (dateStr) => {
+const formatDate = (dateStr: string | null | undefined) => {
   if (!dateStr) return '';
   return new Date(dateStr).toLocaleDateString('fr-FR', {
     day: 'numeric',
@@ -109,9 +107,9 @@ const formatDate = (dateStr) => {
   });
 };
 
-const translateUnit = (unit) => {
-  const map = { day: 'j', month: 'mois', year: 'an' };
-  return map[unit] || unit;
+const translateUnit = (unit: string | null | undefined) => {
+  const map: Record<string, string> = { day: 'j', month: 'mois', year: 'an' };
+  return unit ? map[unit] || unit : '';
 };
 </script>
 

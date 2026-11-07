@@ -57,11 +57,13 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+defineOptions({ name: 'DepensesView' });
+import type { Account, Transaction, TransactionForm, Id, ApiError } from '@/types/models';
 import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import { useToast } from 'vue-toastification';
-import { API_BASE } from '@/config/api.js';
+import { API_BASE } from '@/config/api';
 
 import DepensesTable from '../components/depenses/DepensesTable.vue';
 import DepenseCreateModal from '../components/depenses/DepenseCreateModal.vue';
@@ -73,13 +75,13 @@ const toast = useToast();
 
 const router = useRouter();
 
-const expenses = ref([]);
-const accounts = ref([]);
+const expenses = ref<Transaction[]>([]);
+const accounts = ref<Account[]>([]);
 const isLoading = ref(true);
 
 const showCreateModal = ref(false);
 const showUpdateModal = ref(false);
-const expenseToEdit = ref(null);
+const expenseToEdit = ref<Transaction | null>(null);
 
 const search = ref('');
 const filters = ref({
@@ -114,7 +116,7 @@ const fetchData = async () => {
   }
 };
 
-const handleCreate = async (newExpense) => {
+const handleCreate = async (newExpense: TransactionForm) => {
   const token = localStorage.getItem('budgie_token');
   try {
     await axios.post(`${API_BASE}/expenses`, newExpense, {
@@ -124,17 +126,19 @@ const handleCreate = async (newExpense) => {
     fetchData();
     toast.success('Dépense ajoutée avec succès !');
   } catch (err) {
-    const errorMessage = err.response?.data?.message || 'Erreur lors de la création de la dépense';
+    const errorMessage =
+      (axios.isAxiosError<ApiError>(err) ? err.response?.data?.message : undefined) ||
+      'Erreur lors de la création de la dépense';
     toast.error(errorMessage);
   }
 };
 
-const openEditModal = (expense) => {
+const openEditModal = (expense: Transaction) => {
   expenseToEdit.value = expense; // On passe la donnée à la modal
   showUpdateModal.value = true; // On affiche la modal
 };
 
-const handleUpdate = async ({ id, data }) => {
+const handleUpdate = async ({ id, data }: { id: Id; data: TransactionForm }) => {
   const token = localStorage.getItem('budgie_token');
   try {
     await axios.put(`${API_BASE}/expenses/${id}`, data, {
@@ -148,7 +152,7 @@ const handleUpdate = async ({ id, data }) => {
   }
 };
 
-const deleteExpense = async (id) => {
+const deleteExpense = async (id: Id) => {
   if (!confirm('Voulez-vous vraiment supprimer cette dépense ?')) return;
   const token = localStorage.getItem('budgie_token');
   try {
@@ -170,21 +174,21 @@ const filteredExpenses = computed(() => {
   }
 
   if (filters.value.account) {
-    result = result.filter((e) => e.account_id === filters.value.account);
+    result = result.filter((e) => String(e.account_id) === filters.value.account);
   }
 
   switch (filters.value.sort) {
     case 'date_desc':
-      result.sort((a, b) => new Date(b.start_date) - new Date(a.start_date));
+      result.sort((a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime());
       break;
     case 'date_asc':
-      result.sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
+      result.sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime());
       break;
     case 'amount_desc':
-      result.sort((a, b) => b.amount - a.amount);
+      result.sort((a, b) => Number(b.amount) - Number(a.amount));
       break;
     case 'amount_asc':
-      result.sort((a, b) => a.amount - b.amount);
+      result.sort((a, b) => Number(a.amount) - Number(b.amount));
       break;
   }
 

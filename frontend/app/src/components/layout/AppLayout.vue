@@ -14,13 +14,12 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { onMounted, ref } from 'vue'; // Ajout de 'ref'
 import axios from 'axios';
 import { useUserStore } from '@/stores/userStore';
 import AppHeader from './AppHeader.vue';
 import AppSidebar from './AppSidebar.vue';
-import { useRoute } from 'vue-router'; // Pour fermer au changement de page
 
 const userStore = useUserStore();
 const isSidebarOpen = ref(false);

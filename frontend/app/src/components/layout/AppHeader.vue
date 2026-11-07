@@ -44,12 +44,12 @@
   </header>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 
 // Déclaration de l'événement pour le parent (AppLayout)
-defineEmits(['toggle-sidebar']);
+defineEmits<{ 'toggle-sidebar': [] }>();
 
 const router = useRouter();
 const userStore = useUserStore();
