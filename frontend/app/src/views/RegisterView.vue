@@ -1,49 +1,71 @@
 <!-- src/views/RegisterView.vue -->
 <template>
-  <div class="app-main">
+  <div class="register-page">
     <section class="auth-card">
       <h1 class="auth-title">Inscription</h1>
       <p class="auth-subtitle">Crée ton compte Budgie pour suivre tes comptes et tes prévisions.</p>
 
       <form class="auth-form" @submit.prevent="handleRegister">
         <div>
-          <div class="auth-label">Prénom</div>
-          <input v-model="firstName" type="text" class="auth-input" placeholder="Hamza" required />
+          <label for="register-first-name" class="auth-label">Prénom</label>
+          <input
+            id="register-first-name"
+            v-model="firstName"
+            type="text"
+            autocomplete="given-name"
+            class="auth-input"
+            placeholder="Votre prénom"
+            required
+          />
         </div>
         <div>
-          <div class="auth-label">Nom</div>
-          <input v-model="lastName" type="text" class="auth-input" placeholder="Meksem" required />
+          <label for="register-last-name" class="auth-label">Nom</label>
+          <input
+            id="register-last-name"
+            v-model="lastName"
+            type="text"
+            autocomplete="family-name"
+            class="auth-input"
+            placeholder="Votre nom"
+            required
+          />
         </div>
 
-        <div>
-          <div class="auth-label">Email</div>
+        <div class="auth-field-wide">
+          <label for="register-email" class="auth-label">Email</label>
           <input
+            id="register-email"
             v-model="email"
+            autocomplete="email"
             type="email"
             class="auth-input"
-            placeholder="exemple@mail.com"
+            placeholder="nom@exemple.fr"
             required
           />
         </div>
 
         <div>
-          <div class="auth-label">Mot de passe</div>
+          <label for="register-password" class="auth-label">Mot de passe</label>
           <input
+            id="register-password"
             v-model="password"
+            autocomplete="new-password"
             type="password"
             class="auth-input"
-            placeholder="••••••••"
+            placeholder="Saisissez un mot de passe"
             required
           />
         </div>
 
         <div>
-          <div class="auth-label">Confirmer le mot de passe</div>
+          <label for="register-password-confirm" class="auth-label">Confirmer le mot de passe</label>
           <input
+            id="register-password-confirm"
             v-model="passwordConfirm"
+            autocomplete="new-password"
             type="password"
             class="auth-input"
-            placeholder="••••••••"
+            placeholder="Confirmez le mot de passe"
             required
           />
         </div>
@@ -59,8 +81,7 @@
       <div class="auth-footer">
         Déjà inscrit ?
         <RouterLink class="auth-link" to="/login">Se connecter</RouterLink>
-        <br />
-        <span style="font-size: 11px"> En créant un compte, vous acceptez les CGU. </span>
+        <p class="auth-terms">En créant un compte, vous acceptez les CGU.</p>
       </div>
     </section>
   </div>
@@ -123,19 +144,22 @@ async function handleRegister() {
 </script>
 
 <style scoped>
+.register-page {
+  display: flex;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 32px 24px;
+}
+
 /*AUTH CARD*/
 
 .auth-card {
-  width: 420px;
+  width: 640px;
   max-width: 100%;
   background: var(--card-bg);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
   padding: 32px 32px 28px;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   margin: auto;
 }
 
@@ -156,10 +180,21 @@ async function handleRegister() {
 /*FORM*/
 
 .auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 20px;
   margin-bottom: 18px;
+}
+
+.auth-field-wide,
+.auth-form > .auth-error,
+.auth-form > .auth-success,
+.auth-form > .auth-button {
+  grid-column: 1 / -1;
+}
+
+.auth-form > div {
+  min-width: 0;
 }
 
 .auth-label {
@@ -228,6 +263,11 @@ async function handleRegister() {
   color: var(--text-muted);
 }
 
+.auth-terms {
+  margin: 8px 0 0;
+  font-size: 11px;
+}
+
 .auth-link {
   color: var(--primary);
   font-weight: 500;
@@ -251,5 +291,18 @@ async function handleRegister() {
   font-size: 12px;
   color: #15803d;
   margin-bottom: 4px;
+}
+@media (max-width: 600px) {
+  .register-page {
+    padding: 24px 16px;
+  }
+
+  .auth-card {
+    padding: 32px 24px 28px;
+  }
+
+  .auth-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 </style>
