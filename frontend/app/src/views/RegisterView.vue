@@ -52,7 +52,9 @@
             autocomplete="new-password"
             type="password"
             class="auth-input"
-            placeholder="Saisissez un mot de passe"
+            placeholder="Saisissez une phrase de passe"
+            :minlength="PASSWORD_MIN_LENGTH"
+            aria-describedby="register-password-help"
             required
           />
         </div>
@@ -70,7 +72,12 @@
           />
         </div>
 
-        <p v-if="error" class="auth-error">{{ error }}</p>
+        <p id="register-password-help" class="auth-password-help auth-field-wide">
+          {{ PASSWORD_POLICY_MESSAGE }}
+          Privilégiez une phrase de passe longue composée de plusieurs mots. Les espaces sont autorisés.
+        </p>
+
+        <p v-if="error" class="auth-error" role="alert">{{ error }}</p>
         <p v-if="success" class="auth-success">{{ success }}</p>
 
         <button class="auth-button" type="submit" :disabled="loading">
@@ -94,6 +101,7 @@ import { ref } from 'vue';
 import axios from 'axios';
 import { RouterLink, useRouter } from 'vue-router';
 import { API_BASE } from '@/config/api';
+import { isValidPassword, PASSWORD_MIN_LENGTH, PASSWORD_POLICY_MESSAGE } from '@/utils/passwordPolicy';
 
 const router = useRouter();
 
@@ -112,6 +120,11 @@ const success = ref('');
 async function handleRegister() {
   error.value = '';
   success.value = '';
+
+  if (!isValidPassword(password.value)) {
+    error.value = PASSWORD_POLICY_MESSAGE;
+    return;
+  }
 
   if (password.value !== passwordConfirm.value) {
     error.value = 'Les mots de passe ne correspondent pas.';
@@ -260,6 +273,13 @@ async function handleRegister() {
   margin-top: 10px;
   text-align: center;
   font-size: 12px;
+  color: var(--text-muted);
+}
+
+.auth-password-help {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
   color: var(--text-muted);
 }
 

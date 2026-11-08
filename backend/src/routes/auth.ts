@@ -4,6 +4,7 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import db from '../models/db.js';
+import { isValidPassword, PASSWORD_POLICY_MESSAGE } from '../utils/passwordPolicy.js';
 import type { Request, Response, NextFunction } from 'express';
 import type { Router } from 'express';
 
@@ -64,6 +65,10 @@ router.post('/register', async (req: Request<User>, res: Response) => {
 
   if (!first_name || !last_name || !email || !password) {
     return res.status(400).json({ error: 'Champs requis' });
+  }
+
+  if (!isValidPassword(password)) {
+    return res.status(400).json({ error: PASSWORD_POLICY_MESSAGE });
   }
 
   try {
