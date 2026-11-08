@@ -340,3 +340,18 @@ Cette roadmap est indicative et pourra évoluer selon les besoins et les priorit
 **Budgie — Mieux comprendre ses finances pour mieux anticiper l'avenir.**
 
 </div>
+
+### Politique des mots de passe à l'inscription
+
+Le formulaire et l'API exigent au moins **12 caractères**, dont une majuscule
+(lettres accentuées incluses), un chiffre de 0 à 9 et un caractère spécial
+(ponctuation ou symbole ; un espace seul ne compte pas). Une phrase de passe
+longue composée de plusieurs mots est encouragée ; les espaces sont autorisés
+et le mot de passe n'est ni tronqué ni nettoyé.
+
+La limite est de **72 octets UTF-8**, pour respecter la limite du hachage bcrypt
+utilisé par l'API (un caractère accentué peut occuper plusieurs octets).
+L'API renvoie HTTP 400 si la règle n'est pas respectée, avant toute requête en base.
+Les comptes existants conservent leur mot de passe et leur accès habituel.
+Les validations sont définies dans `frontend/app/src/utils/passwordPolicy.ts`
+et `backend/src/utils/passwordPolicy.ts`, avec des tests dans les deux projets.
