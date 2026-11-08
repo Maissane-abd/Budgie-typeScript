@@ -44,7 +44,9 @@
   </section>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import type { User } from '@/stores/userStore';
+import type { ApiError } from '@/types/models';
 import { ref } from 'vue';
 import axios from 'axios';
 import { RouterLink, useRoute } from 'vue-router';
@@ -65,21 +67,23 @@ const userStore = useUserStore();
 function handleLogineLocal() {
   // Simulate a successful login for local testing
   const token = 'dummy_token';
-  const user = { email: email.value, name: 'Test User' };
+  const user: User = { id: 0, email: email.value, first_name: 'Test', last_name: 'User' };
   userStore.setUser(user);
   localStorage.setItem('budgie_token', token);
   success.value = 'Connexion réussie ✅';
-  const redirectTo = route.query.redirect || '/revenus';
+  const redirectTo = typeof route.query.redirect === 'string' ? route.query.redirect : '/revenus';
   window.location.href = redirectTo;
 }
 
+// Connexion API conservée à côté du mode local utilisé par le formulaire.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function handleLogin() {
   error.value = '';
   success.value = '';
   loading.value = true;
 
   try {
-    const res = await axios.post(`${API_BASE}/auth/login`, {
+    const res = await axios.post<{ token: string; user: User }>(`${API_BASE}/auth/login`, {
       email: email.value,
       password: password.value,
     });
@@ -92,13 +96,15 @@ async function handleLogin() {
       userStore.setUser(user);
       success.value = 'Connexion réussie ✅';
       // Rediriger vers la page d'origine ou la page d'accueil
-      const redirectTo = route.query.redirect || '/revenus';
+      const redirectTo =
+        typeof route.query.redirect === 'string' ? route.query.redirect : '/revenus';
       window.location.href = redirectTo;
     }
   } catch (err) {
     console.error(err);
     error.value =
-      err.response?.data?.error || 'Erreur lors de la connexion. Vérifie tes identifiants.';
+      (axios.isAxiosError<ApiError>(err) ? err.response?.data?.error : undefined) ||
+      'Erreur lors de la connexion. Vérifie tes identifiants.';
   } finally {
     loading.value = false;
   }

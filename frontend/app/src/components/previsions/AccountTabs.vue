@@ -11,19 +11,14 @@
   </div>
 </template>
 
-<script setup>
-defineProps({
-  accounts: {
-    type: Array,
-    default: () => [],
-  },
-  modelValue: {
-    type: [String, Number],
-    default: null,
-  },
+<script setup lang="ts">
+import type { AccountForecast, Id } from '@/types/models';
+withDefaults(defineProps<{ accounts?: AccountForecast[]; modelValue?: Id | null }>(), {
+  accounts: () => [],
+  modelValue: null,
 });
 
-defineEmits(['update:modelValue']);
+defineEmits<{ 'update:modelValue': [id: Id] }>();
 </script>
 
 <style scoped>

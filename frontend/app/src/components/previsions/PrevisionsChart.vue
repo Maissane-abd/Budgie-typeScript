@@ -30,26 +30,18 @@
   </div>
 </template>
 
-<script setup>
-defineProps({
-  monthlyDetails: {
-    type: Array,
-    required: true,
-  },
-  maxValue: {
-    type: Number,
-    required: true,
-  },
-});
+<script setup lang="ts">
+import type { MonthlyDetail } from '@/types/models';
+defineProps<{ monthlyDetails: MonthlyDetail[]; maxValue: number }>();
 
-function formatCurrency(amount) {
+function formatCurrency(amount: number | string | null | undefined) {
   return new Intl.NumberFormat('fr-FR', {
     style: 'currency',
     currency: 'EUR',
-  }).format(amount);
+  }).format(Number(amount ?? 0));
 }
 
-function formatMonth(date) {
+function formatMonth(date: string) {
   const d = new Date(date);
   return d.toLocaleDateString('fr-FR', { month: 'short' });
 }

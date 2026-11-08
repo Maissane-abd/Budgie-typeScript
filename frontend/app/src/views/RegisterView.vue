@@ -66,12 +66,13 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import type { ApiError } from '@/types/models';
 import '../assets/main.css';
 import { ref } from 'vue';
 import axios from 'axios';
 import { RouterLink, useRouter } from 'vue-router';
-import { API_BASE } from '@/config/api.js';
+import { API_BASE } from '@/config/api';
 
 const router = useRouter();
 
@@ -98,7 +99,7 @@ async function handleRegister() {
 
   loading.value = true;
   try {
-    const res = await axios.post(`${API_BASE}/auth/register`, {
+    await axios.post(`${API_BASE}/auth/register`, {
       first_name: firstName.value,
       last_name: lastName.value,
       email: email.value,
@@ -112,7 +113,9 @@ async function handleRegister() {
     }, 800);
   } catch (err) {
     console.error(err);
-    error.value = err.response?.data?.error || "Erreur lors de l'inscription. Réessaie plus tard.";
+    error.value =
+      (axios.isAxiosError<ApiError>(err) ? err.response?.data?.error : undefined) ||
+      "Erreur lors de l'inscription. Réessaie plus tard.";
   } finally {
     loading.value = false;
   }

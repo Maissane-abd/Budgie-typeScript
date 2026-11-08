@@ -65,22 +65,20 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import type { Account, TransactionForm, Transaction, Id } from '@/types/models';
 import { reactive, onMounted, ref, watch } from 'vue';
 import axios from 'axios';
 import { useToast } from 'vue-toastification';
 
-const props = defineProps({
-  show: Boolean,
-  expenseToEdit: Object,
-});
+const props = defineProps<{ show: boolean; expenseToEdit: Transaction | null }>();
 
-const emit = defineEmits(['close', 'updated']);
+const emit = defineEmits<{ close: []; updated: [payload: { id: Id; data: TransactionForm }] }>();
 
 const toast = useToast();
-const accounts = ref([]);
+const accounts = ref<Account[]>([]);
 
-const form = reactive({
+const form = reactive<TransactionForm>({
   transaction_name: '',
   amount: null,
   duration_type: 'once',
@@ -121,7 +119,7 @@ const fetchAccounts = async () => {
   const token = localStorage.getItem('budgie_token');
   if (!token) return;
   try {
-    const res = await axios.get('/api/accounts', {
+    const res = await axios.get<{ data: Account[] }>('/api/accounts', {
       headers: { Authorization: `Bearer ${token}` },
     });
     accounts.value = res.data.data;
@@ -134,6 +132,7 @@ const fetchAccounts = async () => {
 onMounted(fetchAccounts);
 
 const handleUpdate = () => {
+  if (!props.expenseToEdit) return;
   if (!form.transaction_name || !form.amount || !form.account_id) {
     toast.error('Veuillez remplir les champs obligatoires');
     return;

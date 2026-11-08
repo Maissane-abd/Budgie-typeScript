@@ -27,7 +27,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 defineProps({
   startingBalance: {
     type: Number,
@@ -43,11 +43,11 @@ defineProps({
   },
 });
 
-function formatCurrency(amount) {
+function formatCurrency(amount: number | string | null | undefined) {
   return new Intl.NumberFormat('fr-FR', {
     style: 'currency',
     currency: 'EUR',
-  }).format(amount);
+  }).format(Number(amount ?? 0));
 }
 </script>
 

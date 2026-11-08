@@ -65,18 +65,19 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import type { Account, TransactionForm } from '@/types/models';
 import { reactive, onMounted, ref, watch } from 'vue';
 import axios from 'axios';
 import { useToast } from 'vue-toastification';
 
-const props = defineProps({ show: Boolean });
-const emit = defineEmits(['close', 'save']);
+defineProps<{ show: boolean }>();
+const emit = defineEmits<{ close: []; save: [form: TransactionForm] }>();
 
 const toast = useToast();
 
-const accounts = ref([]);
-const form = reactive({
+const accounts = ref<Account[]>([]);
+const form = reactive<TransactionForm>({
   transaction_name: '',
   amount: null,
   duration_type: 'once',
@@ -100,7 +101,7 @@ const fetchAccounts = async () => {
   const token = localStorage.getItem('budgie_token');
   if (!token) return;
   try {
-    const res = await axios.get('/api/accounts', {
+    const res = await axios.get<{ data: Account[] }>('/api/accounts', {
       headers: { Authorization: `Bearer ${token}` },
     });
     accounts.value = res.data.data;

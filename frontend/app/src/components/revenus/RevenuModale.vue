@@ -66,22 +66,20 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import type { Account, TransactionForm, Transaction } from '@/types/models';
 import { reactive, watch, ref, onMounted } from 'vue';
 import axios from 'axios';
 
-const props = defineProps({
-  show: Boolean,
-  revenu: Object, // L'objet revenu passé par le parent
-});
+const props = defineProps<{ show: boolean; revenu: Transaction | null }>();
 
-const emit = defineEmits(['close', 'updated', 'deleted']);
+const emit = defineEmits<{ close: []; updated: []; deleted: [] }>();
 
-const accounts = ref([]);
+const accounts = ref<Account[]>([]);
 const API_URL = '/api';
 
 // Formulaire réactif
-const form = reactive({
+const form = reactive<TransactionForm>({
   id: null,
   transaction_name: '',
   amount: 0,
@@ -96,7 +94,7 @@ const fetchAccounts = async () => {
   const token = localStorage.getItem('budgie_token');
   if (!token) return;
   try {
-    const res = await axios.get(`${API_URL}/accounts`, {
+    const res = await axios.get<Account[] | { data: Account[] }>(`${API_URL}/accounts`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     // Gestion de la structure de réponse { data: [...] } ou [...]

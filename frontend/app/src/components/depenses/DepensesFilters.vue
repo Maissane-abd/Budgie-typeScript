@@ -4,7 +4,9 @@
       <div class="input-wrapper">
         <select
           :value="account"
-          @change="$emit('update:account', $event.target.value)"
+          @change="
+            $emit('update:account', ($event.target as HTMLInputElement | HTMLSelectElement).value)
+          "
           class="custom-input"
         >
           <option value="">Tous les comptes</option>
@@ -29,7 +31,9 @@
       <div class="input-wrapper">
         <select
           :value="sort"
-          @change="$emit('update:sort', $event.target.value)"
+          @change="
+            $emit('update:sort', ($event.target as HTMLInputElement | HTMLSelectElement).value)
+          "
           class="custom-input"
         >
           <option value="date_desc">Plus récent</option>
@@ -70,7 +74,9 @@
       <input
         type="text"
         :value="search"
-        @input="$emit('update:search', $event.target.value)"
+        @input="
+          $emit('update:search', ($event.target as HTMLInputElement | HTMLSelectElement).value)
+        "
         placeholder="Rechercher..."
         class="custom-input search-input"
       />
@@ -78,15 +84,15 @@
   </div>
 </template>
 
-<script setup>
-defineProps({
-  search: String,
-  sort: String,
-  account: String,
-  accounts: Array,
-});
+<script setup lang="ts">
+import type { Account } from '@/types/models';
+defineProps<{ search: string; sort: string; account: string; accounts: Account[] }>();
 
-defineEmits(['update:search', 'update:sort', 'update:account']);
+defineEmits<{
+  'update:search': [value: string];
+  'update:sort': [value: string];
+  'update:account': [value: string];
+}>();
 </script>
 
 <style scoped>

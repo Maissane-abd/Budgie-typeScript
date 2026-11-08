@@ -4,7 +4,9 @@
       <div class="input-wrapper">
         <select
           :value="type"
-          @change="$emit('update:type', $event.target.value)"
+          @change="
+            $emit('update:type', ($event.target as HTMLInputElement | HTMLSelectElement).value)
+          "
           class="custom-input"
         >
           <option value="">Tous les types</option>
@@ -27,7 +29,9 @@
       <div class="input-wrapper">
         <select
           :value="sort"
-          @change="$emit('update:sort', $event.target.value)"
+          @change="
+            $emit('update:sort', ($event.target as HTMLInputElement | HTMLSelectElement).value)
+          "
           class="custom-input"
         >
           <option value="">Tri par défaut</option>
@@ -67,7 +71,9 @@
       <input
         type="text"
         :value="search"
-        @input="$emit('update:search', $event.target.value)"
+        @input="
+          $emit('update:search', ($event.target as HTMLInputElement | HTMLSelectElement).value)
+        "
         placeholder="Rechercher un compte..."
         class="custom-input search-input"
       />
@@ -75,15 +81,14 @@
   </div>
 </template>
 
-<script setup>
-defineProps({
-  types: Array,
-  type: String,
-  sort: String,
-  search: String,
-});
+<script setup lang="ts">
+defineProps<{ types: string[]; type: string; sort: string; search: string }>();
 
-defineEmits(['update:type', 'update:sort', 'update:search']);
+defineEmits<{
+  'update:type': [value: string];
+  'update:sort': [value: string];
+  'update:search': [value: string];
+}>();
 </script>
 
 <style scoped>

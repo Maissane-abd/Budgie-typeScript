@@ -30,7 +30,9 @@
           <div class="limit-info">
             <span class="label">Comptes</span>
             <span class="value">
-              {{ user.max_accounts >= 999 ? 'Illimités' : (user.max_accounts || 1) + ' max' }}
+              {{
+                (user.max_accounts ?? 0) >= 999 ? 'Illimités' : (user.max_accounts || 1) + ' max'
+              }}
             </span>
           </div>
         </div>
@@ -73,24 +75,16 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import type { User } from '@/stores/userStore';
 import { computed } from 'vue';
-import axios from 'axios';
 
 // On recup l'objet user complet depuis profile.vue
-const props = defineProps({
-  user: {
-    type: Object,
-    required: true,
-    default: () => ({}),
-  },
-});
-
-const API_URL = '/api';
+const props = defineProps<{ user: Partial<User> }>();
 
 const isPremium = computed(() => props.user?.plan_name === 'Premium');
 
-const formatPrice = (p) => {
+const formatPrice = (p: string | number | null | undefined) => {
   return !p || p === 0 ? 'Gratuit' : `${p} €`;
 };
 

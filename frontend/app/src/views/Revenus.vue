@@ -48,7 +48,9 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+defineOptions({ name: 'RevenusView' });
+import type { Transaction, TransactionForm, RevenueFilters, ApiError } from '@/types/models';
 import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
@@ -58,14 +60,14 @@ import RevenusTable from '../components/revenus/RevenusTable.vue';
 import RevenusFilters from '../components/revenus/RevenusFilters.vue';
 import RevenuCreateModal from '../components/revenus/RevenuCreateModal.vue';
 import RevenuModal from '../components/revenus/RevenuModale.vue';
-import { API_BASE } from '../config/api.js';
+import { API_BASE } from '@/config/api';
 
 const toast = useToast();
 
-const revenus = ref([]);
+const revenus = ref<Transaction[]>([]);
 const showCreateModal = ref(false);
 const showModal = ref(false);
-const selected = ref({});
+const selected = ref<Transaction | null>(null);
 const router = useRouter();
 
 const filters = ref({
@@ -94,7 +96,7 @@ const fetchRevenus = async () => {
   }
 };
 
-const handleCreate = async (newRevenu) => {
+const handleCreate = async (newRevenu: TransactionForm) => {
   const token = localStorage.getItem('budgie_token');
   try {
     await axios.post(`${API_BASE}/revenus`, newRevenu, {
@@ -104,19 +106,21 @@ const handleCreate = async (newRevenu) => {
     fetchRevenus();
     toast.success('Revenu ajouté avec succès !');
   } catch (error) {
-    const errorMessage = error.response?.data?.message || 'Erreur lors de la création du revenu';
+    const errorMessage =
+      (axios.isAxiosError<ApiError>(error) ? error.response?.data?.message : undefined) ||
+      'Erreur lors de la création du revenu';
     toast.error(errorMessage);
   }
 };
 
-const updateFilters = (newFilters) => {
+const updateFilters = (newFilters: RevenueFilters) => {
   filters.value = newFilters;
 };
 
 const filteredRevenus = computed(() => {
   return revenus.value.filter((r) => {
     // Compte
-    if (filters.value.account && r.account_id !== filters.value.account) return false;
+    if (filters.value.account && String(r.account_id) !== filters.value.account) return false;
     // Type
     if (filters.value.type && r.duration_type !== filters.value.type) return false;
     // Recherche
@@ -142,7 +146,7 @@ const filteredRevenus = computed(() => {
   });
 });
 
-const openEditModal = (rev) => {
+const openEditModal = (rev: Transaction) => {
   selected.value = rev;
   showModal.value = true;
 };

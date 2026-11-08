@@ -148,20 +148,26 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+defineOptions({ name: 'ProfilesView' });
+import type { User } from '@/stores/userStore';
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 import AbonnementHeader from '../components/profile/AbonnementHeader.vue';
-import { API_BASE } from '@/config/api.js';
+import { API_BASE } from '@/config/api';
 
 const router = useRouter();
 const userStore = useUserStore();
 
 // const API_BASE = "https://budgie-api-s1yz.onrender.com/api";
 
-const user = ref({});
+const user = ref<Partial<User> & Pick<User, 'first_name' | 'last_name' | 'email'>>({
+  first_name: '',
+  last_name: '',
+  email: '',
+});
 const form = ref({ first_name: '', last_name: '', email: '' });
 const isEditing = ref(false);
 
@@ -175,7 +181,7 @@ const fetchProfile = async () => {
   if (!token) return router.push('/login');
 
   try {
-    const res = await axios.get(`${API_BASE}/auth/me`, {
+    const res = await axios.get<User>(`${API_BASE}/auth/me`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     user.value = res.data;
@@ -189,13 +195,13 @@ const fetchProfile = async () => {
 const saveProfile = async () => {
   const token = localStorage.getItem('budgie_token');
   try {
-    const res = await axios.put(`${API_BASE}/auth/me`, form.value, {
+    const res = await axios.put<User>(`${API_BASE}/auth/me`, form.value, {
       headers: { Authorization: `Bearer ${token}` },
     });
     user.value = { ...user.value, ...res.data };
     userStore.updateUser(res.data);
     isEditing.value = false;
-  } catch (err) {
+  } catch {
     alert('Erreur mise à jour');
   }
 };
@@ -212,7 +218,7 @@ const handleDeleteAccount = async () => {
       await axios.delete(`${API_BASE}/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
       userStore.clearUser();
       router.push('/register');
-    } catch (e) {
+    } catch {
       alert('Erreur');
     }
   }

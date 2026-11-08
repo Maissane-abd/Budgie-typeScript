@@ -1,7 +1,22 @@
 import { defineStore } from 'pinia';
 
+export interface User {
+  id: string | number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  plan_name?: string;
+  price?: string | number | null;
+  max_accounts?: number;
+  sub_status?: string;
+}
+
+interface UserState {
+  user: User | null;
+}
+
 export const useUserStore = defineStore('user', {
-  state: () => ({
+  state: (): UserState => ({
     user: null,
   }),
 
@@ -18,11 +33,11 @@ export const useUserStore = defineStore('user', {
   },
 
   actions: {
-    setUser(userData) {
+    setUser(userData: User) {
       this.user = userData;
     },
 
-    updateUser(partialData) {
+    updateUser(partialData: Partial<User>) {
       if (this.user) {
         this.user = { ...this.user, ...partialData };
       }

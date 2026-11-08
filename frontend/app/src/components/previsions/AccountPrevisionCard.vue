@@ -12,30 +12,22 @@
 
     <PrevisionsChart :monthly-details="account.monthly_details" :max-value="maxMonthlyValue" />
 
-    <PrevisionsTable :monthly-details="account.monthly_details" />
+    <PrevisionsTable :details="account.monthly_details" />
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import type { AccountForecast } from '@/types/models';
 import PrevisionsChart from './PrevisionsChart.vue';
 import PrevisionsTable from './PrevisionsTable.vue';
 
-defineProps({
-  account: {
-    type: Object,
-    required: true,
-  },
-  maxMonthlyValue: {
-    type: Number,
-    required: true,
-  },
-});
+defineProps<{ account: AccountForecast; maxMonthlyValue: number }>();
 
-function formatCurrency(amount) {
+function formatCurrency(amount: number | string | null | undefined) {
   return new Intl.NumberFormat('fr-FR', {
     style: 'currency',
     currency: 'EUR',
-  }).format(amount);
+  }).format(Number(amount ?? 0));
 }
 </script>
 

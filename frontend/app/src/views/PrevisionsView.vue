@@ -109,7 +109,8 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import type { Forecast, Id, ApiError } from '@/types/models';
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
@@ -118,14 +119,14 @@ import PrevisionsHeader from '@/components/previsions/PrevisionsHeader.vue';
 import PrevisionsControls from '@/components/previsions/PrevisionsControls.vue';
 import PrevisionsTable from '@/components/previsions/PrevisionsTable.vue';
 const router = useRouter();
-import { API_BASE } from '@/config/api.js';
+import { API_BASE } from '@/config/api';
 // const API_BASE = 'https://budgie-api-s1yz.onrender.com/api';
 
-const previsions = ref(null);
+const previsions = ref<Forecast | null>(null);
 const loading = ref(false);
 const error = ref('');
 const targetDate = ref('');
-const activeAccountId = ref(null); // ID du compte actuellement affiché
+const activeAccountId = ref<Id | null>(null); // ID du compte actuellement affiché
 
 // Initialiser la date cible à 1 an dans le futur
 const oneYearFromNow = new Date();
@@ -173,7 +174,7 @@ async function fetchPrevisions() {
       return;
     }
 
-    const res = await axios.get(`${API_BASE}/previsions`, {
+    const res = await axios.get<Forecast>(`${API_BASE}/previsions`, {
       params: {
         target_date: targetDate.value,
       },
@@ -195,12 +196,12 @@ async function fetchPrevisions() {
     }
   } catch (err) {
     console.error('Erreur lors du chargement des prévisions:', err);
-    if (err.response?.status === 401) {
+    if (axios.isAxiosError<ApiError>(err) && err.response?.status === 401) {
       localStorage.removeItem('budgie_token');
       router.push('/login');
     } else {
       error.value =
-        err.response?.data?.error ||
+        (axios.isAxiosError<ApiError>(err) ? err.response?.data?.error : undefined) ||
         'Erreur lors du chargement des prévisions. Réessaie plus tard.';
     }
   } finally {
@@ -210,15 +211,15 @@ async function fetchPrevisions() {
 
 // --- FONCTIONS UTILITAIRES (Nécessaires pour le Graphique et le Résumé) ---
 
-function formatCurrency(amount) {
+function formatCurrency(amount: number | string | null | undefined) {
   if (amount === undefined || amount === null) return '0,00 €';
   return new Intl.NumberFormat('fr-FR', {
     style: 'currency',
     currency: 'EUR',
-  }).format(amount);
+  }).format(Number(amount ?? 0));
 }
 
-function formatMonth(date) {
+function formatMonth(date: string) {
   if (!date) return '';
   const d = new Date(date);
   return d.toLocaleDateString('fr-FR', { month: 'short' });
