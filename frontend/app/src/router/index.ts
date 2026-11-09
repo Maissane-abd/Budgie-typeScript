@@ -63,11 +63,11 @@ const routes: RouteRecordRaw[] = [
     name: 'register',
     component: RegisterView,
   },
-  {
-    path: '/reset-password',
-    name: 'reset-password',
-    component: ResetPasswordView,
-  },
+  // {
+  //   path: '/reset-password',
+  //   name: 'reset-password',
+  //   component: ResetPasswordView,
+  // },
 ];
 
 const router = createRouter({

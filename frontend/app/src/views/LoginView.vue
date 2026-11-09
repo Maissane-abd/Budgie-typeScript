@@ -36,7 +36,7 @@
     </form>
 
     <div class="auth-footer">
-      <RouterLink class="auth-link" to="/reset-password"> Mot de passe oublié ? </RouterLink>
+      <!-- <RouterLink class="auth-link" to="/reset-password"> Mot de passe oublié ? </RouterLink> -->
       <br />
       <span>Pas encore de compte ? </span>
       <RouterLink class="auth-link" to="/register"> Créer un compte </RouterLink>
