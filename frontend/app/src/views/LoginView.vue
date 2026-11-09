@@ -4,7 +4,7 @@
     <h1 class="auth-title">Connexion</h1>
     <p class="auth-subtitle">Ravi de te revoir</p>
 
-    <form class="auth-form" @submit.prevent="handleLogineLocal">
+    <form class="auth-form" @submit.prevent="handleLogin">
       <div>
         <div class="auth-label">Email</div>
         <input
@@ -13,6 +13,7 @@
           class="auth-input"
           placeholder="exemple@mail.com"
           required
+          @invalid="handleEmailInvalid"
         />
       </div>
 
@@ -24,10 +25,11 @@
           class="auth-input"
           placeholder="••••••••"
           required
+          @invalid="error = 'Entrez votre mot de passe.'"
         />
       </div>
 
-      <p v-if="error" class="auth-error">{{ error }}</p>
+      <p v-if="error" class="auth-error" role="alert">{{ error }}</p>
       <p v-if="success" class="auth-success">{{ success }}</p>
 
       <button class="auth-button" type="submit" :disabled="loading">
@@ -49,7 +51,8 @@ import type { User } from '@/stores/userStore';
 import type { ApiError } from '@/types/models';
 import { ref } from 'vue';
 import axios from 'axios';
-import { RouterLink, useRoute } from 'vue-router';
+import { RouterLink, useRoute, useRouter } from 'vue-router';
+import { getLoginDestination } from '@/router/authGuard';
 import { useUserStore } from '@/stores/userStore';
 import { API_BASE } from '@/config/api';
 
@@ -59,24 +62,19 @@ const loading = ref(false);
 const error = ref('');
 const success = ref('');
 const route = useRoute();
+const router = useRouter();
 const userStore = useUserStore();
 
 // const API_BASE = "https://budgie-api-s1yz.onrender.com/api";
 // const API_BASE = "http://localhost:5001/api"
 
-function handleLogineLocal() {
-  // Simulate a successful login for local testing
-  const token = 'dummy_token';
-  const user: User = { id: 0, email: email.value, first_name: 'Test', last_name: 'User' };
-  userStore.setUser(user);
-  localStorage.setItem('budgie_token', token);
-  success.value = 'Connexion réussie ✅';
-  const redirectTo = typeof route.query.redirect === 'string' ? route.query.redirect : '/revenus';
-  window.location.href = redirectTo;
+function handleEmailInvalid(event: Event) {
+  const input = event.currentTarget as HTMLInputElement;
+  error.value = input.validity.valueMissing
+    ? 'Entrez votre adresse e-mail.'
+    : 'Entrez une adresse e-mail valide.';
 }
 
-// Connexion API conservée à côté du mode local utilisé par le formulaire.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function handleLogin() {
   error.value = '';
   success.value = '';
@@ -88,23 +86,35 @@ async function handleLogin() {
       password: password.value,
     });
 
-    const token = res.data?.token;
-    const user = res.data?.user;
-    if (token) {
-      userStore.setUser(res.data.user);
-      localStorage.setItem('budgie_token', token);
-      userStore.setUser(user);
-      success.value = 'Connexion réussie ✅';
-      // Rediriger vers la page d'origine ou la page d'accueil
-      const redirectTo =
-        typeof route.query.redirect === 'string' ? route.query.redirect : '/revenus';
-      window.location.href = redirectTo;
+    const { token, user } = res.data;
+    if (!token || !user) {
+      error.value = 'La réponse du serveur est invalide. Réessaie plus tard.';
+      return;
     }
+
+    userStore.setUser(user);
+    localStorage.setItem('budgie_token', token);
+    success.value = 'Connexion réussie ✅';
+    await router.replace(getLoginDestination(router, route.query.redirect));
   } catch (err) {
     console.error(err);
-    error.value =
-      (axios.isAxiosError<ApiError>(err) ? err.response?.data?.error : undefined) ||
-      'Erreur lors de la connexion. Vérifie tes identifiants.';
+    const responseData = axios.isAxiosError<ApiError>(err) ? err.response?.data : undefined;
+    const responseError = responseData?.error || responseData?.message;
+    if (axios.isAxiosError(err) && err.response?.status === 401) {
+      error.value = 'Adresse e-mail ou mot de passe erroné.';
+    } else if (
+      responseError &&
+      /email|mail/i.test(responseError) &&
+      /invalid|valide/i.test(responseError)
+    ) {
+      error.value = 'Entrez une adresse e-mail valide.';
+    } else if (axios.isAxiosError(err) && !err.response) {
+      error.value = 'Impossible de joindre le serveur. Vérifiez votre connexion et réessayez.';
+    } else if (axios.isAxiosError(err) && (err.response?.status ?? 0) >= 500) {
+      error.value = 'La connexion est momentanément indisponible. Réessayez plus tard.';
+    } else {
+      error.value = responseError || 'Erreur lors de la connexion. Réessayez plus tard.';
+    }
   } finally {
     loading.value = false;
   }

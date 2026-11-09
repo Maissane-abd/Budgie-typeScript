@@ -15,13 +15,10 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'; // Ajout de 'ref'
-import axios from 'axios';
-import { useUserStore } from '@/stores/userStore';
+import { ref } from 'vue';
 import AppHeader from './AppHeader.vue';
 import AppSidebar from './AppSidebar.vue';
 
-const userStore = useUserStore();
 const isSidebarOpen = ref(false);
 
 // Actions pour le menu
@@ -33,23 +30,6 @@ const closeSidebar = () => {
   isSidebarOpen.value = false;
 };
 
-onMounted(async () => {
-  const token = localStorage.getItem('budgie_token');
-
-  // Logique de persistance de l'utilisateur (inchangée)
-  if (token && !userStore.user) {
-    try {
-      const res = await axios.get('/api/auth/me', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      userStore.setUser(res.data);
-    } catch (error) {
-      console.error('Session expirée ou invalide', error);
-      localStorage.removeItem('budgie_token');
-      userStore.clearUser();
-    }
-  }
-});
 </script>
 
 <style scoped>
