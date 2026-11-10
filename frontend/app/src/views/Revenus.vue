@@ -25,7 +25,13 @@
         </button>
       </div>
 
-      <RevenusFilters @change="updateFilters" />
+      <RevenusFilters
+        v-model:account="filters.account"
+        v-model:period="filters.period"
+        v-model:type="filters.type"
+        v-model:search="filters.search"
+        :accounts="accounts"
+      />
     </div>
 
     <div class="card table-card">
@@ -50,7 +56,7 @@
 
 <script setup lang="ts">
 defineOptions({ name: 'RevenusView' });
-import type { Transaction, TransactionForm, RevenueFilters, ApiError } from '@/types/models';
+import type { Account, Transaction, TransactionForm, RevenueFilters, ApiError } from '@/types/models';
 import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
@@ -65,12 +71,13 @@ import { API_BASE } from '@/config/api';
 const toast = useToast();
 
 const revenus = ref<Transaction[]>([]);
+const accounts = ref<Account[]>([]);
 const showCreateModal = ref(false);
 const showModal = ref(false);
 const selected = ref<Transaction | null>(null);
 const router = useRouter();
 
-const filters = ref({
+const filters = ref<RevenueFilters>({
   account: '',
   period: '',
   type: '',
@@ -113,10 +120,6 @@ const handleCreate = async (newRevenu: TransactionForm) => {
   }
 };
 
-const updateFilters = (newFilters: RevenueFilters) => {
-  filters.value = newFilters;
-};
-
 const filteredRevenus = computed(() => {
   return revenus.value.filter((r) => {
     // Compte
@@ -151,7 +154,24 @@ const openEditModal = (rev: Transaction) => {
   showModal.value = true;
 };
 
-onMounted(fetchRevenus);
+const fetchAccounts = async () => {
+  const token = localStorage.getItem('budgie_token');
+  if (!token) return;
+
+  try {
+    const res = await axios.get(`${API_BASE}/accounts`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    accounts.value = Array.isArray(res.data) ? res.data : res.data.data || [];
+  } catch (error) {
+    console.error('Erreur API comptes :', error);
+  }
+};
+
+onMounted(() => {
+  fetchRevenus();
+  fetchAccounts();
+});
 </script>
 
 <style scoped>
