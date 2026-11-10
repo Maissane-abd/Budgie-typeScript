@@ -6,7 +6,6 @@
       <PrevisionsControls
         v-model="targetDate"
         :loading="loading"
-        @change="fetchPrevisions"
         @refresh="fetchPrevisions"
       />
 
