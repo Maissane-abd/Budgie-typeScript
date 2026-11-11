@@ -1,9 +1,9 @@
-// Keep the frontend and API policies aligned (separate Docker build contexts).
 export const PASSWORD_MIN_LENGTH = 12;
 export const PASSWORD_MAX_BYTES = 72;
 export const PASSWORD_POLICY_MESSAGE =
   'Utilisez au moins 12 caract\u00e8res, une majuscule, un chiffre et un caract\u00e8re sp\u00e9cial .';
 
+// Checks if a password meets the defined policy
 export function isValidPassword(value: unknown): value is string {
   return (
     typeof value === 'string' &&

@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import db from '../models/db.js';
 
-// Créer une exception pour un revenu (transaction income)
+// Create a new exception for a transaction
 export const create = async (req: Request, res: Response): Promise<void> => {
   const {
     transaction_id,
@@ -50,7 +50,7 @@ export const create = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-// Récupérer toutes les exceptions d’un revenu (transaction income)
+// Pull all exceptions for a specific transaction
 export const getByTransaction = async (req: Request, res: Response): Promise<void> => {
   const { transactionId } = req.params;
 
@@ -77,7 +77,7 @@ export const getByTransaction = async (req: Request, res: Response): Promise<voi
   }
 };
 
-// Mettre à jour une exception
+// Update an exception
 export const update = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   const { exception_name, description, started_at, ends_at, override_amount, override_n_months } =
@@ -116,7 +116,7 @@ export const update = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-// Supprimer une exception
+// Delete an exception
 export const deleteException = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
 

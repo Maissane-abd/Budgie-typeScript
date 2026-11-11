@@ -1,9 +1,8 @@
 import dotenv from 'dotenv';
 import { Pool } from 'pg';
-
-// Charge les variables d'environnement (.env) pour le local
 dotenv.config();
 
+// Define a type for the database connection configuration
 type ConnectionConfig = {
   connectionString: string | undefined;
   ssl:
@@ -20,44 +19,38 @@ type ConnectionConfig = {
   idleTimeoutMillis: number;
 };
 
-// const { Pool } = pkg;
-
-// Détection : Si DATABASE_URL existe, on est sur Render (Production)
+// Check if the application is running in production mode (e.g., on Render)
 const isProduction: boolean = !!process.env.DATABASE_URL;
 
+// Create a new PostgreSQL connection pool with the specified configuration
 const connectionConfig: ConnectionConfig = {
-  // Render fournit une URL complète (connectionString).
-  // Si elle n'existe pas (local), cette propriété sera undefined et ignorée.
   connectionString: process.env.DATABASE_URL,
 
-  // SSL est OBLIGATOIRE pour Render
   ssl: isProduction ? { rejectUnauthorized: false } : false,
 
-  // Configuration de repli pour le local (Docker)
-  // Ces valeurs seront utilisées si connectionString est vide
   user: process.env.PGUSER,
   host: process.env.PGHOST,
   database: process.env.PGDATABASE,
   password: process.env.PGPASSWORD,
   port: Number(process.env.PGPORT),
 
-  // Options du pool
   max: 10,
   idleTimeoutMillis: 30000,
 };
 
 const db: Pool = new Pool(connectionConfig);
 
+// Log a message when the database connection is established
 db.on('connect', () => {
   console.log(
     isProduction
-      ? '✅ Connecté à PostgreSQL (Mode Production/Render)'
-      : '💻 Connecté à PostgreSQL (Mode Local)',
+      ? 'Connecté à PostgreSQL (Mode Production/Render)'
+      : 'Connecté à PostgreSQL (Mode Local)',
   );
 });
 
 db.on('error', (err) => {
-  console.error('❌ Erreur PostgreSQL', err);
+  console.error('Erreur PostgreSQL', err);
 });
 
 export default db;

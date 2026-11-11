@@ -3,6 +3,7 @@ import db from '../models/db.js';
 import { v4 as uuidv4 } from 'uuid';
 import { Request, Response } from 'express';
 
+// GET /revenus, returns all revenus for the authenticated user
 export const getAll = async (req: Request, res: Response): Promise<void> => {
   if (!req.user) {
     res.status(401).json({ message: 'Utilisateur non authentifié' });
@@ -28,6 +29,7 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
   res.json(rows);
 };
 
+// GET /revenus/:id, returns a specific revenu by ID for the authenticated user
 export const getById = async (req: Request, res: Response<{ message: string }>): Promise<void> => {
   if (!req.user) {
     res.status(401).json({ message: 'Utilisateur non authentifié' });
@@ -54,6 +56,7 @@ export const getById = async (req: Request, res: Response<{ message: string }>):
   res.json(rows[0]);
 };
 
+// POST /revenus, creates a new revenu for the authenticated user
 export const create = async (req: Request, res: Response): Promise<void> => {
   let {
     account_id,
@@ -157,6 +160,7 @@ export const create = async (req: Request, res: Response): Promise<void> => {
   res.status(201).json(transaction);
 };
 
+// PUT /revenus/:id, updates an existing revenu for the authenticated user
 export const update = async (req: Request, res: Response<{ message: string }>): Promise<void> => {
   if (!req.user) {
     res.status(401).json({ message: 'Utilisateur non authentifié' });
@@ -266,6 +270,7 @@ export const update = async (req: Request, res: Response<{ message: string }>): 
   res.json(transactionRows[0]);
 };
 
+// DELETE /revenus/:id, deletes an existing revenu for the authenticated user
 export const remove = async (req: Request, res: Response<{ message: string }>): Promise<void> => {
   if (!req.user) {
     res.status(401).json({ message: 'Utilisateur non authentifié' });

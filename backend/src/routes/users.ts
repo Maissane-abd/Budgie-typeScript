@@ -1,4 +1,3 @@
-//backend/src/routes/users.ts
 import express from 'express';
 import type { Router } from 'express';
 import { requireAuth } from '../middlewares/index.js';

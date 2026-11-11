@@ -9,8 +9,6 @@ import accountsRoutes from "./routes/accounts.js";
 import expensesRoutes from "./routes/expenses.js";
 import previsionsRoutes from "./routes/previsions.js";
 
-
-
 const app: Express = express();
 
 // Middlewares
@@ -23,7 +21,6 @@ app.use("/api/auth", authRoutes);
 app.use("/api/accounts", accountsRoutes);
 app.use("/api/expenses", expensesRoutes);
 app.use("/api/previsions", previsionsRoutes);
-
 
 // Test route
 app.get('/', (req: Request, res: Response) => {

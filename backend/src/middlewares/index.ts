@@ -11,6 +11,7 @@ export const corsMiddleware = cors({
 
 export const jsonMiddleware = express.json();
 
+// Middleware to require authentication for certain routes
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
   const authHeader: string = req.headers.authorization || '';
   const token: string = authHeader.split(' ')[1];

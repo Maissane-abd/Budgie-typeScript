@@ -1,6 +1,3 @@
-// backend/src/routes/previsions.js
-// Routes et contrôleurs pour le calcul des prévisions financières
-
 import express from 'express';
 import db from '../models/db.js';
 import { requireAuth } from '../middlewares/index.js';
@@ -84,9 +81,7 @@ type ForecastQuery = {
   target_date?: string;
 };
 
-/**
- * Calcule les occurrences d'une transaction récurrente jusqu'à une date cible
- */
+// pull all occurrences of a recurring transaction up to a target date
 function getRecurringOccurrences(
   transaction: Transaction,
   recurrenceRule: RecurrenceRule,
@@ -125,9 +120,7 @@ function getRecurringOccurrences(
   return occurrences;
 }
 
-/**
- * Calcule le solde prévisionnel d'un compte à une date donnée
- */
+// Function to calculate the forecast for a given account up to a target date
 function calculateAccountForecast(
   account: Account,
   transactions: Transaction[],
@@ -233,10 +226,7 @@ function calculateAccountForecast(
   };
 }
 
-/**
- * GET /api/previsions?target_date=2025-12-31
- * Calcule les prévisions financières jusqu'à la date cible
- */
+// GET /previsions, returns the forecast for all accounts of the authenticated user up to a target date
 router.get('/', requireAuth, async (req: Request<{}, {}, {}, ForecastQuery>, res: Response) => {
   if (!req.user) {
     return res.status(401).json({ error: 'Utilisateur non authentifié' });

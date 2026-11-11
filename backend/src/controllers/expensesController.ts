@@ -2,7 +2,7 @@
 import db from '../models/db.js';
 import type { Request, Response } from 'express';
 
-// GET /expenses
+// GET /expenses, returns all expenses for the authenticated user
 export const getAll = async (req: Request, res: Response): Promise<void> => {
   if (!req.user || !req.user.id) {
     res.status(401).json({ message: 'Utilisateur non authentifié' });
@@ -28,7 +28,7 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
   res.json(rows);
 };
 
-// GET /expenses/:id
+// GET /expenses/:id, returns a specific expense by ID for the authenticated user
 export const getById = async (req: Request, res: Response): Promise<void> => {
   if (!req.user || !req.user.id) {
     res.status(401).json({ message: 'Utilisateur non authentifié' });
@@ -57,7 +57,7 @@ export const getById = async (req: Request, res: Response): Promise<void> => {
   res.json(rows[0]);
 };
 
-// POST /expenses
+// POST /expenses, creates a new expense for the authenticated user
 export const create = async (req: Request, res: Response): Promise<void> => {
   let {
     account_id,
@@ -154,7 +154,7 @@ export const create = async (req: Request, res: Response): Promise<void> => {
   res.status(201).json(transaction);
 };
 
-// PUT /expenses/:id
+// PUT /expenses/:id, updates an existing expense for the authenticated user
 export const update = async (req: Request, res: Response) => {
   if (!req.user || !req.user.id) {
     return res.status(401).json({ message: 'Utilisateur non authentifié' });
@@ -249,7 +249,7 @@ export const update = async (req: Request, res: Response) => {
   res.json(transactionRows[0]);
 };
 
-// DELETE /expenses/:id
+// DELETE /expenses/:id, deletes an existing expense for the authenticated user
 export const remove = async (req: Request, res: Response) => {
   if (!req.user || !req.user.id) {
     return res.status(401).json({ message: 'Utilisateur non authentifié' });

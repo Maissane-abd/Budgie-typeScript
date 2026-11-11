@@ -1,4 +1,3 @@
-// backend/src/routes/expenses.js
 import express from 'express';
 import { create, getAll, getById, update, remove } from '../controllers/expensesController.js';
 import { requireAuth } from '../middlewares/index.js';
