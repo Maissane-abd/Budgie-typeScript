@@ -1,11 +1,12 @@
-// routes, controllers et middleware pour l’authentification
-// backend/src/routes/auth.js
+// Routes et logique pour authentification
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import db from '../models/db.js';
+import { requireAuth } from '../middlewares/index.js';
+import { JWT_SECRET } from '../utils/jwt.js';
 import { isValidPassword, PASSWORD_POLICY_MESSAGE } from '../utils/passwordPolicy.js';
-import type { Request, Response, NextFunction } from 'express';
+import type { Request, Response } from 'express';
 import type { Router } from 'express';
 
 type User = {
@@ -17,35 +18,8 @@ type User = {
 
 const router: Router = express.Router();
 
-function getEnvVariable(name: string): string {
-  const value: string | undefined = process.env[name];
-
-  if (!value) {
-    throw new Error(`${name} n'est pas défini`);
-  }
-
-  return value;
-}
-
-const JWT_SECRET: string = getEnvVariable('JWT_SECRET');
-
 function createToken(user: User): string {
   return jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1d' });
-}
-
-export function requireAuth(req: Request, res: Response, next: NextFunction) {
-  const authHeader: string = req.headers.authorization || '';
-  const token: string = authHeader.split(' ')[1];
-
-  if (!token) return res.status(401).json({ error: 'Token manquant' });
-
-  try {
-    const decoded: string | jwt.JwtPayload = jwt.verify(token, JWT_SECRET);
-    req.user = { id: (decoded as any).id, email: (decoded as any).email };
-    next();
-  } catch (err) {
-    res.status(401).json({ error: 'Token invalide' });
-  }
 }
 
 const queryUser = `

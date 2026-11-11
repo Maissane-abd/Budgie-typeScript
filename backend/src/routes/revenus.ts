@@ -2,7 +2,7 @@
 import express from 'express';
 import type { Router } from 'express';
 import { create, getAll, getById, update, remove } from '../controllers/revenusController.js';
-import { requireAuth } from './auth.js';
+import { requireAuth } from '../middlewares/index.js';
 
 const router: Router = express.Router();
 

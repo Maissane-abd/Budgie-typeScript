@@ -3,7 +3,7 @@
 
 import express from 'express';
 import db from '../models/db.js';
-import { requireAuth } from './auth.js';
+import { requireAuth } from '../middlewares/index.js';
 import { Request, Response } from 'express';
 import type { Router } from 'express';
 
