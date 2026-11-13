@@ -42,7 +42,7 @@ const menuItems = [
 
 <template>
   <aside class="sidebar">
-    <div class="user-info">
+    <div class="user-info">  
       <div class="avatar-circle">
         {{ firstName.charAt(0).toUpperCase() }}
       </div>
