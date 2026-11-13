@@ -149,39 +149,22 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
       });
     }
 
-    // Vérifier si l'utilisateur a un abonnement Premium actif
-    const { rows: subscriptionRows } = await db.query(
-      `SELECT s.id
-       FROM subscriptions s
-       JOIN plans p ON p.id = s.plan_id
-       WHERE s.user_id = $1 
-       AND s.status = 'active'
-       AND p.plan_name = 'Premium'
-       AND (s.ends_at IS NULL OR s.ends_at > NOW())
-       LIMIT 1`,
+    // Limiter chaque utilisateur à 10 comptes financiers pour éviter les abus.
+    const maxAccounts = 10;
+    const { rows: accountCountRows } = await db.query(
+      'SELECT COUNT(*) as count FROM accounts WHERE user_id = $1',
       [userId],
     );
 
-    const hasPremiumSubscription: boolean = subscriptionRows.length > 0;
+    const accountCount: number = parseInt(accountCountRows[0].count, 10);
 
-    // Si l'utilisateur n'a pas d'abonnement Premium, vérifier la limite de 2 comptes
-    if (!hasPremiumSubscription) {
-      const { rows: accountCountRows } = await db.query(
-        'SELECT COUNT(*) as count FROM accounts WHERE user_id = $1',
-        [userId],
-      );
-
-      const accountCount: number = parseInt(accountCountRows[0].count, 10);
-
-      if (accountCount >= 2) {
-        return res.status(403).json({
-          error:
-            'Limite de comptes atteinte. Vous avez atteint la limite de 2 comptes du plan gratuit. Abonnez-vous au plan Premium pour créer des comptes illimités.',
-          limitReached: true,
-          currentCount: accountCount,
-          maxCount: 2,
-        });
-      }
+    if (accountCount >= maxAccounts) {
+      return res.status(403).json({
+        error: 'Limite de comptes atteinte. Vous pouvez créer au maximum 10 comptes financiers.',
+        limitReached: true,
+        currentCount: accountCount,
+        maxCount: maxAccounts,
+      });
     }
 
     const { rows } = await db.query(
