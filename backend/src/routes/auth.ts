@@ -1,13 +1,15 @@
-// routes, controllers et middleware pour l’authentification
-// backend/src/routes/auth.js
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import db from '../models/db.js';
+import { requireAuth } from '../middlewares/index.js';
+import { JWT_SECRET } from '../utils/jwt.js';
 import { isValidPassword, PASSWORD_POLICY_MESSAGE } from '../utils/passwordPolicy.js';
-import type { Request, Response, NextFunction } from 'express';
+import type { Request, Response } from 'express';
 import type { Router } from 'express';
 
+
+// Define the User type to represent the structure of a user in the database
 type User = {
   id: string;
   first_name: string;
@@ -17,37 +19,12 @@ type User = {
 
 const router: Router = express.Router();
 
-function getEnvVariable(name: string): string {
-  const value: string | undefined = process.env[name];
-
-  if (!value) {
-    throw new Error(`${name} n'est pas défini`);
-  }
-
-  return value;
-}
-
-const JWT_SECRET: string = getEnvVariable('JWT_SECRET');
-
+// Function to create a JWT token for a user
 function createToken(user: User): string {
   return jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1d' });
 }
 
-export function requireAuth(req: Request, res: Response, next: NextFunction) {
-  const authHeader: string = req.headers.authorization || '';
-  const token: string = authHeader.split(' ')[1];
-
-  if (!token) return res.status(401).json({ error: 'Token manquant' });
-
-  try {
-    const decoded: string | jwt.JwtPayload = jwt.verify(token, JWT_SECRET);
-    req.user = { id: (decoded as any).id, email: (decoded as any).email };
-    next();
-  } catch (err) {
-    res.status(401).json({ error: 'Token invalide' });
-  }
-}
-
+// SQL query to fetch user details along with their subscription and plan information
 const queryUser = `
   SELECT 
     u.id, u.first_name, u.last_name, u.email,
@@ -60,6 +37,7 @@ const queryUser = `
   WHERE u.id = $1
 `;
 
+// POST /register, registers a new user
 router.post('/register', async (req: Request<User>, res: Response) => {
   const { first_name, last_name, email, password } = req.body;
 
@@ -96,6 +74,7 @@ router.post('/register', async (req: Request<User>, res: Response) => {
   }
 });
 
+// POST /login, authenticates a user and returns a JWT token
 router.post('/login', async (req: Request<{ email: string; password: string }>, res: Response) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Champs requis' });
@@ -119,6 +98,7 @@ router.post('/login', async (req: Request<{ email: string; password: string }>, 
   }
 });
 
+// GET /me, returns the profile of the authenticated user
 router.get('/me', requireAuth, async (req: Request, res: Response) => {
   if (!req.user) return res.status(401).json({ error: 'Utilisateur non authentifié' });
   try {
@@ -130,6 +110,7 @@ router.get('/me', requireAuth, async (req: Request, res: Response) => {
   }
 });
 
+// PUT /me, updates the profile of the authenticated user
 router.put('/me', requireAuth, async (req: Request<Partial<User>>, res: Response) => {
   const { first_name, last_name, email } = req.body;
   if (!req.user) return res.status(401).json({ error: 'Utilisateur non authentifié' });
@@ -155,6 +136,7 @@ router.put('/me', requireAuth, async (req: Request<Partial<User>>, res: Response
   }
 });
 
+// DELETE /me, deletes the authenticated user's account
 router.delete('/me', requireAuth, async (req: Request, res: Response) => {
   if (!req.user) return res.status(401).json({ error: 'Utilisateur non authentifié' });
   try {

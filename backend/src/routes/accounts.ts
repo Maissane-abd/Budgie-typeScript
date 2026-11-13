@@ -1,11 +1,10 @@
-// backend/src/routes/accounts.js
-// Controllers et routes pour la gestion des comptes
 import express from 'express';
 import db from '../models/db.js';
-import { requireAuth } from './auth.js';
+import { requireAuth } from '../middlewares/index.js';
 import type { Request, Response } from 'express';
 import type { Router } from 'express';
 
+// Define the Account type to represent the structure of an account in the database
 type Account = {
   id: string;
   user_id: string;
@@ -22,10 +21,7 @@ type Account = {
 
 const router: Router = express.Router();
 
-/*
- * Calcule le solde prévisionnel après `months` mois
- * Intérêts composés mensuels, net d’impôts
- */
+// Function to compute the forecasted balance of an account after a specified number of months
 function computeForecast(account: Account, months: number = 12): number {
   const annualRate: number = Number(account.annual_interest_rate || 0) / 100;
   const taxRate: number = Number(account.tax_rate || 0) / 100;
@@ -42,9 +38,7 @@ function computeForecast(account: Account, months: number = 12): number {
   return balance;
 }
 
-/*
- * Ajoute des champs calculés à un compte
- */
+// Function to decorate an account with additional computed fields: current_balance and forecast_12m
 function decorateAccount(
   account: Account,
 ): Account & { current_balance: number; forecast_12m: number } {
@@ -64,10 +58,7 @@ function decorateAccount(
   };
 }
 
-/*
- * GET /api/accounts
- * Liste des comptes de l’utilisateur connecté
- */
+// GET /accounts, returns all accounts for the authenticated user
 router.get('/', requireAuth, async (req: Request, res: Response) => {
   if (!req.user) {
     return res.status(401).json({ error: 'Utilisateur non authentifié' });
@@ -113,19 +104,7 @@ router.get('/', requireAuth, async (req: Request, res: Response) => {
   }
 });
 
-/*
- * POST /api/accounts
- * Body JSON :
- * {
- *   account_name,
- *   description,
- *   created_on,
- *   currency,
- *   balance,
- *   annual_interest_rate,
- *   tax_rate
- * }
- */
+// POST /accounts, creates a new account for the authenticated user
 router.post('/', requireAuth, async (req: Request, res: Response) => {
   if (!req.user) {
     return res.status(401).json({ error: 'Utilisateur non authentifié' });
@@ -196,10 +175,7 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
   }
 });
 
-/*
- * PUT /api/accounts/:id
- * Mise à jour d’un compte
- */
+// PUT /accounts/:id, updates an existing account for the authenticated user
 router.put('/:id', requireAuth, async (req: Request, res: Response) => {
   if (!req.user) {
     return res.status(401).json({ error: 'Utilisateur non authentifié' });
@@ -255,10 +231,7 @@ router.put('/:id', requireAuth, async (req: Request, res: Response) => {
   }
 });
 
-/*
- * DELETE /api/accounts/:id
- * Suppression d’un compte
- */
+// DELETE /accounts/:id, deletes an existing account for the authenticated user
 router.delete('/:id', requireAuth, async (req: Request, res: Response) => {
   if (!req.user) {
     return res.status(401).json({ error: 'Utilisateur non authentifié' });

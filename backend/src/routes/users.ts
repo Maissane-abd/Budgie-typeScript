@@ -1,7 +1,6 @@
-//backend/src/routes/users.ts
 import express from 'express';
 import type { Router } from 'express';
-import { requireAuth } from './auth.js';
+import { requireAuth } from '../middlewares/index.js';
 import { getProfile, updateProfile, deleteAccount } from '../controllers/usersController.js';
 
 const router: Router = express.Router();
