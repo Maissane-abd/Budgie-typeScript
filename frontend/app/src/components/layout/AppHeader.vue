@@ -19,7 +19,7 @@
         </svg>
       </button>
 
-      <div class="logo">Budgie</div>
+      <RouterLink class="logo" to="/">Budgie</RouterLink>
     </div>
 
     <div class="header-right">
@@ -107,6 +107,7 @@ const handleLogout = () => {
   font-size: 24px;
   color: #6b21a8;
   letter-spacing: -0.5px;
+  text-decoration: none;
 }
 
 .header-right {

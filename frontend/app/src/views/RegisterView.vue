@@ -16,6 +16,7 @@
             class="auth-input"
             placeholder="Votre prénom"
             required
+            @invalid="error = 'Entrez votre prénom.'"
           />
         </div>
         <div>
@@ -28,6 +29,7 @@
             class="auth-input"
             placeholder="Votre nom"
             required
+            @invalid="error = 'Entrez votre nom.'"
           />
         </div>
 
@@ -41,6 +43,7 @@
             class="auth-input"
             placeholder="nom@exemple.fr"
             required
+            @invalid="handleEmailInvalid"
           />
         </div>
 
@@ -52,10 +55,11 @@
             autocomplete="new-password"
             type="password"
             class="auth-input"
-            placeholder="Saisissez une phrase de passe"
+            placeholder="Votre mot de passe"
             :minlength="PASSWORD_MIN_LENGTH"
             aria-describedby="register-password-help"
             required
+            @invalid="error = password ? PASSWORD_POLICY_MESSAGE : 'Entrez un mot de passe.'"
           />
         </div>
 
@@ -69,6 +73,7 @@
             class="auth-input"
             placeholder="Confirmez le mot de passe"
             required
+            @invalid="error = 'Confirmez votre mot de passe.'"
           />
         </div>
 
@@ -117,6 +122,13 @@ const success = ref('');
 // const API_BASE = "https://budgie-api-s1yz.onrender.com/api";
 // const API_BASE = "http://localhost:5001/api"
 
+function handleEmailInvalid(event: Event) {
+  const input = event.currentTarget as HTMLInputElement;
+  error.value = input.validity.valueMissing
+    ? 'Entrez votre adresse e-mail.'
+    : 'Entrez une adresse e-mail valide.';
+}
+
 async function handleRegister() {
   error.value = '';
   success.value = '';
@@ -147,9 +159,23 @@ async function handleRegister() {
     }, 800);
   } catch (err) {
     console.error(err);
-    error.value =
-      (axios.isAxiosError<ApiError>(err) ? err.response?.data?.error : undefined) ||
-      "Erreur lors de l'inscription. Réessaie plus tard.";
+    const responseData = axios.isAxiosError<ApiError>(err) ? err.response?.data : undefined;
+    const responseError = responseData?.error || responseData?.message;
+    if (
+      responseError &&
+      /email|mail/i.test(responseError) &&
+      /invalid|valide/i.test(responseError)
+    ) {
+      error.value = 'Entrez une adresse e-mail valide.';
+    } else if (axios.isAxiosError(err) && err.response?.status === 409) {
+      error.value = 'Cette adresse e-mail est déjà utilisée.';
+    } else if (axios.isAxiosError(err) && !err.response) {
+      error.value = 'Impossible de joindre le serveur. Vérifiez votre connexion et réessayez.';
+    } else if (axios.isAxiosError(err) && (err.response?.status ?? 0) >= 500) {
+      error.value = "L'inscription est momentanément indisponible. Réessayez plus tard.";
+    } else {
+      error.value = responseError || "Erreur lors de l'inscription. Réessaie plus tard.";
+    }
   } finally {
     loading.value = false;
   }

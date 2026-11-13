@@ -22,11 +22,10 @@ defineProps({
   loading: Boolean,
 });
 
-const emit = defineEmits<{ 'update:modelValue': [value: string]; change: []; refresh: [] }>();
+const emit = defineEmits<{ 'update:modelValue': [value: string]; refresh: [] }>();
 
 function handleChange(event: Event) {
   emit('update:modelValue', (event.target as HTMLInputElement).value);
-  emit('change');
 }
 </script>
 

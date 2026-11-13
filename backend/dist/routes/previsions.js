@@ -41,9 +41,11 @@ function getRecurringOccurrences(transaction, recurrenceRule, targetDate) {
 /**
  * Calcule le solde prévisionnel d'un compte à une date donnée
  */
-function calculateAccountForecast(account, transactions, targetDate) {
+export function calculateAccountForecast(account, transactions, targetDate) {
     const startDate = new Date();
+    startDate.setHours(0, 0, 0, 0);
     const target = new Date(targetDate);
+    const occurrenceEndDate = new Date(Math.max(startDate.getTime(), target.getTime()));
     let balance = Number(account.balance || 0);
     const annualRate = Number(account.annual_interest_rate || 0) / 100;
     const taxRate = Number(account.tax_rate || 0) / 100;
@@ -53,8 +55,8 @@ function calculateAccountForecast(account, transactions, targetDate) {
     for (const transaction of transactions) {
         // Transaction récurrente : calculer toutes les occurrences
         if (transaction.duration_type === 'recurring' && transaction.recurrence_rule) {
-            const occurrences = getRecurringOccurrences(transaction, transaction.recurrence_rule, targetDate);
-            occurrences.forEach(occ => {
+            const occurrences = getRecurringOccurrences(transaction, transaction.recurrence_rule, occurrenceEndDate.toISOString());
+            occurrences.forEach((occ) => {
                 occ.name = transaction.transaction_name;
             });
             allOccurrences.push(...occurrences);
@@ -62,16 +64,23 @@ function calculateAccountForecast(account, transactions, targetDate) {
         else {
             // Transaction ponctuelle (one_time ou null) : une seule occurrence
             const transDate = new Date(transaction.start_date);
-            if (transDate <= target) {
+            if (transDate <= occurrenceEndDate) {
                 allOccurrences.push({
                     date: transDate,
                     amount: Number(transaction.amount),
                     type: transaction.transaction_type,
-                    name: transaction.transaction_name
+                    name: transaction.transaction_name,
                 });
             }
         }
     }
+    // Le solde de départ inclut les opérations antérieures à aujourd'hui.
+    for (const occurrence of allOccurrences) {
+        if (occurrence.date < startDate) {
+            balance += occurrence.type === 'income' ? occurrence.amount : -occurrence.amount;
+        }
+    }
+    const startingBalance = balance;
     // Trier les occurrences par date
     allOccurrences.sort((a, b) => a.date.getTime() - b.date.getTime());
     // Simuler mois par mois jusqu'à la date cible
@@ -89,7 +98,7 @@ function calculateAccountForecast(account, transactions, targetDate) {
         for (const occ of allOccurrences) {
             const occDate = new Date(occ.date);
             occDate.setHours(0, 0, 0, 0);
-            if (occDate >= monthStart && occDate <= monthEndDate) {
+            if (occDate >= startDate && occDate >= monthStart && occDate <= monthEndDate) {
                 if (occ.type === 'income') {
                     monthIncome += occ.amount;
                 }
@@ -111,7 +120,7 @@ function calculateAccountForecast(account, transactions, targetDate) {
             income: monthIncome,
             expense: monthExpense,
             interest: monthInterest,
-            balance: Number(balance.toFixed(2))
+            balance: Number(balance.toFixed(2)),
         });
         // Passer au mois suivant
         currentMonth.setMonth(currentMonth.getMonth() + 1);
@@ -119,9 +128,9 @@ function calculateAccountForecast(account, transactions, targetDate) {
     return {
         account_id: account.id,
         account_name: account.account_name,
-        starting_balance: Number(account.balance || 0),
+        starting_balance: Number(startingBalance.toFixed(2)),
         forecasted_balance: Number(balance.toFixed(2)),
-        monthly_details: monthlyDetails
+        monthly_details: monthlyDetails,
     };
 }
 /**
