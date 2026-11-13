@@ -1,13 +1,8 @@
-// backend/src/routes/accounts.js
-// Controllers et routes pour la gestion des comptes
-import express from "express";
-import db from "../models/db.js";
-import { requireAuth } from "./auth.js";
+import express from 'express';
+import db from '../models/db.js';
+import { requireAuth } from '../middlewares/index.js';
 const router = express.Router();
-/*
- * Calcule le solde prévisionnel après `months` mois
- * Intérêts composés mensuels, net d’impôts
- */
+// Function to compute the forecasted balance of an account after a specified number of months
 function computeForecast(account, months = 12) {
     const annualRate = Number(account.annual_interest_rate || 0) / 100;
     const taxRate = Number(account.tax_rate || 0) / 100;
@@ -20,9 +15,7 @@ function computeForecast(account, months = 12) {
     }
     return balance;
 }
-/*
- * Ajoute des champs calculés à un compte
- */
+// Function to decorate an account with additional computed fields: current_balance and forecast_12m
 function decorateAccount(account) {
     const balance = Number(account.balance || 0);
     const annualRate = Number(account.annual_interest_rate || 0);
@@ -37,16 +30,13 @@ function decorateAccount(account) {
         forecast_12m: Number(computeForecast(account, 12).toFixed(2)),
     };
 }
-/*
- * GET /api/accounts
- * Liste des comptes de l’utilisateur connecté
- */
-router.get("/", requireAuth, async (req, res) => {
+// GET /accounts, returns all accounts for the authenticated user
+router.get('/', requireAuth, async (req, res) => {
     if (!req.user) {
-        return res.status(401).json({ error: "Utilisateur non authentifié" });
+        return res.status(401).json({ error: 'Utilisateur non authentifié' });
     }
     try {
-        // Récupérer l’ID de l’utilisateur connecté 
+        // Récupérer l’ID de l’utilisateur connecté
         const userId = req.user.id;
         // On récupère les comptes et on calcule le solde réel à partir des transactions.
         const { rows } = await db.query(`SELECT
@@ -73,55 +63,37 @@ router.get("/", requireAuth, async (req, res) => {
         res.json({ data });
     }
     catch (err) {
-        console.error("GET /accounts error", err);
+        console.error('GET /accounts error', err);
         res.status(500).json({
-            error: "Erreur lors de la récupération des comptes.",
+            error: 'Erreur lors de la récupération des comptes.',
         });
     }
 });
-/*
- * POST /api/accounts
- * Body JSON :
- * {
- *   account_name,
- *   description,
- *   created_on,
- *   currency,
- *   balance,
- *   annual_interest_rate,
- *   tax_rate
- * }
- */
-router.post("/", requireAuth, async (req, res) => {
+// POST /accounts, creates a new account for the authenticated user
+router.post('/', requireAuth, async (req, res) => {
     if (!req.user) {
-        return res.status(401).json({ error: "Utilisateur non authentifié" });
+        return res.status(401).json({ error: 'Utilisateur non authentifié' });
     }
     try {
         const userId = req.user.id;
-        const { account_name, description = null, created_on, currency = "EUR", balance = 0, annual_interest_rate = 0, tax_rate = 0, } = req.body || {};
+        const { account_name, description = null, created_on, currency = 'EUR', balance = 0, annual_interest_rate = 0, tax_rate = 0, } = req.body || {};
         if (!account_name || !created_on) {
             return res.status(400).json({
-                error: "account_name et created_on sont obligatoires.",
+                error: 'account_name et created_on sont obligatoires.',
             });
         }
         // Limiter chaque utilisateur à 10 comptes financiers pour éviter les abus.
         const maxAccounts = 10;
-        const { rows: accountCountRows } = await db.query(
-          'SELECT COUNT(*) as count FROM accounts WHERE user_id = $1',
-          [userId],
-        );
-
+        const { rows: accountCountRows } = await db.query('SELECT COUNT(*) as count FROM accounts WHERE user_id = $1', [userId]);
         const accountCount = parseInt(accountCountRows[0].count, 10);
-
         if (accountCount >= maxAccounts) {
-          return res.status(403).json({
-            error: 'Limite de comptes atteinte. Vous pouvez créer au maximum 10 comptes financiers.',
-            limitReached: true,
-            currentCount: accountCount,
-            maxCount: maxAccounts,
-          });
+            return res.status(403).json({
+                error: 'Limite de comptes atteinte. Vous pouvez créer au maximum 10 comptes financiers.',
+                limitReached: true,
+                currentCount: accountCount,
+                maxCount: maxAccounts,
+            });
         }
-
         const { rows } = await db.query(`INSERT INTO accounts
        (user_id, account_name, description, created_on, currency, balance, annual_interest_rate, tax_rate)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
@@ -139,19 +111,16 @@ router.post("/", requireAuth, async (req, res) => {
         res.status(201).json({ data: account });
     }
     catch (err) {
-        console.error("POST /accounts error", err);
+        console.error('POST /accounts error', err);
         res.status(500).json({
-            error: "Erreur lors de la création du compte.",
+            error: 'Erreur lors de la création du compte.',
         });
     }
 });
-/*
- * PUT /api/accounts/:id
- * Mise à jour d’un compte
- */
-router.put("/:id", requireAuth, async (req, res) => {
+// PUT /accounts/:id, updates an existing account for the authenticated user
+router.put('/:id', requireAuth, async (req, res) => {
     if (!req.user) {
-        return res.status(401).json({ error: "Utilisateur non authentifié" });
+        return res.status(401).json({ error: 'Utilisateur non authentifié' });
     }
     try {
         const userId = req.user.id;
@@ -178,38 +147,38 @@ router.put("/:id", requireAuth, async (req, res) => {
             userId,
         ]);
         if (!rowCount) {
-            return res.status(404).json({ error: "Compte introuvable." });
+            return res.status(404).json({ error: 'Compte introuvable.' });
         }
         res.json({ data: decorateAccount(rows[0]) });
     }
     catch (err) {
-        console.error("PUT /accounts/:id error", err);
+        console.error('PUT /accounts/:id error', err);
         res.status(500).json({
-            error: "Erreur lors de la mise à jour du compte.",
+            error: 'Erreur lors de la mise à jour du compte.',
         });
     }
 });
-/*
- * DELETE /api/accounts/:id
- * Suppression d’un compte
- */
-router.delete("/:id", requireAuth, async (req, res) => {
+// DELETE /accounts/:id, deletes an existing account for the authenticated user
+router.delete('/:id', requireAuth, async (req, res) => {
     if (!req.user) {
-        return res.status(401).json({ error: "Utilisateur non authentifié" });
+        return res.status(401).json({ error: 'Utilisateur non authentifié' });
     }
     try {
         const userId = req.user.id;
         const id = req.params.id;
-        const result = await db.query("DELETE FROM accounts WHERE id = $1 AND user_id = $2", [id, userId]);
+        const result = await db.query('DELETE FROM accounts WHERE id = $1 AND user_id = $2', [
+            id,
+            userId,
+        ]);
         if (result.rowCount === 0) {
-            return res.status(404).json({ error: "Compte introuvable." });
+            return res.status(404).json({ error: 'Compte introuvable.' });
         }
         res.status(204).send();
     }
     catch (err) {
-        console.error("DELETE /accounts/:id error", err);
+        console.error('DELETE /accounts/:id error', err);
         res.status(500).json({
-            error: "Erreur lors de la suppression du compte.",
+            error: 'Erreur lors de la suppression du compte.',
         });
     }
 });

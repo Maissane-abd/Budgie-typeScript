@@ -1,12 +1,8 @@
-// backend/src/routes/previsions.js
-// Routes et contrôleurs pour le calcul des prévisions financières
-import express from "express";
-import db from "../models/db.js";
-import { requireAuth } from "./auth.js";
+import express from 'express';
+import db from '../models/db.js';
+import { requireAuth } from '../middlewares/index.js';
 const router = express.Router();
-/**
- * Calcule les occurrences d'une transaction récurrente jusqu'à une date cible
- */
+// pull all occurrences of a recurring transaction up to a target date
 function getRecurringOccurrences(transaction, recurrenceRule, targetDate) {
     const occurrences = [];
     const startDate = new Date(transaction.start_date);
@@ -23,7 +19,7 @@ function getRecurringOccurrences(transaction, recurrenceRule, targetDate) {
         occurrences.push({
             date: new Date(currentDate),
             amount: Number(transaction.amount),
-            type: transaction.transaction_type
+            type: transaction.transaction_type,
         });
         // Calculer la prochaine occurrence
         if (intervalUnit === 'day') {
@@ -38,9 +34,7 @@ function getRecurringOccurrences(transaction, recurrenceRule, targetDate) {
     }
     return occurrences;
 }
-/**
- * Calcule le solde prévisionnel d'un compte à une date donnée
- */
+// Function to calculate the forecast for a given account up to a target date
 export function calculateAccountForecast(account, transactions, targetDate) {
     const startDate = new Date();
     startDate.setHours(0, 0, 0, 0);
@@ -133,17 +127,15 @@ export function calculateAccountForecast(account, transactions, targetDate) {
         monthly_details: monthlyDetails,
     };
 }
-/**
- * GET /api/previsions?target_date=2025-12-31
- * Calcule les prévisions financières jusqu'à la date cible
- */
-router.get("/", requireAuth, async (req, res) => {
+// GET /previsions, returns the forecast for all accounts of the authenticated user up to a target date
+router.get('/', requireAuth, async (req, res) => {
     if (!req.user) {
-        return res.status(401).json({ error: "Utilisateur non authentifié" });
+        return res.status(401).json({ error: 'Utilisateur non authentifié' });
     }
     try {
         const userId = req.user.id;
-        const targetDate = req.query.target_date || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // 1 an par défaut
+        const targetDate = req.query.target_date ||
+            new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // 1 an par défaut
         // Récupérer tous les comptes de l'utilisateur
         const { rows: accounts } = await db.query(`SELECT * FROM accounts WHERE user_id = $1 ORDER BY account_name`, [userId]);
         const forecasts = [];
@@ -176,13 +168,13 @@ router.get("/", requireAuth, async (req, res) => {
             target_date: targetDate,
             accounts: forecasts,
             total_starting_balance: Number(totalStarting.toFixed(2)),
-            total_forecasted_balance: Number(totalForecasted.toFixed(2))
+            total_forecasted_balance: Number(totalForecasted.toFixed(2)),
         });
     }
     catch (err) {
-        console.error("GET /previsions error", err);
+        console.error('GET /previsions error', err);
         res.status(500).json({
-            error: "Erreur lors du calcul des prévisions.",
+            error: 'Erreur lors du calcul des prévisions.',
         });
     }
 });

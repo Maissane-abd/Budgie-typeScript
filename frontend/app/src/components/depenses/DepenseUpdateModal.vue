@@ -30,7 +30,8 @@
             </label>
           </div>
         </div>
-
+        
+        //bug
         <div class="form-group">
           <label>Compte</label>
           <div class="select-gray-wrapper">
@@ -66,7 +67,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Account, TransactionForm, Transaction, Id } from '@/types/models';
+import type { Account, TransactionForm, Transaction, Id } from '@/types/models'; 
 import { reactive, onMounted, ref, watch } from 'vue';
 import axios from 'axios';
 import { useToast } from 'vue-toastification';

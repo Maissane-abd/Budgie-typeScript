@@ -1,6 +1,6 @@
 // controllers/expensesController.js
 import db from '../models/db.js';
-// GET /expenses
+// GET /expenses, returns all expenses for the authenticated user
 export const getAll = async (req, res) => {
     if (!req.user || !req.user.id) {
         res.status(401).json({ message: 'Utilisateur non authentifié' });
@@ -19,7 +19,7 @@ export const getAll = async (req, res) => {
     `, [userId]);
     res.json(rows);
 };
-// GET /expenses/:id
+// GET /expenses/:id, returns a specific expense by ID for the authenticated user
 export const getById = async (req, res) => {
     if (!req.user || !req.user.id) {
         res.status(401).json({ message: 'Utilisateur non authentifié' });
@@ -41,9 +41,9 @@ export const getById = async (req, res) => {
     }
     res.json(rows[0]);
 };
-// POST /expenses
+// POST /expenses, creates a new expense for the authenticated user
 export const create = async (req, res) => {
-    let { account_id, transaction_name, amount, start_date, description, duration_type, interval_count, interval_unit, end_date } = req.body;
+    let { account_id, transaction_name, amount, start_date, description, duration_type, interval_count, interval_unit, end_date, } = req.body;
     // Champs obligatoires
     if (!account_id || !transaction_name || !amount || !start_date) {
         res.status(400).json({ message: 'Champs obligatoires manquants' });
@@ -53,13 +53,13 @@ export const create = async (req, res) => {
         res.status(400).json({ message: 'Le montant doit être positif' });
         return;
     }
-    if (end_date === "") {
+    if (end_date === '') {
         end_date = null;
     }
     if (duration_type === 'recurring') {
         if (!interval_count || interval_count < 1 || !interval_unit) {
             res.status(400).json({
-                message: 'interval_count et interval_unit obligatoires pour une dépense récurrente'
+                message: 'interval_count et interval_unit obligatoires pour une dépense récurrente',
             });
             return;
         }
@@ -69,7 +69,10 @@ export const create = async (req, res) => {
         res.status(401).json({ message: 'Utilisateur non authentifié' });
         return;
     }
-    const accountCheck = await db.query(`SELECT 1 FROM accounts WHERE id = $1 AND user_id = $2`, [account_id, req.user.id]);
+    const accountCheck = await db.query(`SELECT 1 FROM accounts WHERE id = $1 AND user_id = $2`, [
+        account_id,
+        req.user.id,
+    ]);
     if (!accountCheck.rowCount) {
         res.status(403).json({ message: 'Compte non autorisé' });
         return;
@@ -96,14 +99,7 @@ export const create = async (req, res) => {
             duration_type
         )
          VALUES ($1, $2, 'expense', $3, $4, $5, $6)
-             RETURNING *`, [
-        account_id,
-        transaction_name,
-        amount,
-        start_date,
-        description,
-        duration_type
-    ]);
+             RETURNING *`, [account_id, transaction_name, amount, start_date, description, duration_type]);
     const transaction = transactionRows[0];
     // Insert recurrence rule si récurrent
     if (duration_type === 'recurring') {
@@ -113,18 +109,18 @@ export const create = async (req, res) => {
     }
     res.status(201).json(transaction);
 };
-// PUT /expenses/:id
+// PUT /expenses/:id, updates an existing expense for the authenticated user
 export const update = async (req, res) => {
     if (!req.user || !req.user.id) {
         return res.status(401).json({ message: 'Utilisateur non authentifié' });
     }
     const userId = req.user.id;
     const { id } = req.params;
-    let { transaction_name, amount, start_date, description, duration_type, interval_count, interval_unit, end_date } = req.body;
-    if (!transaction_name || !amount || !start_date) {
+    let { account_id, transaction_name, amount, start_date, description, duration_type, interval_count, interval_unit, end_date, } = req.body;
+    if (!account_id || !transaction_name || !amount || !start_date) {
         return res.status(400).json({ message: 'Champs obligatoires manquants' });
     }
-    if (end_date === "") {
+    if (end_date === '') {
         end_date = null;
     }
     if (amount <= 0) {
@@ -133,11 +129,18 @@ export const update = async (req, res) => {
     if (duration_type === 'recurring') {
         if (!interval_count || interval_count < 1 || !interval_unit) {
             return res.status(400).json({
-                message: 'interval_count et interval_unit obligatoires pour une dépense récurrente'
+                message: 'interval_count et interval_unit obligatoires pour une dépense récurrente',
             });
         }
     }
-    // Update transaction (avec contrôle ownership)
+    const accountCheck = await db.query(`SELECT 1 FROM accounts WHERE id = $1 AND user_id = $2`, [
+        account_id,
+        userId,
+    ]);
+    if (!accountCheck.rowCount) {
+        return res.status(403).json({ message: 'Compte non autorisé' });
+    }
+    // Update transaction 
     const { rows: transactionRows } = await db.query(`
         UPDATE transactions t
         SET
@@ -145,7 +148,8 @@ export const update = async (req, res) => {
             amount = $2,
             start_date = $3,
             description = $4,
-            duration_type = $5
+            duration_type = $5,
+            account_id = $8
             FROM accounts a
         WHERE
             t.id = $6
@@ -153,21 +157,15 @@ export const update = async (req, res) => {
           AND a.id = t.account_id
           AND a.user_id = $7
             RETURNING t.*
-    `, [
-        transaction_name,
-        amount,
-        start_date,
-        description,
-        duration_type,
-        id,
-        userId
-    ]);
+    `, [transaction_name, amount, start_date, description, duration_type, id, userId, account_id]);
     if (!transactionRows.length) {
         return res.status(404).json({ message: 'Dépense non trouvée' });
     }
     // Recurrence: update / insert / delete
     if (duration_type === 'recurring') {
-        const ruleCheck = await db.query(`SELECT id FROM recurrence_rules WHERE transaction_id = $1`, [id]);
+        const ruleCheck = await db.query(`SELECT id FROM recurrence_rules WHERE transaction_id = $1`, [
+            id,
+        ]);
         if (ruleCheck.rowCount) {
             await db.query(`UPDATE recurrence_rules
                  SET interval_unit = $1,
@@ -187,7 +185,7 @@ export const update = async (req, res) => {
     }
     res.json(transactionRows[0]);
 };
-// DELETE /expenses/:id
+// DELETE /expenses/:id, deletes an existing expense for the authenticated user
 export const remove = async (req, res) => {
     if (!req.user || !req.user.id) {
         return res.status(401).json({ message: 'Utilisateur non authentifié' });

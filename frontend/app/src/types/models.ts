@@ -1,5 +1,5 @@
 export type Id = string | number;
-export type Numeric = string | number;
+export type Numeric = string | number; 
 
 export interface Account {
   id: Id;

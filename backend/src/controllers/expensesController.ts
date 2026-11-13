@@ -163,6 +163,7 @@ export const update = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   let {
+    account_id,
     transaction_name,
     amount,
     start_date,
@@ -173,7 +174,7 @@ export const update = async (req: Request, res: Response) => {
     end_date,
   } = req.body;
 
-  if (!transaction_name || !amount || !start_date) {
+  if (!account_id || !transaction_name || !amount || !start_date) {
     return res.status(400).json({ message: 'Champs obligatoires manquants' });
   }
 
@@ -193,7 +194,16 @@ export const update = async (req: Request, res: Response) => {
     }
   }
 
-  // Update transaction (avec contrôle ownership)
+  const accountCheck = await db.query(`SELECT 1 FROM accounts WHERE id = $1 AND user_id = $2`, [
+    account_id,
+    userId,
+  ]);
+
+  if (!accountCheck.rowCount) {
+    return res.status(403).json({ message: 'Compte non autorisé' });
+  }
+
+  // Update transaction 
   const { rows: transactionRows } = await db.query(
     `
         UPDATE transactions t
@@ -202,7 +212,8 @@ export const update = async (req: Request, res: Response) => {
             amount = $2,
             start_date = $3,
             description = $4,
-            duration_type = $5
+            duration_type = $5,
+            account_id = $8
             FROM accounts a
         WHERE
             t.id = $6
@@ -211,7 +222,7 @@ export const update = async (req: Request, res: Response) => {
           AND a.user_id = $7
             RETURNING t.*
     `,
-    [transaction_name, amount, start_date, description, duration_type, id, userId],
+    [transaction_name, amount, start_date, description, duration_type, id, userId, account_id],
   );
 
   if (!transactionRows.length) {
