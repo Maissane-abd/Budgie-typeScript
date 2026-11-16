@@ -1,7 +1,8 @@
 export type Id = string | number;
-export type Numeric = string | number;
+export type Numeric = string | number; 
 
 export interface Account {
+  initial_balance: Numeric;
   id: Id;
   account_name: string;
   description: string | null;

@@ -1,6 +1,6 @@
-import "dotenv/config";
-import express from "express";
-import cors from "cors";
+import 'dotenv/config';
+import express from 'express';
+import { corsMiddleware, jsonMiddleware } from './middlewares/index.js';
 import revenusRoutes from "./routes/revenus.js";
 import authRoutes from "./routes/auth.js";
 import accountsRoutes from "./routes/accounts.js";
@@ -8,16 +8,8 @@ import expensesRoutes from "./routes/expenses.js";
 import previsionsRoutes from "./routes/previsions.js";
 const app = express();
 // Middlewares
-app.use(cors({
-    origin: [
-        "http:localhost:80",
-        "https://budgie.com"
-    ],
-    methods: [
-        "GET", "POST", "PUT", "DELETE"
-    ]
-}));
-app.use(express.json());
+app.use(corsMiddleware);
+app.use(jsonMiddleware);
 // Routes
 app.use("/api/revenus", revenusRoutes);
 app.use("/api/auth", authRoutes);
@@ -25,8 +17,14 @@ app.use("/api/accounts", accountsRoutes);
 app.use("/api/expenses", expensesRoutes);
 app.use("/api/previsions", previsionsRoutes);
 // Test route
-app.get("/", (req, res) => {
-    res.send("Hello World from backend!");
+app.get('/', (req, res) => {
+    res.send('Hello World from backend!');
+});
+app.get("/health", (req, res) => {
+    res.status(200).send("OK");
+});
+app.get("/health", (req, res) => {
+    res.status(200).send("OK");
 });
 // Start server
 const PORT = process.env.PORT || 5001;

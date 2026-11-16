@@ -1,7 +1,7 @@
 // backend/src/routes/revenus.ts
 import express from 'express';
 import { create, getAll, getById, update, remove } from '../controllers/revenusController.js';
-import { requireAuth } from './auth.js';
+import { requireAuth } from '../middlewares/index.js';
 const router = express.Router();
 // Routes for revenus
 router.post('/', requireAuth, create);

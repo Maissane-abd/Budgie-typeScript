@@ -1,7 +1,6 @@
-// backend/src/routes/expenses.js
 import express from 'express';
 import { create, getAll, getById, update, remove } from '../controllers/expensesController.js';
-import { requireAuth } from './auth.js';
+import { requireAuth } from '../middlewares/index.js';
 const router = express.Router();
 // Routes for expenses
 router.post('/', requireAuth, create);

@@ -29,8 +29,8 @@
           >
             {{ Number(acc.balance).toFixed(2) }} €
           </td>
-          <td class="text-muted">{{ acc.annual_interest_rate }}%</td>
-          <td class="text-muted">{{ acc.tax_rate }}%</td>
+          <td class="text-muted">{{ formatRate(acc.annual_interest_rate) }}%</td>
+          <td class="text-muted">{{ formatRate(acc.tax_rate) }}%</td>
           <td class="text-muted">{{ formatDate(acc.created_on) }}</td>
           <td class="text-right actions-cell">
             <button class="icon-btn edit" @click="$emit('edit', acc)" title="Modifier">
@@ -77,6 +77,9 @@
 import type { Account, Id } from '@/types/models';
 defineProps<{ accounts: Account[] }>();
 defineEmits<{ edit: [account: Account]; delete: [id: Id] }>();
+
+const formatRate = (rate: Account['annual_interest_rate']) =>
+  Number(rate ?? 0).toLocaleString('fr-FR', { maximumFractionDigits: 2 });
 
 const formatDate = (d: string | null | undefined) =>
   d ? new Date(d).toLocaleDateString('fr-FR') : '-';

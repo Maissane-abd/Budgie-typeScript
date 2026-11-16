@@ -5,8 +5,6 @@ const emit = defineEmits<{ close: []; save: []; delete: []; 'update:form': [form
 
 const update = (key: keyof AccountForm, val: string) =>
   emit('update:form', { ...props.form, [key]: val });
-const formatDate = (d: string | null | undefined) =>
-  d ? new Date(d).toLocaleDateString('fr-FR') : '';
 </script>
 
 <template>
@@ -43,10 +41,10 @@ const formatDate = (d: string | null | undefined) =>
           />
         </div>
 
-        <div class="form-group" v-if="isCreate">
+        <div class="form-group">
           <label>Solde Initial (€)</label>
           <input
-            type="number"
+            type="number" step="0.01"
             :value="form.balance"
             @input="
               update('balance', ($event.target as HTMLInputElement | HTMLSelectElement).value)
@@ -57,9 +55,9 @@ const formatDate = (d: string | null | undefined) =>
 
         <div class="row-dates">
           <div class="form-group half">
-            <label>Intérêts (%)</label>
+            <label>Intérêts annuels (%)</label>
             <input
-              type="number"
+              type="number" step="0.01"
               :value="form.annual_interest_rate"
               @input="
                 update(
@@ -71,9 +69,9 @@ const formatDate = (d: string | null | undefined) =>
             />
           </div>
           <div class="form-group half">
-            <label>Impôts (%)</label>
+            <label>Impôts sur les intérêts (%)</label>
             <input
-              type="number"
+              type="number" step="0.01"
               :value="form.tax_rate"
               @input="
                 update('tax_rate', ($event.target as HTMLInputElement | HTMLSelectElement).value)
@@ -83,9 +81,10 @@ const formatDate = (d: string | null | undefined) =>
           </div>
         </div>
 
-        <div class="form-group disabled" v-if="!isCreate">
+        <div class="form-group">
           <label>Date de création</label>
-          <input type="text" :value="formatDate(form.created_on)" disabled />
+          <input type="date" :value="form.created_on"
+            @input="update('created_on', ($event.target as HTMLInputElement).value)" />
         </div>
       </div>
 

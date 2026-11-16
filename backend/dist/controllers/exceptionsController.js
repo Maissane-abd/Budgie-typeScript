@@ -1,7 +1,7 @@
 import db from '../models/db.js';
-// Créer une exception pour un revenu (transaction income)
+// Create a new exception for a transaction
 export const create = async (req, res) => {
-    const { transaction_id, exception_name, description, started_at, ends_at, override_amount, override_n_months } = req.body;
+    const { transaction_id, exception_name, description, started_at, ends_at, override_amount, override_n_months, } = req.body;
     if (!transaction_id || !exception_name || !started_at) {
         res.status(400).json({ message: 'transaction_id, exception_name et started_at sont requis' });
         return;
@@ -24,7 +24,7 @@ export const create = async (req, res) => {
             started_at,
             ends_at,
             override_amount,
-            override_n_months
+            override_n_months,
         ]);
         res.status(201).json(rows[0]);
     }
@@ -34,7 +34,7 @@ export const create = async (req, res) => {
         }
     }
 };
-// Récupérer toutes les exceptions d’un revenu (transaction income)
+// Pull all exceptions for a specific transaction
 export const getByTransaction = async (req, res) => {
     const { transactionId } = req.params;
     if (!transactionId) {
@@ -55,7 +55,7 @@ export const getByTransaction = async (req, res) => {
         }
     }
 };
-// Mettre à jour une exception
+// Update an exception
 export const update = async (req, res) => {
     const { id } = req.params;
     const { exception_name, description, started_at, ends_at, override_amount, override_n_months } = req.body;
@@ -73,15 +73,7 @@ export const update = async (req, res) => {
          override_amount = $5,
          override_n_months = $6
        WHERE id = $7
-       RETURNING *`, [
-            exception_name,
-            description,
-            started_at,
-            ends_at,
-            override_amount,
-            override_n_months,
-            id
-        ]);
+       RETURNING *`, [exception_name, description, started_at, ends_at, override_amount, override_n_months, id]);
         if (rows.length === 0) {
             res.status(404).json({ message: 'Exception non trouvée' });
             return;
@@ -94,7 +86,7 @@ export const update = async (req, res) => {
         }
     }
 };
-// Supprimer une exception
+// Delete an exception
 export const deleteException = async (req, res) => {
     const { id } = req.params;
     if (!id) {
