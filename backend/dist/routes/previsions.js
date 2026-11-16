@@ -2,17 +2,27 @@ import express from 'express';
 import db from '../models/db.js';
 import { requireAuth } from '../middlewares/index.js';
 const router = express.Router();
+// SQL DATE values are calendar dates, without a time or UTC offset.
+export function calendarDate(value) {
+    if (value instanceof Date) {
+        return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+    }
+    const [year, month, day] = value.slice(0, 10).split('-').map(Number);
+    return new Date(year, month - 1, day);
+}
 // pull all occurrences of a recurring transaction up to a target date
 function getRecurringOccurrences(transaction, recurrenceRule, targetDate) {
     const occurrences = [];
-    const startDate = new Date(transaction.start_date);
-    const target = new Date(targetDate);
-    const endDate = recurrenceRule.end_date ? new Date(recurrenceRule.end_date) : null;
+    const startDate = calendarDate(transaction.start_date);
+    const target = calendarDate(targetDate);
+    const endDate = recurrenceRule.end_date ? calendarDate(recurrenceRule.end_date) : null;
     if (target < startDate)
         return occurrences;
-    let currentDate = new Date(startDate);
+    const currentDate = new Date(startDate);
     const intervalUnit = recurrenceRule.interval_unit;
-    const intervalCount = recurrenceRule.interval_count;
+    const intervalCount = Number(recurrenceRule.interval_count);
+    if (!Number.isInteger(intervalCount) || intervalCount <= 0)
+        return occurrences;
     while (currentDate <= target) {
         if (endDate && currentDate > endDate)
             break;
@@ -38,18 +48,17 @@ function getRecurringOccurrences(transaction, recurrenceRule, targetDate) {
 export function calculateAccountForecast(account, transactions, targetDate) {
     const startDate = new Date();
     startDate.setHours(0, 0, 0, 0);
-    const target = new Date(targetDate);
+    const target = calendarDate(targetDate);
     const occurrenceEndDate = new Date(Math.max(startDate.getTime(), target.getTime()));
     let balance = Number(account.balance || 0);
     const annualRate = Number(account.annual_interest_rate || 0) / 100;
     const taxRate = Number(account.tax_rate || 0) / 100;
-    const monthlyRate = annualRate / 12;
     // Récupérer toutes les occurrences de transactions jusqu'à la date cible
     const allOccurrences = [];
     for (const transaction of transactions) {
         // Transaction récurrente : calculer toutes les occurrences
         if (transaction.duration_type === 'recurring' && transaction.recurrence_rule) {
-            const occurrences = getRecurringOccurrences(transaction, transaction.recurrence_rule, occurrenceEndDate.toISOString());
+            const occurrences = getRecurringOccurrences(transaction, transaction.recurrence_rule, `${occurrenceEndDate.getFullYear()}-${String(occurrenceEndDate.getMonth() + 1).padStart(2, '0')}-${String(occurrenceEndDate.getDate()).padStart(2, '0')}`);
             occurrences.forEach((occ) => {
                 occ.name = transaction.transaction_name;
             });
@@ -57,7 +66,7 @@ export function calculateAccountForecast(account, transactions, targetDate) {
         }
         else {
             // Transaction ponctuelle (one_time ou null) : une seule occurrence
-            const transDate = new Date(transaction.start_date);
+            const transDate = calendarDate(transaction.start_date);
             if (transDate <= occurrenceEndDate) {
                 allOccurrences.push({
                     date: transDate,
@@ -68,18 +77,39 @@ export function calculateAccountForecast(account, transactions, targetDate) {
             }
         }
     }
-    // Le solde de départ inclut les opérations antérieures à aujourd'hui.
-    for (const occurrence of allOccurrences) {
-        if (occurrence.date < startDate) {
-            balance += occurrence.type === 'income' ? occurrence.amount : -occurrence.amount;
-        }
+    // Interest and its tax are applied once a year on the account anniversary.
+    const opening = calendarDate(account.created_on);
+    const interestDates = [];
+    for (let year = opening.getFullYear() + 1; year <= occurrenceEndDate.getFullYear(); year++) {
+        const day = Math.min(opening.getDate(), new Date(year, opening.getMonth() + 1, 0).getDate());
+        const anniversary = new Date(year, opening.getMonth(), day);
+        if (anniversary <= occurrenceEndDate)
+            interestDates.push(anniversary);
     }
+    const events = [
+        ...allOccurrences.map(occ => ({ date: occ.date, amount: occ.type === 'income' ? occ.amount : -occ.amount, interest: false })),
+        ...interestDates.map(date => ({ date, amount: 0, interest: true })),
+    ].sort((a, b) => a.date.getTime() - b.date.getTime() || Number(a.interest) - Number(b.interest));
+    let eventIndex = 0;
+    const applyThrough = (date) => {
+        let interest = 0;
+        while (eventIndex < events.length && events[eventIndex].date <= date) {
+            const event = events[eventIndex++];
+            if (event.interest) {
+                const net = Number((balance * annualRate * (1 - taxRate)).toFixed(2));
+                balance += net;
+                interest += net;
+            }
+            else {
+                balance += event.amount;
+            }
+        }
+        return interest;
+    };
+    applyThrough(startDate);
     const startingBalance = balance;
-    // Trier les occurrences par date
-    allOccurrences.sort((a, b) => a.date.getTime() - b.date.getTime());
-    // Simuler mois par mois jusqu'à la date cible
     const monthlyDetails = [];
-    let currentMonth = new Date(startDate);
+    const currentMonth = new Date(startDate);
     currentMonth.setDate(1); // Premier jour du mois
     currentMonth.setHours(0, 0, 0, 0);
     while (currentMonth <= target) {
@@ -92,7 +122,7 @@ export function calculateAccountForecast(account, transactions, targetDate) {
         for (const occ of allOccurrences) {
             const occDate = new Date(occ.date);
             occDate.setHours(0, 0, 0, 0);
-            if (occDate >= startDate && occDate >= monthStart && occDate <= monthEndDate) {
+            if (occDate > startDate && occDate >= monthStart && occDate <= monthEndDate) {
                 if (occ.type === 'income') {
                     monthIncome += occ.amount;
                 }
@@ -101,14 +131,7 @@ export function calculateAccountForecast(account, transactions, targetDate) {
                 }
             }
         }
-        // Appliquer les transactions du mois
-        balance += monthIncome - monthExpense;
-        // Calculer les intérêts du mois (sur le solde après les transactions)
-        const grossInterest = balance * monthlyRate;
-        const netInterest = grossInterest * (1 - taxRate);
-        const monthInterest = netInterest;
-        // Appliquer les intérêts
-        balance += monthInterest;
+        const monthInterest = applyThrough(monthEndDate);
         monthlyDetails.push({
             month: new Date(currentMonth),
             income: monthIncome,

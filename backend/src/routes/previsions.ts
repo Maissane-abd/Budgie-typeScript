@@ -6,7 +6,7 @@ import type { Router } from 'express';
 
 const router: Router = express.Router();
 
-type Transaction = {
+export type Transaction = {
   id: string;
   account_id: string;
   transaction_name: string;
@@ -27,7 +27,7 @@ type RecurrenceRule = {
   end_date?: string | null; // DATE
 };
 
-type Account = {
+export type Account = {
   id: string;
   user_id: string;
   account_name: string;
@@ -64,22 +64,18 @@ type ForecastResult = {
   monthly_details: MonthlyDetail[];
 };
 
-type forecast = {
-  calculateAccountForecast: (
-    account: Account,
-    transactions: Transaction[],
-    targetDate: string,
-  ) => ForecastResult;
-  getRecurringOccurrences: (
-    transaction: Transaction,
-    recurrenceRule: RecurrenceRule,
-    targetDate: string,
-  ) => Occurrence[];
-};
-
 type ForecastQuery = {
   target_date?: string;
 };
+
+// SQL DATE values are calendar dates, without a time or UTC offset.
+export function calendarDate(value: string | Date): Date {
+  if (value instanceof Date) {
+    return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+  }
+  const [year, month, day] = value.slice(0, 10).split('-').map(Number);
+  return new Date(year!, month! - 1, day!);
+}
 
 // pull all occurrences of a recurring transaction up to a target date
 function getRecurringOccurrences(
@@ -88,15 +84,16 @@ function getRecurringOccurrences(
   targetDate: string,
 ): Occurrence[] {
   const occurrences: Occurrence[] = [];
-  const startDate: Date = new Date(transaction.start_date);
-  const target: Date = new Date(targetDate);
-  const endDate: Date | null = recurrenceRule.end_date ? new Date(recurrenceRule.end_date) : null;
+  const startDate: Date = calendarDate(transaction.start_date);
+  const target: Date = calendarDate(targetDate);
+  const endDate: Date | null = recurrenceRule.end_date ? calendarDate(recurrenceRule.end_date) : null;
 
   if (target < startDate) return occurrences;
 
-  let currentDate = new Date(startDate);
+  const currentDate = new Date(startDate);
   const intervalUnit: 'day' | 'month' | 'year' = recurrenceRule.interval_unit;
-  const intervalCount: number = recurrenceRule.interval_count;
+  const intervalCount: number = Number(recurrenceRule.interval_count);
+  if (!Number.isInteger(intervalCount) || intervalCount <= 0) return occurrences;
 
   while (currentDate <= target) {
     if (endDate && currentDate > endDate) break;
@@ -128,12 +125,12 @@ export function calculateAccountForecast(
 ): ForecastResult {
   const startDate: Date = new Date();
   startDate.setHours(0, 0, 0, 0);
-  const target: Date = new Date(targetDate);
+  const target: Date = calendarDate(targetDate);
   const occurrenceEndDate = new Date(Math.max(startDate.getTime(), target.getTime()));
   let balance: number = Number(account.balance || 0);
   const annualRate: number = Number(account.annual_interest_rate || 0) / 100;
   const taxRate: number = Number(account.tax_rate || 0) / 100;
-  const monthlyRate: number = annualRate / 12;
+
 
   // Récupérer toutes les occurrences de transactions jusqu'à la date cible
   const allOccurrences: Occurrence[] = [];
@@ -144,7 +141,7 @@ export function calculateAccountForecast(
       const occurrences: Occurrence[] = getRecurringOccurrences(
         transaction,
         transaction.recurrence_rule,
-        occurrenceEndDate.toISOString(),
+        `${occurrenceEndDate.getFullYear()}-${String(occurrenceEndDate.getMonth() + 1).padStart(2, '0')}-${String(occurrenceEndDate.getDate()).padStart(2, '0')}`,
       );
       occurrences.forEach((occ) => {
         occ.name = transaction.transaction_name;
@@ -152,7 +149,7 @@ export function calculateAccountForecast(
       allOccurrences.push(...occurrences);
     } else {
       // Transaction ponctuelle (one_time ou null) : une seule occurrence
-      const transDate: Date = new Date(transaction.start_date);
+      const transDate: Date = calendarDate(transaction.start_date);
       if (transDate <= occurrenceEndDate) {
         allOccurrences.push({
           date: transDate,
@@ -164,22 +161,38 @@ export function calculateAccountForecast(
     }
   }
 
-  // Le solde de départ inclut les opérations antérieures à aujourd'hui.
-  for (const occurrence of allOccurrences) {
-    if (occurrence.date < startDate) {
-      balance += occurrence.type === 'income' ? occurrence.amount : -occurrence.amount;
-    }
+  // Interest and its tax are applied once a year on the account anniversary.
+  const opening = calendarDate(account.created_on);
+  const interestDates: Date[] = [];
+  for (let year = opening.getFullYear() + 1; year <= occurrenceEndDate.getFullYear(); year++) {
+    const day = Math.min(opening.getDate(), new Date(year, opening.getMonth() + 1, 0).getDate());
+    const anniversary = new Date(year, opening.getMonth(), day);
+    if (anniversary <= occurrenceEndDate) interestDates.push(anniversary);
   }
+  const events = [
+    ...allOccurrences.map(occ => ({ date: occ.date, amount: occ.type === 'income' ? occ.amount : -occ.amount, interest: false })),
+    ...interestDates.map(date => ({ date, amount: 0, interest: true })),
+  ].sort((a, b) => a.date.getTime() - b.date.getTime() || Number(a.interest) - Number(b.interest));
+  let eventIndex = 0;
+  const applyThrough = (date: Date) => {
+    let interest = 0;
+    while (eventIndex < events.length && events[eventIndex]!.date <= date) {
+      const event = events[eventIndex++]!;
+      if (event.interest) {
+        const net = Number((balance * annualRate * (1 - taxRate)).toFixed(2));
+        balance += net;
+        interest += net;
+      } else {
+        balance += event.amount;
+      }
+    }
+    return interest;
+  };
+  applyThrough(startDate);
   const startingBalance = balance;
 
-  // Trier les occurrences par date
-  allOccurrences.sort(
-    (a: Occurrence, b: Occurrence): number => a.date.getTime() - b.date.getTime(),
-  );
-
-  // Simuler mois par mois jusqu'à la date cible
   const monthlyDetails: MonthlyDetail[] = [];
-  let currentMonth: Date = new Date(startDate);
+  const currentMonth: Date = new Date(startDate);
   currentMonth.setDate(1); // Premier jour du mois
   currentMonth.setHours(0, 0, 0, 0);
 
@@ -195,7 +208,7 @@ export function calculateAccountForecast(
     for (const occ of allOccurrences) {
       const occDate: Date = new Date(occ.date);
       occDate.setHours(0, 0, 0, 0);
-      if (occDate >= startDate && occDate >= monthStart && occDate <= monthEndDate) {
+      if (occDate > startDate && occDate >= monthStart && occDate <= monthEndDate) {
         if (occ.type === 'income') {
           monthIncome += occ.amount;
         } else {
@@ -204,16 +217,7 @@ export function calculateAccountForecast(
       }
     }
 
-    // Appliquer les transactions du mois
-    balance += monthIncome - monthExpense;
-
-    // Calculer les intérêts du mois (sur le solde après les transactions)
-    const grossInterest: number = balance * monthlyRate;
-    const netInterest: number = grossInterest * (1 - taxRate);
-    const monthInterest: number = netInterest;
-
-    // Appliquer les intérêts
-    balance += monthInterest;
+    const monthInterest = applyThrough(monthEndDate);
 
     monthlyDetails.push({
       month: new Date(currentMonth),
@@ -237,7 +241,7 @@ export function calculateAccountForecast(
 }
 
 // GET /previsions, returns the forecast for all accounts of the authenticated user up to a target date
-router.get('/', requireAuth, async (req: Request<{}, {}, {}, ForecastQuery>, res: Response) => {
+router.get('/', requireAuth, async (req: Request<Record<string, never>, unknown, unknown, ForecastQuery>, res: Response) => {
   if (!req.user) {
     return res.status(401).json({ error: 'Utilisateur non authentifié' });
   }

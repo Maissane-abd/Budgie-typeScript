@@ -106,8 +106,10 @@ const openDrawer = (acc: Account) => {
   form.value = {
     ...acc,
     description: acc.description ?? '',
-    annual_interest_rate: acc.annual_interest_rate ?? 0,
-    tax_rate: acc.tax_rate ?? 0,
+    balance: acc.initial_balance,
+    created_on: acc.created_on.slice(0, 10),
+    annual_interest_rate: Number(Number(acc.annual_interest_rate ?? 0).toFixed(2)),
+    tax_rate: Number(Number(acc.tax_rate ?? 0).toFixed(2)),
   };
   showDrawer.value = true;
 };
@@ -120,7 +122,7 @@ const openCreateDrawer = () => {
     balance: 0,
     annual_interest_rate: 0,
     tax_rate: 0,
-    created_on: new Date().toISOString(),
+    created_on: new Date().toLocaleDateString('en-CA'),
   };
   showDrawer.value = true;
 };

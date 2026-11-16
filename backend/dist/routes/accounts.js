@@ -1,33 +1,24 @@
 import express from 'express';
 import db from '../models/db.js';
 import { requireAuth } from '../middlewares/index.js';
+import { calendarDate, calculateAccountForecast } from './previsions.js';
 const router = express.Router();
-// Function to compute the forecasted balance of an account after a specified number of months
-function computeForecast(account, months = 12) {
-    const annualRate = Number(account.annual_interest_rate || 0) / 100;
-    const taxRate = Number(account.tax_rate || 0) / 100;
-    let balance = Number(account.balance || 0);
-    const monthlyRate = annualRate / 12;
-    for (let i = 0; i < months; i++) {
-        const grossInterest = balance * monthlyRate;
-        const netInterest = grossInterest * (1 - taxRate);
-        balance += netInterest;
-    }
-    return balance;
-}
-// Function to decorate an account with additional computed fields: current_balance and forecast_12m
-function decorateAccount(account) {
-    const balance = Number(account.balance || 0);
-    const annualRate = Number(account.annual_interest_rate || 0);
-    const taxRate = Number(account.tax_rate || 0);
-    const monthlyRate = annualRate / 100 / 12;
-    const grossMonth = balance * monthlyRate;
-    const netMonth = grossMonth * (1 - taxRate / 100);
+async function decorateAccount(account) {
+    const { rows: transactions } = await db.query(`SELECT t.*, row_to_json(r) AS recurrence_rule
+     FROM transactions t
+     LEFT JOIN recurrence_rules r ON r.transaction_id = t.id
+     WHERE t.account_id = $1 ORDER BY t.start_date`, [account.id]);
+    const target = new Date();
+    target.setFullYear(target.getFullYear() + 1);
+    const forecast = calculateAccountForecast(account, transactions, target.toISOString());
+    const createdOn = calendarDate(account.created_on);
     return {
         ...account,
-        balance: Number(balance.toFixed(2)),
-        current_balance: Number((balance + netMonth).toFixed(2)),
-        forecast_12m: Number(computeForecast(account, 12).toFixed(2)),
+        created_on: `${createdOn.getFullYear()}-${String(createdOn.getMonth() + 1).padStart(2, '0')}-${String(createdOn.getDate()).padStart(2, '0')}`,
+        initial_balance: Number(account.balance),
+        balance: forecast.starting_balance,
+        current_balance: forecast.starting_balance,
+        forecast_12m: forecast.forecasted_balance,
     };
 }
 // GET /accounts, returns all accounts for the authenticated user
@@ -39,27 +30,9 @@ router.get('/', requireAuth, async (req, res) => {
         // Récupérer l’ID de l’utilisateur connecté
         const userId = req.user.id;
         // On récupère les comptes et on calcule le solde réel à partir des transactions.
-        const { rows } = await db.query(`SELECT
-           a.*,
-           (
-             COALESCE(a.balance, 0) +
-             COALESCE(
-                 SUM(
-                     CASE
-                       WHEN t.transaction_type = 'income' THEN t.amount
-                       WHEN t.transaction_type = 'expense' THEN -t.amount
-                       ELSE 0
-                       END
-                 ), 0
-             )
-             ) AS balance
-         FROM accounts a
-                LEFT JOIN transactions t ON t.account_id = a.id
-         WHERE a.user_id = $1
-         GROUP BY a.id
-         ORDER BY a.created_on DESC, a.id DESC`, [userId]);
+        const { rows } = await db.query(`SELECT * FROM accounts WHERE user_id = $1 ORDER BY created_on DESC, id DESC`, [userId]);
         // Décorer chaque compte avec les champs calculés
-        const data = rows.map(decorateAccount);
+        const data = await Promise.all(rows.map(decorateAccount));
         res.json({ data });
     }
     catch (err) {
@@ -107,7 +80,7 @@ router.post('/', requireAuth, async (req, res) => {
             annual_interest_rate,
             tax_rate,
         ]);
-        const account = decorateAccount(rows[0]);
+        const account = await decorateAccount(rows[0]);
         res.status(201).json({ data: account });
     }
     catch (err) {
@@ -149,7 +122,7 @@ router.put('/:id', requireAuth, async (req, res) => {
         if (!rowCount) {
             return res.status(404).json({ error: 'Compte introuvable.' });
         }
-        res.json({ data: decorateAccount(rows[0]) });
+        res.json({ data: await decorateAccount(rows[0]) });
     }
     catch (err) {
         console.error('PUT /accounts/:id error', err);

@@ -4,57 +4,29 @@ import { requireAuth } from '../middlewares/index.js';
 import type { Request, Response } from 'express';
 import type { Router } from 'express';
 
-// Define the Account type to represent the structure of an account in the database
-type Account = {
-  id: string;
-  user_id: string;
-  account_name: string;
-  description: string | null;
-  created_on: string; // DATE
-  currency: string; // CHAR(3)
-  balance: number; // NUMERIC(18,2)
-  annual_interest_rate: number | null; // NUMERIC(6,4)
-  tax_rate: number | null; // NUMERIC(6,4)
-  created_at: string; // TIMESTAMPTZ
-  updated_at: string; // TIMESTAMPTZ
-};
+import { calendarDate, calculateAccountForecast, type Account, type Transaction } from './previsions.js';
 
 const router: Router = express.Router();
 
-// Function to compute the forecasted balance of an account after a specified number of months
-function computeForecast(account: Account, months: number = 12): number {
-  const annualRate: number = Number(account.annual_interest_rate || 0) / 100;
-  const taxRate: number = Number(account.tax_rate || 0) / 100;
-  let balance: number = Number(account.balance || 0);
-
-  const monthlyRate: number = annualRate / 12;
-
-  for (let i = 0; i < months; i++) {
-    const grossInterest: number = balance * monthlyRate;
-    const netInterest: number = grossInterest * (1 - taxRate);
-    balance += netInterest;
-  }
-
-  return balance;
-}
-
-// Function to decorate an account with additional computed fields: current_balance and forecast_12m
-function decorateAccount(
-  account: Account,
-): Account & { current_balance: number; forecast_12m: number } {
-  const balance: number = Number(account.balance || 0);
-  const annualRate: number = Number(account.annual_interest_rate || 0);
-  const taxRate: number = Number(account.tax_rate || 0);
-
-  const monthlyRate: number = annualRate / 100 / 12;
-  const grossMonth: number = balance * monthlyRate;
-  const netMonth: number = grossMonth * (1 - taxRate / 100);
-
+async function decorateAccount(account: Account) {
+  const { rows: transactions } = await db.query(
+    `SELECT t.*, row_to_json(r) AS recurrence_rule
+     FROM transactions t
+     LEFT JOIN recurrence_rules r ON r.transaction_id = t.id
+     WHERE t.account_id = $1 ORDER BY t.start_date`,
+    [account.id],
+  );
+  const target = new Date();
+  target.setFullYear(target.getFullYear() + 1);
+  const forecast = calculateAccountForecast(account, transactions as Transaction[], target.toISOString());
+  const createdOn = calendarDate(account.created_on);
   return {
     ...account,
-    balance: Number(balance.toFixed(2)),
-    current_balance: Number((balance + netMonth).toFixed(2)),
-    forecast_12m: Number(computeForecast(account, 12).toFixed(2)),
+    created_on: `${createdOn.getFullYear()}-${String(createdOn.getMonth() + 1).padStart(2, '0')}-${String(createdOn.getDate()).padStart(2, '0')}`,
+    initial_balance: Number(account.balance),
+    balance: forecast.starting_balance,
+    current_balance: forecast.starting_balance,
+    forecast_12m: forecast.forecasted_balance,
   };
 }
 
@@ -70,31 +42,13 @@ router.get('/', requireAuth, async (req: Request, res: Response) => {
 
     // On récupère les comptes et on calcule le solde réel à partir des transactions.
     const { rows } = await db.query(
-      `SELECT
-           a.*,
-           (
-             COALESCE(a.balance, 0) +
-             COALESCE(
-                 SUM(
-                     CASE
-                       WHEN t.transaction_type = 'income' THEN t.amount
-                       WHEN t.transaction_type = 'expense' THEN -t.amount
-                       ELSE 0
-                       END
-                 ), 0
-             )
-             ) AS balance
-         FROM accounts a
-                LEFT JOIN transactions t ON t.account_id = a.id
-         WHERE a.user_id = $1
-         GROUP BY a.id
-         ORDER BY a.created_on DESC, a.id DESC`,
+      `SELECT * FROM accounts WHERE user_id = $1 ORDER BY created_on DESC, id DESC`,
       [userId],
     );
 
     // Décorer chaque compte avec les champs calculés
     const data: (Account & { current_balance: number; forecast_12m: number })[] =
-      rows.map(decorateAccount);
+      await Promise.all(rows.map(decorateAccount));
     res.json({ data });
   } catch (err) {
     console.error('GET /accounts error', err);
@@ -163,7 +117,7 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
       ],
     );
 
-    const account: Account & { current_balance: number; forecast_12m: number } = decorateAccount(
+    const account: Account & { current_balance: number; forecast_12m: number } = await decorateAccount(
       rows[0],
     );
     res.status(201).json({ data: account });
@@ -222,7 +176,7 @@ router.put('/:id', requireAuth, async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Compte introuvable.' });
     }
 
-    res.json({ data: decorateAccount(rows[0]) });
+    res.json({ data: await decorateAccount(rows[0]) });
   } catch (err) {
     console.error('PUT /accounts/:id error', err);
     res.status(500).json({
