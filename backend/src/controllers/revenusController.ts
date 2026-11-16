@@ -17,9 +17,13 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
     `
     SELECT
       t.*,
-      a.account_name
+      a.account_name,
+      r.interval_count,
+      r.interval_unit,
+      r.end_date
     FROM transactions t
            JOIN accounts a ON a.id = t.account_id
+           LEFT JOIN recurrence_rules r ON r.transaction_id = t.id
     WHERE t.transaction_type = 'income'
       AND a.user_id = $1
     ORDER BY t.start_date DESC
@@ -38,9 +42,10 @@ export const getById = async (req: Request, res: Response<{ message: string }>):
   const userId: string = req.user.id;
   const { id } = req.params;
   const { rows } = await db.query(
-    ` SELECT t.*
+    ` SELECT t.*, r.interval_count, r.interval_unit, r.end_date
         FROM transactions t
                JOIN accounts a ON a.id = t.account_id
+               LEFT JOIN recurrence_rules r ON r.transaction_id = t.id
         WHERE
           t.id = $1
           AND t.transaction_type = 'income'
@@ -171,6 +176,7 @@ export const update = async (req: Request, res: Response<{ message: string }>): 
   const { id } = req.params;
 
   let {
+    account_id,
     transaction_name,
     amount,
     start_date,
@@ -211,6 +217,17 @@ export const update = async (req: Request, res: Response<{ message: string }>): 
   }
 
   // Mise à jour du revenu
+  if (account_id != null) {
+    const accountCheck = await db.query(
+      `SELECT 1 FROM accounts WHERE id = $1 AND user_id = $2`,
+      [account_id, userId],
+    );
+    if (!accountCheck.rowCount) {
+      res.status(403).json({ message: 'Compte non autoris\u00e9' });
+      return;
+    }
+  }
+
   const { rows: transactionRows } = await db.query(
     `
         UPDATE transactions t
@@ -219,7 +236,8 @@ export const update = async (req: Request, res: Response<{ message: string }>): 
           amount = $2,
           start_date = $3,
           description = $4,
-          duration_type = $5
+          duration_type = $5,
+          account_id = COALESCE($8, t.account_id)
           FROM accounts a
         WHERE
           t.id = $6
@@ -228,7 +246,7 @@ export const update = async (req: Request, res: Response<{ message: string }>): 
           AND a.user_id = $7
           RETURNING t.*
       `,
-    [transaction_name, amount, start_date, description, duration_type, id, userId],
+    [transaction_name, amount, start_date, description, duration_type, id, userId, account_id ?? null],
   );
 
   if (!transactionRows.length) {

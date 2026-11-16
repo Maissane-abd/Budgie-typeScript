@@ -31,7 +31,7 @@
           </div>
         </div>
         
-        //bug
+      
         <div class="form-group">
           <label>Compte</label>
           <div class="select-gray-wrapper">

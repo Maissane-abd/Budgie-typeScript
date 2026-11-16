@@ -11,9 +11,13 @@ export const getAll = async (req, res) => {
     const { rows } = await db.query(`
     SELECT
       t.*,
-      a.account_name
+      a.account_name,
+      r.interval_count,
+      r.interval_unit,
+      r.end_date
     FROM transactions t
            JOIN accounts a ON a.id = t.account_id
+           LEFT JOIN recurrence_rules r ON r.transaction_id = t.id
     WHERE t.transaction_type = 'income'
       AND a.user_id = $1
     ORDER BY t.start_date DESC
@@ -28,9 +32,10 @@ export const getById = async (req, res) => {
     }
     const userId = req.user.id;
     const { id } = req.params;
-    const { rows } = await db.query(` SELECT t.*
+    const { rows } = await db.query(` SELECT t.*, r.interval_count, r.interval_unit, r.end_date
         FROM transactions t
                JOIN accounts a ON a.id = t.account_id
+               LEFT JOIN recurrence_rules r ON r.transaction_id = t.id
         WHERE
           t.id = $1
           AND t.transaction_type = 'income'
@@ -122,7 +127,7 @@ export const update = async (req, res) => {
     }
     const userId = req.user.id;
     const { id } = req.params;
-    let { transaction_name, amount, start_date, description, duration_type, interval_count, interval_unit, end_date, } = req.body;
+    let { account_id, transaction_name, amount, start_date, description, duration_type, interval_count, interval_unit, end_date, } = req.body;
     // Validation des champs obligatoires
     if (!transaction_name || !amount || !start_date) {
         res.status(400).json({
@@ -148,6 +153,13 @@ export const update = async (req, res) => {
         }
     }
     // Mise à jour du revenu
+    if (account_id != null) {
+        const accountCheck = await db.query(`SELECT 1 FROM accounts WHERE id = $1 AND user_id = $2`, [account_id, userId]);
+        if (!accountCheck.rowCount) {
+            res.status(403).json({ message: 'Compte non autoris\u00e9' });
+            return;
+        }
+    }
     const { rows: transactionRows } = await db.query(`
         UPDATE transactions t
         SET
@@ -155,7 +167,8 @@ export const update = async (req, res) => {
           amount = $2,
           start_date = $3,
           description = $4,
-          duration_type = $5
+          duration_type = $5,
+          account_id = COALESCE($8, t.account_id)
           FROM accounts a
         WHERE
           t.id = $6
@@ -163,7 +176,7 @@ export const update = async (req, res) => {
           AND a.id = t.account_id
           AND a.user_id = $7
           RETURNING t.*
-      `, [transaction_name, amount, start_date, description, duration_type, id, userId]);
+      `, [transaction_name, amount, start_date, description, duration_type, id, userId, account_id ?? null]);
     if (!transactionRows.length) {
         res.status(404).json({ message: 'Revenu non trouvé' });
         return;

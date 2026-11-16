@@ -26,7 +26,7 @@
             </label>
             <label class="radio-label">
               <input type="radio" value="recurring" v-model="form.duration_type" />
-              <span>Récurrent (tous les mois)</span>
+              <span>Récurrent</span>
             </label>
           </div>
         </div>
@@ -39,6 +39,18 @@
               <option v-for="acc in accounts" :key="acc.id" :value="acc.id">
                 {{ acc.account_name }}
               </option>
+            </select>
+          </div>
+        </div>
+
+        <div v-if="form.duration_type === 'recurring'" class="form-group">
+          <label>Fréquence</label>
+          <div class="row-dates">
+            <input type="number" min="1" v-model.number="form.interval_count" />
+            <select v-model="form.interval_unit">
+              <option value="day">Jour(s)</option>
+              <option value="month">Mois</option>
+              <option value="year">Année(s)</option>
             </select>
           </div>
         </div>
@@ -87,6 +99,8 @@ const form = reactive<TransactionForm>({
   account_id: null,
   start_date: '',
   end_date: '',
+  interval_count: 1,
+  interval_unit: 'month',
 });
 
 // Charger les comptes pour la liste déroulante
@@ -114,6 +128,8 @@ watch(
       form.amount = newVal.amount;
       form.duration_type = newVal.duration_type || 'once';
       form.account_id = newVal.account_id;
+      form.interval_count = newVal.interval_count ?? 1;
+      form.interval_unit = newVal.interval_unit ?? 'month';
       // Formatage des dates pour l'input HTML type="date" (YYYY-MM-DD)
       form.start_date = newVal.start_date ? newVal.start_date.split('T')[0] : '';
       form.end_date = newVal.end_date ? newVal.end_date.split('T')[0] : '';
@@ -136,14 +152,19 @@ onMounted(fetchAccounts);
 
 // MISE A JOUR
 const handleUpdate = async () => {
-  if (!form.transaction_name || !form.amount || !form.start_date) {
+  if (!form.transaction_name || !form.amount || !form.start_date || !form.account_id) {
     alert('Veuillez remplir les champs obligatoires (Nom, Montant, Date).');
     return;
   }
 
   const token = localStorage.getItem('budgie_token');
   try {
-    await axios.put(`${API_URL}/revenus/${form.id}`, form, {
+    await axios.put(`${API_URL}/revenus/${form.id}`, {
+      ...form,
+      interval_count: form.duration_type === 'recurring' ? form.interval_count : null,
+      interval_unit: form.duration_type === 'recurring' ? form.interval_unit : null,
+      end_date: form.duration_type === 'recurring' ? form.end_date : null,
+    }, {
       headers: { Authorization: `Bearer ${token}` },
     });
     emit('updated');
