@@ -6,6 +6,7 @@
         id="target-date"
         :value="modelValue"
         type="date"
+        :max="maxForecastDate()"
         class="date-input"
         @change="handleChange"
       />
@@ -17,6 +18,8 @@
 </template>
 
 <script setup lang="ts">
+import { maxForecastDate } from '@/utils/forecastDate';
+
 defineProps({
   modelValue: String,
   loading: Boolean,

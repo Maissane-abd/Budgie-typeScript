@@ -119,6 +119,7 @@ import PrevisionsControls from '@/components/previsions/PrevisionsControls.vue';
 import PrevisionsTable from '@/components/previsions/PrevisionsTable.vue';
 const router = useRouter();
 import { API_BASE } from '@/config/api';
+import { maxForecastDate } from '@/utils/forecastDate';
 // const API_BASE = 'https://budgie-api-s1yz.onrender.com/api';
 
 const previsions = ref<Forecast | null>(null);
@@ -163,6 +164,10 @@ const maxMonthlyValue = computed(() => {
 });
 
 async function fetchPrevisions() {
+  if (targetDate.value > maxForecastDate()) {
+    error.value = 'La date cible ne peut pas dépasser 100 ans à partir d’aujourd’hui.';
+    return;
+  }
   loading.value = true;
   error.value = '';
 
