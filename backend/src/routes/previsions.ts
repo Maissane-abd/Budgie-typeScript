@@ -68,6 +68,23 @@ type ForecastQuery = {
   target_date?: string;
 };
 
+export function validateTargetDate(value: string, today = new Date()): string | null {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return 'La date cible doit être une date valide au format AAAA-MM-JJ.';
+  }
+  const target = calendarDate(value);
+  const [year, month, day] = value.split('-').map(Number);
+  if (target.getFullYear() !== year || target.getMonth() + 1 !== month || target.getDate() !== day) {
+    return 'La date cible doit être une date valide au format AAAA-MM-JJ.';
+  }
+  const maxYear = today.getFullYear() + 100;
+  const maxDay = Math.min(today.getDate(), new Date(maxYear, today.getMonth() + 1, 0).getDate());
+  const maximum = new Date(maxYear, today.getMonth(), maxDay);
+  return target > maximum
+    ? 'La date cible ne peut pas dépasser 100 ans à partir d’aujourd’hui.'
+    : null;
+}
+
 // SQL DATE values are calendar dates, without a time or UTC offset.
 export function calendarDate(value: string | Date): Date {
   if (value instanceof Date) {
@@ -250,6 +267,9 @@ router.get('/', requireAuth, async (req: Request<Record<string, never>, unknown,
     const targetDate: string =
       req.query.target_date ||
       new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // 1 an par défaut
+
+    const dateError = validateTargetDate(targetDate);
+    if (dateError) return res.status(400).json({ error: dateError });
 
     // Récupérer tous les comptes de l'utilisateur
     const { rows: accounts } = await db.query(

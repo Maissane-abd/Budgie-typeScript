@@ -1,9 +1,24 @@
 import { afterEach, expect, it, vi } from 'vitest';
 vi.mock('../src/models/db.js', () => ({ default: {} }));
 vi.mock('../src/middlewares/index.js', () => ({ requireAuth: vi.fn() }));
-import { calculateAccountForecast } from '../src/routes/previsions';
+import { calculateAccountForecast, validateTargetDate } from '../src/routes/previsions';
 
 afterEach(() => vi.useRealTimers());
+
+it('accepts the 100-year boundary and rejects the following day and invalid dates', () => {
+  const today = new Date(2026, 10, 17, 12);
+  expect(validateTargetDate('2126-11-17', today)).toBeNull();
+  expect(validateTargetDate('2126-11-18', today)).toContain('100 ans');
+  expect(validateTargetDate('9999-12-31', today)).toContain('100 ans');
+  expect(validateTargetDate('2126-02-30', today)).toContain('date valide');
+  expect(validateTargetDate('invalid', today)).toContain('date valide');
+});
+
+it('clamps the 100-year limit to February 28 when the target year is not a leap year', () => {
+  const today = new Date(2000, 1, 29, 12);
+  expect(validateTargetDate('2100-02-28', today)).toBeNull();
+  expect(validateTargetDate('2100-03-01', today)).toContain('100 ans');
+});
 
 it('includes past operations in the initial balance without counting them twice', () => {
   vi.useFakeTimers();
