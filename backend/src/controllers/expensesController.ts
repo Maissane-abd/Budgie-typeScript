@@ -59,7 +59,7 @@ export const getById = async (req: Request, res: Response): Promise<void> => {
 
 // POST /expenses, creates a new expense for the authenticated user
 export const create = async (req: Request, res: Response): Promise<void> => {
-  let {
+  const {
     account_id,
     transaction_name,
     amount,
@@ -68,8 +68,8 @@ export const create = async (req: Request, res: Response): Promise<void> => {
     duration_type,
     interval_count,
     interval_unit,
-    end_date,
   } = req.body;
+  let { end_date } = req.body;
 
   // Champs obligatoires
   if (!account_id || !transaction_name || !amount || !start_date) {
@@ -162,7 +162,7 @@ export const update = async (req: Request, res: Response) => {
   const userId = req.user.id;
   const { id } = req.params;
 
-  let {
+  const {
     account_id,
     transaction_name,
     amount,
@@ -171,8 +171,8 @@ export const update = async (req: Request, res: Response) => {
     duration_type,
     interval_count,
     interval_unit,
-    end_date,
   } = req.body;
+  let { end_date } = req.body;
 
   if (!account_id || !transaction_name || !amount || !start_date) {
     return res.status(400).json({ message: 'Champs obligatoires manquants' });

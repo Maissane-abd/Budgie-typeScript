@@ -18,9 +18,6 @@ Application web de gestion financière personnelle et de prévisions budgétaire
 </div>
 
 La v2 désigne ici l'état fonctionnel du dépôt documenté le **26 novembre 2026**.
-Les versions npm restent `1.0.0` à la racine et dans le backend, et `0.0.0` dans le
-frontend ; aucun tag Git v2 n'est présent dans le dépôt examiné. Ce document ne
-certifie pas la version actuellement déployée sur le site.
 
 ## Sommaire
 
@@ -51,12 +48,6 @@ estimer l'évolution de ses soldes. Les opérations sont renseignées manuelleme
 | Prévisions          | Date cible personnalisable jusqu'à **100 ans** à partir d'aujourd'hui, détail mensuel par compte, revenus, dépenses, intérêts et soldes. Graphique des douze premiers mois.                          |
 | Intérêts            | Capitalisation annuelle à l'anniversaire du compte, après application du taux d'imposition paramétré. Les taux sont saisis en pourcentage : `2.5` pour 2,5 %.                                        |
 | Pages publiques     | Accueil, mentions légales, politique de confidentialité et conditions d'utilisation pré-rendus à la compilation ; métadonnées, URL canoniques, `robots.txt` et sitemap.                              |
-
-**Point bloquant sur une base neuve :** le schéma `db/init.sql` ne crée plus les
-tables `plans` et `subscriptions`, encore interrogées à la connexion et par
-`/api/auth/me`. Ces parcours peuvent donc renvoyer une erreur serveur après une
-inscription réussie. Voir les [limites connues](docs/known-limitations.md) avant
-d'utiliser une nouvelle installation.
 
 Les prévisions dépendent des données saisies et du modèle de calcul décrit dans
 l'[architecture](docs/architecture.md). Elles restent des estimations.

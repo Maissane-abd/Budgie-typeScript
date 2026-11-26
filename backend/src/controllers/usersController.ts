@@ -37,6 +37,7 @@ export const getProfile = async (
     }
     res.json(rows[0]);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Erreur serveur' });
   }
 };
@@ -68,6 +69,7 @@ export const updateProfile = async (
     }
     res.json(rows[0]);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Erreur lors de la mise à jour' });
   }
 };

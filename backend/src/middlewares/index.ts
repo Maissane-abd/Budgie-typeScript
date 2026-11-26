@@ -20,9 +20,18 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
 
   try {
     const decoded: string | jwt.JwtPayload = jwt.verify(token, JWT_SECRET);
-    req.user = { id: (decoded as any).id, email: (decoded as any).email };
+    if (
+      typeof decoded === 'string' ||
+      typeof decoded.id !== 'string' ||
+      typeof decoded.email !== 'string'
+    ) {
+      return res.status(401).json({ error: 'Token invalide' });
+    }
+
+    req.user = { id: decoded.id, email: decoded.email };
     next();
   } catch (err) {
+    console.error('Erreur de vérification du token :', err);
     res.status(401).json({ error: 'Token invalide' });
   }
 }
