@@ -155,7 +155,7 @@ defineOptions({ name: 'ProfilesView' });
 import type { User } from '@/stores/userStore';
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import { RouterLink, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 import AbonnementHeader from '../components/profile/AbonnementHeader.vue';
 import { API_BASE } from '@/config/api';

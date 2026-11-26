@@ -17,8 +17,9 @@ export interface LegalPage {
 export const legalContact = {
   name: 'Maïssane ABDALLAH',
   status: 'Particulier',
-  location: 'Paris, France',
+  location: 'L’Haÿ-les-Roses, France',
   email: 'abd.maissane@gmail.com',
+  linkedin: 'https://www.linkedin.com/in/ma%C3%AFssane-abdallah',
 };
 
 // Keep this status until the operational details and the full text have been reviewed.
@@ -26,13 +27,6 @@ export const legalReview = {
   status: 'draft',
   updatedAt: '2026-11-26',
   updatedLabel: '26 novembre 2026',
-  label: 'Version de travail — en cours de validation',
-  pending: [
-    // 'Coordonnées légales complètes de l’éditeur et responsable de publication.',
-    // 'Identité et coordonnées exactes de l’hébergeur, pays de stockage et transferts éventuels.',
-    // 'Durées et modalités de conservation des comptes inactifs, journaux, courriels et sauvegardes.',
-    // 'Vérification du service déployé et relecture de l’ensemble des textes par un professionnel du droit.',
-  ],
 } as const;
 
 export const legalPages: LegalPage[] = [
@@ -47,14 +41,14 @@ export const legalPages: LegalPage[] = [
         title: 'Éditeur du service',
         paragraphs: [
           `Le site monbudgie.fr et le service Budgie sont édités par ${legalContact.name}, à titre de particulier, à ${legalContact.location}.`,
-          'L’adresse postale complète, les autres coordonnées légalement requises et l’identité du responsable de publication restent à confirmer avant validation définitive. La mention « Paris, France » ne constitue pas une adresse postale complète.',
+          `Directeur de la publication : ${legalContact.name}. Le contact pour le site et les données personnelles est ${legalContact.email}.`,
         ],
       },
       {
         id: 'service',
         title: 'Objet du site',
         paragraphs: [
-          'Budgie est un outil de gestion de budget personnel. Il permet de saisir manuellement des comptes financiers, des revenus et des dépenses, puis de consulter des prévisions calculées à partir de ces informations.',
+          'Budgie est un outil gratuit de gestion et de simulation de budget personnel, sans publicité ni commercialisation des données des utilisateurs. Il permet de saisir manuellement des comptes financiers, des revenus et des dépenses, puis de consulter des prévisions calculées à partir de ces informations.',
           'Budgie ne se connecte pas à votre banque et ne réalise aucun paiement ni virement. Ses estimations ne constituent pas un conseil financier personnalisé.',
         ],
       },
@@ -62,8 +56,14 @@ export const legalPages: LegalPage[] = [
         id: 'hebergement',
         title: 'Hébergement',
         paragraphs: [
-          'L’hébergement annoncé pour Budgie est un serveur privé virtuel chez OVHcloud. L’entité contractante, son adresse, son numéro de téléphone et les lieux effectifs de stockage restent à confirmer.',
-          'Ces informations doivent être complétées à partir du contrat d’hébergement avant de considérer ces mentions comme définitives.',
+          'Hébergeur : OVH SAS, 2 rue Kellermann, 59100 Roubaix, France. Téléphone : 1007 depuis la France, ou +33 9 72 10 10 07 depuis l’étranger.',
+          'Le site, l’API et la base de données sont hébergés sur un même serveur privé virtuel situé au Royaume-Uni. L’adresse française d’OVH SAS correspond à son siège social, et non au lieu de stockage de ces données.',
+        ],
+        links: [
+          {
+            label: 'Informations légales d’OVHcloud',
+            href: 'https://www.ovhcloud.com/fr/terms-and-conditions/',
+          },
         ],
       },
       {
@@ -87,8 +87,9 @@ export const legalPages: LegalPage[] = [
         id: 'responsable',
         title: 'Responsable et périmètre',
         paragraphs: [
-          `${legalContact.name}, particulier à ${legalContact.location}, est le point de contact et le responsable du traitement des données du service Budgie. Le contact pour la confidentialité est ${legalContact.email}.`,
+          `${legalContact.name}, particulier à ${legalContact.location}, est le seul éditeur, administrateur et responsable du traitement des données du service Budgie. Le contact pour la confidentialité est ${legalContact.email}.`,
           'Cette politique concerne le site monbudgie.fr, votre espace personnel et les échanges avec le support. Elle est distincte des conditions d’utilisation et de la documentation du code source.',
+          'Budgie est entièrement gratuit. Les données des utilisateurs ne sont ni vendues ni utilisées par l’éditeur pour la publicité.',
         ],
       },
       {
@@ -102,7 +103,7 @@ export const legalPages: LegalPage[] = [
           'Comptes financiers : nom et description, devise, solde renseigné, date de départ et, lorsqu’ils sont renseignés, taux d’intérêt et taux fiscal.',
           'Revenus et dépenses : libellés, descriptions, montants, dates, compte associé et règles de récurrence. Les prévisions et les totaux sont calculés à partir de ces informations.',
           'Connexion et fonctionnement : jeton d’authentification dans le navigateur, informations de requête et d’erreur dans les journaux techniques. Ces journaux peuvent comprendre une adresse IP, un identifiant de compte ou une adresse e-mail.',
-          'Contact : adresse e-mail et contenu des messages que vous adressez au support.',
+          'Contact : adresse e-mail ou profil LinkedIn et contenu des messages que vous adressez au support.',
         ],
       },
       {
@@ -118,7 +119,7 @@ export const legalPages: LegalPage[] = [
         title: 'À quoi servent ces données ?',
         paragraphs: [
           'La création et la gestion du compte, l’authentification, l’enregistrement du budget et le calcul des prévisions servent à fournir le service que vous demandez. La base légale retenue pour ces fonctions est l’exécution du contrat d’utilisation du service, y compris les démarches nécessaires à sa création (article 6, paragraphe 1, b du RGPD).',
-          'La protection des accès et le diagnostic des erreurs répondent à l’intérêt légitime de maintenir la sécurité et le fonctionnement du service (article 6, paragraphe 1, f du RGPD). Le périmètre des journaux et cette justification doivent encore être validés et documentés.',
+          'La protection des accès et le diagnostic des erreurs répondent à l’intérêt légitime de maintenir la sécurité et le fonctionnement du service (article 6, paragraphe 1, f du RGPD).',
           'Les messages de support sont utilisés pour répondre à votre demande : exécution du service pour une demande liée au compte, ou intérêt légitime à répondre aux autres questions. Les demandes d’exercice de droits sont traitées pour respecter les obligations du RGPD (article 6, paragraphe 1, c).',
           'Les prévisions sont des calculs indicatifs destinés à votre consultation. Budgie ne les utilise pas pour prendre une décision d’octroi de crédit ou une autre décision produisant un effet juridique à votre égard.',
         ],
@@ -127,19 +128,39 @@ export const legalPages: LegalPage[] = [
         id: 'destinataires',
         title: 'Qui peut accéder aux données ?',
         paragraphs: [
-          'Les données de votre espace ne sont pas publiées sur le site. Leur traitement implique l’éditeur pour l’exploitation et l’assistance, ainsi que le prestataire d’hébergement dans le cadre de ses missions techniques.',
-          'L’hébergement annoncé est OVHcloud. Les messages adressés au contact transitent également par son fournisseur de messagerie, Gmail (Google). La liste complète des prestataires, leurs conditions d’accès, les pays de stockage et les éventuels transferts hors de l’Espace économique européen et leurs garanties restent à vérifier.',
-          'Les coordonnées de l’hébergeur et les informations sur les transferts devront être précisées avant la validation définitive de cette politique.',
+          `Les données de votre espace ne sont pas publiées sur le site. ${legalContact.name} assure seul l’administration et l’assistance. OVH SAS fournit l’hébergement et intervient dans le cadre de ses missions techniques. Les échanges de contact utilisent Gmail ou, si vous choisissez ce canal, LinkedIn. Aucun autre administrateur ni prestataire directement engagé par l’éditeur n’intervient dans le service.`,
+          'Le site, l’API et la base de données sont hébergés chez OVH SAS sur un serveur situé au Royaume-Uni, hors de l’Espace économique européen. Le Royaume-Uni bénéficie d’une décision d’adéquation de la Commission européenne, renouvelée par la décision (UE) 2025/2574 du 19 décembre 2025, au titre de l’article 45 du RGPD.',
+          `Les demandes par e-mail sont reçues sur une boîte Gmail personnelle, consultée uniquement par ${legalContact.name}, sans transfert automatique vers une autre adresse. Les messages transitent par l’infrastructure de Google, selon les conditions et règles de confidentialité de ce service grand public. Ils ne sont pas envoyés automatiquement depuis votre espace Budgie.`,
+          'Google indique que des traitements peuvent avoir lieu sur des serveurs situés hors du pays de résidence, notamment hors de l’Espace économique européen. Ses règles de confidentialité et ses cadres de transfert précisent les mécanismes qu’il utilise. Cette messagerie n’est pas présentée comme un service Google Workspace ni comme un stockage limité au Royaume-Uni ou à l’Union européenne.',
+          'Si vous choisissez de contacter l’éditeur sur LinkedIn, les informations liées à cet échange sont également traitées par LinkedIn selon sa propre politique de confidentialité. Pour les demandes relatives à votre compte ou à vos données, privilégiez l’e-mail et n’envoyez pas de détail financier sur un réseau social.',
+        ],
+        links: [
+          {
+            label: 'Décisions d’adéquation de la Commission européenne',
+            href: 'https://commission.europa.eu/law/law-topic/data-protection/international-dimension-data-protection/adequacy-decisions_en',
+          },
+          {
+            label: 'Règles de confidentialité de Google',
+            href: 'https://policies.google.com/privacy?hl=fr',
+          },
+          {
+            label: 'Cadres de transfert de données de Google',
+            href: 'https://policies.google.com/privacy/frameworks?hl=fr',
+          },
+          {
+            label: 'Politique de confidentialité de LinkedIn',
+            href: 'https://www.linkedin.com/legal/privacy-policy',
+          },
         ],
       },
       {
         id: 'conservation',
         title: 'Conservation et suppression',
         paragraphs: [
-          'Dans la version actuelle, les données du compte et du budget restent dans la base active jusqu’à la suppression du compte ou des éléments concernés. Aucune purge automatique des comptes inactifs n’est actuellement définie. Une règle d’inactivité et sa mise en œuvre doivent être fixées avant validation définitive.',
+          'Les données du compte et du budget restent dans la base active jusqu’à la suppression du compte ou des éléments concernés. Les comptes inactifs ne font actuellement pas l’objet d’une suppression automatique.',
           'Depuis votre profil, vous pouvez modifier votre prénom, votre nom et votre e-mail, puis demander la suppression de votre compte avec confirmation. La suppression du compte entraîne celle des comptes financiers, opérations et récurrences associés dans la base active. La déconnexion seule ne supprime pas votre compte ni votre budget.',
-          'Les durées des journaux techniques, des échanges par e-mail et des éventuelles sauvegardes, ainsi que les modalités de purge de ces dernières, restent à préciser. La suppression dans la base active ne vaut pas garantie d’effacement immédiat dans ces autres supports.',
-          'Aucune conservation supplémentaire pour une obligation légale ne sera présentée comme nécessaire sans en préciser le fondement, les données concernées et la durée applicable.',
+          'Aucune sauvegarde de l’application ou de la base de données Budgie n’est actuellement mise en place par l’éditeur. Une panne ou un incident peut donc entraîner une perte définitive des informations enregistrées. Cette absence de sauvegarde ne concerne pas les copies techniques que les fournisseurs peuvent gérer pour leurs propres services.',
+          'La suppression du compte ne supprime pas automatiquement les messages que vous avez envoyés au support ni les journaux techniques. L’éditeur n’a actuellement défini aucune durée maximale de conservation ni purge périodique pour les journaux techniques, les comptes inactifs et les échanges de support. Vous pouvez exercer vos droits sur ces données auprès du contact du service, dans les conditions du RGPD.',
         ],
       },
       {
@@ -148,7 +169,7 @@ export const legalPages: LegalPage[] = [
         paragraphs: [
           'Après connexion, un jeton nommé « budgie_token » est enregistré dans le stockage local de votre navigateur (localStorage) pour authentifier vos requêtes. Il contient un identifiant de compte et une adresse e-mail. Sa durée de validité est d’un jour ; son expiration ne supprime pas automatiquement la valeur stockée dans le navigateur.',
           'La déconnexion retire ce jeton du navigateur. Vous pouvez aussi l’effacer dans les données du site de votre navigateur ; vous devrez alors vous reconnecter. Sur un appareil partagé, déconnectez-vous après utilisation.',
-          'Ce stockage sert à l’authentification demandée et est strictement nécessaire à cette fonction. L’application examinée n’intègre pas de traceur publicitaire ni de mesure d’audience. La configuration du site déployé doit encore être vérifiée pour confirmer ce périmètre.',
+          'Ce stockage sert à l’authentification demandée et est strictement nécessaire à cette fonction. Budgie n’intègre pas de traceur publicitaire ni d’outil de mesure d’audience.',
         ],
       },
       {
@@ -160,11 +181,19 @@ export const legalPages: LegalPage[] = [
         ],
       },
       {
+        id: 'mineurs',
+        title: 'Utilisateurs mineurs',
+        paragraphs: [
+          'Budgie accueille également des utilisateurs mineurs. Leurs données servent aux mêmes fonctions de compte et de budget décrites dans cette politique. L’éditeur ne les vend pas et ne les utilise pas pour la publicité.',
+          'Si tu es mineur et que tu ne comprends pas une information ou souhaites modifier ou supprimer tes données, tu peux demander de l’aide à ton représentant légal ou écrire au contact du service. L’exercice des droits tient compte de ta situation et des règles de représentation applicables.',
+        ],
+      },
+      {
         id: 'droits',
         title: 'Vos droits et leur exercice',
         paragraphs: [
           'Dans les conditions prévues par le RGPD, vous disposez de droits d’accès, de rectification, d’effacement et de limitation du traitement. Vous pouvez demander la portabilité des données fournies lorsque les conditions sont réunies et vous opposer, pour des raisons tenant à votre situation particulière, aux traitements fondés sur l’intérêt légitime.',
-          `Pour exercer un droit ou poser une question, écrivez à ${legalContact.email}, en précisant votre demande et l’adresse e-mail du compte concerné. N’envoyez pas votre mot de passe. Des informations complémentaires ne seront demandées pour vérifier votre identité qu’en cas de doute raisonnable.`,
+          `Pour exercer un droit ou poser une question, écrivez à ${legalContact.email}, en précisant votre demande et l’adresse e-mail du compte concerné. ${legalContact.name} traite personnellement les demandes d’accès, de copie ou d’export et de suppression. N’envoyez pas votre mot de passe. Des informations complémentaires ne seront demandées pour vérifier votre identité qu’en cas de doute raisonnable.`,
           'Une réponse doit être apportée dans les meilleurs délais et au plus tard dans un mois à compter de la réception de la demande. Ce délai peut être prolongé de deux mois si la complexité ou le nombre de demandes le justifie ; vous devez alors être informé de cette prolongation et de ses motifs pendant le premier mois.',
           'Vous pouvez également adresser une réclamation à la CNIL. Il n’est pas nécessaire de publier vos données dans un espace de discussion public pour exercer vos droits.',
         ],
@@ -188,7 +217,7 @@ export const legalPages: LegalPage[] = [
         id: 'objet',
         title: 'Le service Budgie',
         paragraphs: [
-          'Budgie est un service de suivi de budget personnel accessible sur monbudgie.fr. Vous renseignez manuellement vos comptes financiers, vos revenus et vos dépenses, ponctuels ou récurrents, pour consulter une estimation de vos soldes futurs.',
+          'Budgie est un service gratuit de suivi et de simulation de budget personnel accessible sur monbudgie.fr, sans publicité ni commercialisation des données des utilisateurs. Vous renseignez manuellement vos comptes financiers, vos revenus et vos dépenses, ponctuels ou récurrents, pour consulter une estimation de vos soldes futurs.',
           'Budgie ne détient pas votre argent, ne se connecte pas à vos banques et n’exécute ni paiement ni virement. Les présentes conditions concernent ce service en ligne ; les conditions de la licence du code source sont distinctes.',
         ],
       },
@@ -199,7 +228,15 @@ export const legalPages: LegalPage[] = [
           'L’accès à votre espace nécessite un compte créé avec votre prénom, votre nom, une adresse e-mail et un mot de passe conforme aux règles du formulaire. Un compte financier principal est créé lors de l’inscription.',
           'Utilisez une adresse e-mail à laquelle vous avez accès et gardez vos identifiants confidentiels. Choisissez un mot de passe propre à Budgie, déconnectez-vous sur les appareils partagés et signalez au contact toute utilisation suspecte de votre compte.',
           'La version actuelle ne propose pas de réinitialisation autonome du mot de passe. Si vous perdez votre accès, contactez le support ; aucune récupération automatique ne peut être garantie.',
-          'Le service actuel ne comporte pas de parcours de paiement actif. Toute future offre payante devra présenter ses tarifs et ses conditions avant une souscription distincte.',
+          'L’inscription et l’utilisation du service sont entièrement gratuites. Aucun paiement ni abonnement payant n’est demandé.',
+        ],
+      },
+      {
+        id: 'public-et-mineurs',
+        title: 'Public et utilisateurs mineurs',
+        paragraphs: [
+          'Budgie s’adresse aux personnes qui souhaitent suivre leurs revenus et leurs dépenses ou simuler l’évolution de leur budget, y compris aux personnes mineures. Le service ne fixe pas de seuil d’âge général.',
+          'Si vous êtes mineur, la création et l’utilisation de votre compte doivent respecter les règles de capacité juridique qui vous sont applicables. Faites-vous accompagner par votre représentant légal lorsque son accord ou son intervention est nécessaire. Pour toute question concernant le compte d’un mineur, celui-ci ou son représentant légal peut contacter l’éditeur.',
         ],
       },
       {
@@ -224,7 +261,7 @@ export const legalPages: LegalPage[] = [
         title: 'Modification, déconnexion et suppression',
         paragraphs: [
           'Depuis votre profil, vous pouvez modifier votre prénom, votre nom et votre adresse e-mail. Vous pouvez aussi supprimer votre compte après confirmation. Cette suppression entraîne l’effacement des comptes financiers et des opérations associés dans la base active et met fin à l’accès à cet espace.',
-          'La déconnexion retire votre jeton de connexion du navigateur ; elle laisse votre compte et les données du budget enregistrés pour une prochaine connexion. Les éventuelles conservations dans les journaux et sauvegardes sont décrites dans la politique de confidentialité et restent à préciser avant validation définitive.',
+          'La déconnexion retire votre jeton de connexion du navigateur ; elle laisse votre compte et les données du budget enregistrés pour une prochaine connexion. La conservation des journaux techniques et des messages de support est décrite dans la politique de confidentialité.',
           'Si vous ne pouvez plus accéder au profil ou si vous souhaitez exercer un droit sur vos données, contactez l’éditeur par e-mail. La politique de confidentialité précise les droits et les modalités de demande.',
         ],
         links: [
@@ -236,7 +273,8 @@ export const legalPages: LegalPage[] = [
         title: 'Disponibilité et évolutions',
         paragraphs: [
           'Des opérations de maintenance, des incidents techniques ou des difficultés de connexion peuvent interrompre temporairement le service. Aucun engagement de disponibilité continue ni de durée de rétablissement n’est annoncé.',
-          'Les fonctionnalités peuvent évoluer. Les changements importants du service ou des présentes conditions devront être portés à votre connaissance avant leur application, avec une information adaptée à leur portée. Cette version de travail n’est pas présentée comme un texte contractuel définitif ni comme la preuve d’une acceptation enregistrée.',
+          'Aucune sauvegarde de l’application ou de la base de données n’est actuellement mise en place par l’éditeur. En cas de panne ou d’incident, les informations enregistrées peuvent être perdues définitivement. Conservez vos relevés et les informations dont vous avez besoin sur un support personnel.',
+          'Les fonctionnalités peuvent évoluer. Les changements importants du service ou des présentes conditions devront être portés à votre connaissance avant leur application, avec une information adaptée à leur portée.',
         ],
       },
       {

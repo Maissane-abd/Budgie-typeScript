@@ -7,7 +7,9 @@
           {{ page.title }}
         </RouterLink>
         <a :href="`mailto:${legalContact.email}`">Contact</a>
+        <a :href="legalContact.linkedin" rel="noreferrer">LinkedIn</a>
       </nav>
+      <p class="footer-credit">développé par {{ legalContact.name }}</p>
     </div>
   </footer>
 </template>
@@ -72,7 +74,7 @@ a:focus-visible {
   border-radius: 3px;
 }
 
-.footer-status {
+.footer-credit {
   margin: 0.75rem 0 0;
 }
 

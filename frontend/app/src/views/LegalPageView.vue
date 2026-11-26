@@ -14,16 +14,6 @@
         <time :datetime="legalReview.updatedAt">{{ legalReview.updatedLabel }}</time>
       </p>
 
-      <aside class="legal-review" aria-labelledby="review-title">
-        <h2 id="review-title">{{ legalReview.label }}</h2>
-        <p>
-          Ces textes restent à compléter et à faire relire avant d’être considérés comme définitifs.
-        </p>
-        <ul>
-          <li v-for="pending in legalReview.pending" :key="pending">{{ pending }}</li>
-        </ul>
-      </aside>
-
       <nav class="legal-summary" aria-label="Sommaire de cette page">
         <a v-for="section in page.sections" :key="section.id" :href="`#${section.id}`">
           {{ section.title }}
@@ -53,6 +43,10 @@
         <p>
           Précisez l’objet de votre demande et l’adresse e-mail du compte concerné. N’envoyez pas
           votre mot de passe, vos accès bancaires ou le détail de vos finances.
+        </p>
+        <p>
+          Pour une question générale, vous pouvez aussi contacter {{ legalContact.name }} sur
+          <a :href="legalContact.linkedin" rel="noreferrer">LinkedIn</a>.
         </p>
       </section>
     </article>
@@ -130,27 +124,6 @@ h1 {
   font-size: 0.875rem;
 }
 
-.legal-review {
-  padding: 1.25rem 1.5rem;
-  border: 1px solid #d9c3eb;
-  border-left: 4px solid #6b21a8;
-  border-radius: 0.75rem;
-  background: #faf6ff;
-}
-
-.legal-review h2 {
-  margin: 0;
-  font-size: 1.125rem;
-}
-
-.legal-review p {
-  margin-top: 0.75rem;
-}
-
-.legal-review ul {
-  margin-bottom: 0;
-}
-
 .legal-summary {
   display: flex;
   flex-wrap: wrap;
@@ -222,10 +195,6 @@ li + li {
 
   .legal-header {
     padding-inline: 1rem;
-  }
-
-  .legal-review {
-    padding: 1rem;
   }
 }
 </style>
