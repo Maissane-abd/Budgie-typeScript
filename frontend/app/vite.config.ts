@@ -3,6 +3,7 @@ import { fileURLToPath, URL } from 'node:url';
 import { defineConfig, type Plugin } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import vueDevTools from 'vite-plugin-vue-devtools';
+import { legalPages } from './src/content/legal';
 
 // Mirror Nginx's SPA fallback when reviewing a production build locally.
 function applicationShellPreview(): Plugin {
@@ -11,7 +12,10 @@ function applicationShellPreview(): Plugin {
     configurePreviewServer(server) {
       server.middlewares.use((request, _response, next) => {
         const pathname = request.url?.split('?')[0] ?? '/';
-        if (pathname !== '/' && pathname !== '/index.html' && !pathname.includes('.')) {
+        const legalPage = legalPages.find((page) => pathname.replace(/\/$/, '') === page.path);
+        if (legalPage) {
+          request.url = `${legalPage.path}/index.html`;
+        } else if (pathname !== '/' && pathname !== '/index.html' && !pathname.includes('.')) {
           request.url = '/app.html';
         }
         next();

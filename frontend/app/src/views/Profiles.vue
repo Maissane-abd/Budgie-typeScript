@@ -119,7 +119,9 @@
         <section class="danger-zone">
           <div class="danger-content">
             <h3>Supprimer mon compte</h3>
-            <p>La suppression du compte est définitive et effacera toutes vos données.</p>
+            <p>
+              La suppression du compte est définitive et efface votre budget dans la base active.
+            </p>
           </div>
           <button class="btn-danger-outline" @click="handleDeleteAccount">
             <svg
@@ -153,7 +155,7 @@ defineOptions({ name: 'ProfilesView' });
 import type { User } from '@/stores/userStore';
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import { useRouter } from 'vue-router';
+import { RouterLink, useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 import AbonnementHeader from '../components/profile/AbonnementHeader.vue';
 import { API_BASE } from '@/config/api';
@@ -465,6 +467,11 @@ button {
   color: #b91c1c;
   margin: 0 0 16px 0;
   font-size: 13px;
+}
+
+.danger-content a {
+  color: inherit;
+  text-underline-offset: 0.2em;
 }
 
 .btn-danger-outline {

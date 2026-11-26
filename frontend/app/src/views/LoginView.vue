@@ -1,49 +1,51 @@
 <!-- src/views/LoginView.vue -->
 <template>
-  <section class="auth-card">
-    <h1 class="auth-title">Connexion</h1>
-    <p class="auth-subtitle">Ravi de te revoir</p>
+  <div class="login-page">
+    <section class="auth-card">
+      <h1 class="auth-title">Connexion</h1>
+      <p class="auth-subtitle">Ravi de te revoir</p>
 
-    <form class="auth-form" @submit.prevent="handleLogin">
-      <div>
-        <div class="auth-label">Email</div>
-        <input
-          v-model="email"
-          type="email"
-          class="auth-input"
-          placeholder="exemple@mail.com"
-          required
-          @invalid="handleEmailInvalid"
-        />
+      <form class="auth-form" @submit.prevent="handleLogin">
+        <div>
+          <div class="auth-label">Email</div>
+          <input
+            v-model="email"
+            type="email"
+            class="auth-input"
+            placeholder="exemple@mail.com"
+            required
+            @invalid="handleEmailInvalid"
+          />
+        </div>
+
+        <div>
+          <div class="auth-label">Mot de passe</div>
+          <input
+            v-model="password"
+            type="password"
+            class="auth-input"
+            placeholder="••••••••"
+            required
+            @invalid="error = 'Entrez votre mot de passe.'"
+          />
+        </div>
+
+        <p v-if="error" class="auth-error" role="alert">{{ error }}</p>
+        <p v-if="success" class="auth-success">{{ success }}</p>
+
+        <button class="auth-button" type="submit" :disabled="loading">
+          {{ loading ? 'Connexion...' : 'Se connecter' }}
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <!-- <RouterLink class="auth-link" to="/reset-password"> Mot de passe oublié ? </RouterLink> -->
+        <br />
+        <span>Pas encore de compte ? </span>
+        <RouterLink class="auth-link" to="/register"> Créer un compte </RouterLink>
       </div>
-
-      <div>
-        <div class="auth-label">Mot de passe</div>
-        <input
-          v-model="password"
-          type="password"
-          class="auth-input"
-          placeholder="••••••••"
-          required
-          @invalid="error = 'Entrez votre mot de passe.'"
-        />
-      </div>
-
-      <p v-if="error" class="auth-error" role="alert">{{ error }}</p>
-      <p v-if="success" class="auth-success">{{ success }}</p>
-
-      <button class="auth-button" type="submit" :disabled="loading">
-        {{ loading ? 'Connexion...' : 'Se connecter' }}
-      </button>
-    </form>
-
-    <div class="auth-footer">
-      <!-- <RouterLink class="auth-link" to="/reset-password"> Mot de passe oublié ? </RouterLink> -->
-      <br />
-      <span>Pas encore de compte ? </span>
-      <RouterLink class="auth-link" to="/register"> Créer un compte </RouterLink>
-    </div>
-  </section>
+    </section>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -124,6 +126,13 @@ async function handleLogin() {
 <style scoped>
 /*AUTH CARD*/
 
+.login-page {
+  display: flex;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 32px 24px;
+}
+
 .auth-card {
   margin: auto;
   width: 420px;
@@ -132,10 +141,6 @@ async function handleLogin() {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
   padding: 32px 32px 28px;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
 }
 
 /*TEXTS*/

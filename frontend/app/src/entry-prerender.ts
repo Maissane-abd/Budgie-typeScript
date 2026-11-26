@@ -2,14 +2,14 @@ import { createSSRApp } from 'vue';
 import { renderToString } from 'vue/server-renderer';
 import { createMemoryHistory, createRouter } from 'vue-router';
 import App from './App.vue';
-import HomeView from './views/HomeView.vue';
+import { publicRoutes } from './router/publicRoutes';
 
-// Only the public page is rendered at build time. No session or API is needed.
-export async function renderHome(): Promise<string> {
+// Only public pages are rendered at build time. No session or API is needed.
+export async function renderPublicPage(path: string): Promise<string> {
   const router = createRouter({
     history: createMemoryHistory(),
     routes: [
-      { path: '/', name: 'home', component: HomeView },
+      ...publicRoutes,
       { path: '/login', component: { render: () => null } },
       { path: '/register', component: { render: () => null } },
     ],
@@ -17,7 +17,7 @@ export async function renderHome(): Promise<string> {
 
   const app = createSSRApp(App);
   app.use(router);
-  await router.push('/');
+  await router.push(path);
   await router.isReady();
   return renderToString(app);
 }
