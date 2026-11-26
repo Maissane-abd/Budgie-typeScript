@@ -2,6 +2,10 @@
 <template>
   <div class="login-page">
     <section class="auth-card">
+      <RouterLink class="auth-back-link" to="/">
+        <span aria-hidden="true">&larr;</span>
+        Retour à l’accueil
+      </RouterLink>
       <h1 class="auth-title">Connexion</h1>
       <p class="auth-subtitle">Ravi de te revoir</p>
 

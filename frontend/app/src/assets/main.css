@@ -46,6 +46,29 @@ body {
   --transition-fast: 0.2s ease;
 }
 
+.auth-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-bottom: 8px;
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.auth-back-link:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+.auth-back-link:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
 .auth-card {
   width: 420px;
   max-width: 90%;

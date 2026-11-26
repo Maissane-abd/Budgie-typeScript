@@ -2,6 +2,10 @@
 <template>
   <div class="register-page">
     <section class="auth-card">
+      <RouterLink class="auth-back-link" to="/">
+        <span aria-hidden="true">&larr;</span>
+        Retour à l’accueil
+      </RouterLink>
       <h1 class="auth-title">Inscription</h1>
       <p class="auth-subtitle">Crée ton compte Budgie pour suivre tes comptes et tes prévisions.</p>
 
@@ -88,8 +92,6 @@
         <p v-if="error" class="auth-error" role="alert">{{ error }}</p>
         <p v-if="success" class="auth-success">{{ success }}</p>
 
-        
-
         <button class="auth-button" type="submit" :disabled="loading">
           {{ loading ? 'Création...' : 'Créer mon compte' }}
         </button>
@@ -115,7 +117,6 @@ import {
   PASSWORD_MIN_LENGTH,
   PASSWORD_POLICY_MESSAGE,
 } from '@/utils/passwordPolicy';
-import { legalContact } from '@/content/legal';
 
 const router = useRouter();
 
