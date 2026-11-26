@@ -1,652 +1,848 @@
 <template>
   <div class="landing-page">
+    <a class="skip-link" href="#contenu-accueil">Aller au contenu</a>
     <header class="landing-header">
-      <div class="logo">Budgie</div>
-      <div class="auth-buttons">
-        <RouterLink to="/register" class="btn-auth btn-outline">S'inscrire</RouterLink>
-        <RouterLink to="/login" class="btn-auth btn-solid">Connexion</RouterLink>
+      <div class="header-inner">
+        <RouterLink class="wordmark" to="/" aria-label="Budgie, accueil">Budgie</RouterLink>
+        <nav aria-label="Accès à votre compte">
+          <RouterLink class="login-link" to="/login">Connexion</RouterLink>
+        </nav>
       </div>
     </header>
 
-    <section class="hero">
-      <div class="hero-content">
-        <h1>Gérez vos finances<br />simplement.</h1>
-        <p>
-          Suivez vos comptes, dépenses, revenus et prévisions<br />financières en un seul endroit.
-        </p>
-      </div>
-    </section>
-
-    <section class="why-section">
-      <h2 class="section-title">Pourquoi Budgie ?</h2>
-      <p class="section-subtitle">
-        Budgie vous aide à mieux comprendre vos finances en toute simplicité. Aucune connexion
-        bancaire nécessaire, aucune donnée partagée, tout est sous votre contrôle.
-      </p>
-
-      <div class="cards-grid">
-        <div class="feature-card">
-          <div class="icon-illustration">
-            <svg
-              width="64"
-              height="64"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#8b5cf6"
-              stroke-width="1.5"
-            >
-              <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
-              <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
-              <path d="M21 5c0 1.66-4 3-9 3s-9-1.34-9-3s4-3 9-3s9 1.34 9 3Z" />
-              <circle cx="18" cy="18" r="4" fill="white" stroke="#8b5cf6" stroke-width="2" />
-              <path d="M18 16v2" stroke="#8b5cf6" stroke-width="2" />
-            </svg>
-          </div>
-          <h3>Données sécurisées et privées</h3>
-          <p>
-            Toutes vos données restent chez vous, sans intermédiaires. Aucune exploitation externe :
-            votre vie financière reste privée.
+    <section id="contenu-accueil" class="hero" aria-labelledby="home-title" tabindex="-1">
+      <div class="hero-inner page-container">
+        <div class="hero-copy">
+          <p class="welcome">Bienvenue sur Budgie,<br />votre outil de gestion de budget.</p>
+          <h1 id="home-title">
+            <span>Anticipez votre budget</span> pour mieux préparer la fin du mois.
+          </h1>
+          <p class="hero-description">
+            Renseignez vos revenus et vos dépenses. Visualisez votre solde à venir pour repérer ce
+            que vous pouvez ajuster.
           </p>
-        </div>
-
-        <div class="feature-card">
-          <div class="icon-illustration">
-            <svg
-              width="64"
-              height="64"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#8b5cf6"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-              <path d="M8 12l3 3 4-4 3 3" />
-              <path d="M8 16h8" stroke-opacity="0.3" />
-            </svg>
+          <div class="hero-actions">
+            <RouterLink class="button-primary" to="/register">Créer mon compte</RouterLink>
+            <a class="text-link" href="#exemple">Voir un exemple</a>
           </div>
-          <h3>Gestion simple des dépenses</h3>
-          <p>
-            Suivez vos comptes, vos dépenses, vos revenus et vos prévisions en un seul coup d'œil.
-          </p>
+          <p class="manual-entry">Saisie manuelle, sans connexion bancaire.</p>
         </div>
 
-        <div class="feature-card">
-          <div class="icon-illustration">
-            <svg
-              width="64"
-              height="64"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#8b5cf6"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path
-                d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9M3 12a9 9 0 0 1 9-9"
-              />
-            </svg>
+        <figure class="forecast-preview" aria-labelledby="preview-label">
+          <div class="preview-meta">
+            <span class="example-badge">Exemple fictif</span>
+            <span>Décembre 2026</span>
           </div>
-          <h3>Gérez vos abonnements, factures et revenus</h3>
-          <p>Maîtrisez vos dépenses ponctuelles et mensuelles.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- <section class="pricing-section">
-      <h2 class="section-title">Choisissez le plan qui vous convient</h2>
-      <p class="section-subtitle">
-        Budgie offre un plan gratuit pour commencer, et un plan Premium pour gérer vos finances sans aucune limite.
-      </p>
-
-      <div class="pricing-toggle-wrapper">
-        <div class="toggle-bg">
-          <button
-              class="toggle-btn"
-              :class="{ active: billing === 'monthly' }"
-              @click="billing = 'monthly'"
-          >
-            Mensuelle
-          </button>
-          <button
-              class="toggle-btn"
-              :class="{ active: billing === 'yearly' }"
-              @click="billing = 'yearly'"
-          >
-            Annuelle
-          </button>
-        </div>
-        <div class="eco-badge">
-          ECO -20%
-        </div>
-      </div>
-
-      <div class="pricing-grid">
-        <div class="price-card">
-          <h3>Plan Gratuit</h3>
-          <p class="card-desc">Parfait pour découvrir Budgie et suivre vos finances personnelles de façon simple.</p>
-
-          <ul class="features-list">
-            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> 2 comptes maximum</li>
-            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> 7 dépenses par compte</li>
-            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> 2 revenus par compte</li>
-            <li class="disabled"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Comptes illimités</li>
-            <li class="disabled"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Dépenses illimitées</li>
-            <li class="disabled"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Revenus illimités</li>
-            <li class="disabled"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Partage des comptes</li>
-            <li class="disabled"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Gestion des exceptions</li>
-            <li class="disabled"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Support prioritaire</li>
-          </ul>
-
-          <div class="spacer"></div>
-          <button class="btn-plan secondary">Essayer Budgie gratuitement</button>
-        </div>
-
-        <div class="price-card premium">
-          <div class="premium-header">
-            <h3>Premium</h3>
-            <div class="price-display">
-              <span class="amount">{{ displayedPriceAmount }}</span>
-              <span class="period">{{ displayedPricePeriod }}</span>
+          <div class="preview-balance">
+            <div>
+              <p id="preview-label" class="preview-label">Solde prévisionnel</p>
+              <p class="preview-date">au 31 décembre</p>
             </div>
+            <p class="preview-amount">−50 €</p>
           </div>
-          <p class="card-desc">Pour une gestion illimitée de vos finances.</p>
-
-          <ul class="features-list">
-            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Comptes illimités</li>
-            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Dépenses illimitées</li>
-            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Revenus illimités</li>
-            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Prévisions avancées</li>
-            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Partage des comptes</li>
-            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Gestion des exceptions</li>
-            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Support prioritaire</li>
-          </ul>
-
-          <div class="spacer"></div>
-          <button class="btn-plan primary">Passer en Premium</button>
-        </div>
-      </div>
-    </section> -->
-
-    <section class="features-section">
-      <h2 class="section-title">Fonctionnalités principales</h2>
-
-      <div class="features-box-grid">
-        <div class="feature-item">
-          <div class="icon-box">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#4a1d96"
-              stroke-width="2"
-            >
-              <rect x="2" y="5" width="20" height="14" rx="2" />
-              <line x1="2" y1="10" x2="22" y2="10" />
-            </svg>
-          </div>
-          <div class="text">
-            <h4>Gestion des comptes</h4>
-            <p>
-              Créez et gérez facilement vos comptes : courants, livrets, investissements. Solde
-              visible en un coup d'œil.
-            </p>
-          </div>
-        </div>
-
-        <div class="feature-item">
-          <div class="icon-box">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#4a1d96"
-              stroke-width="2"
-            >
-              <line x1="12" y1="1" x2="12" y2="23" />
-              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-            </svg>
-          </div>
-          <div class="text">
-            <h4>Suivi des dépenses</h4>
-            <p>
-              Ajoutez vos dépenses ponctuelles ou récurrentes, suivez vos abonnements et maîtrisez
-              votre budget.
-            </p>
-          </div>
-        </div>
-
-        <div class="feature-item">
-          <div class="icon-box">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#4a1d96"
-              stroke-width="2"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <circle cx="12" cy="12" r="6" />
-              <circle cx="12" cy="12" r="2" />
-            </svg>
-          </div>
-          <div class="text">
-            <h4>Suivi des revenus</h4>
-            <p>
-              Gérez vos revenus réguliers ou exceptionnels et visualisez rapidement vos entrées
-              d'argent.
-            </p>
-          </div>
-        </div>
-
-        <div class="feature-item">
-          <div class="icon-box">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#4a1d96"
-              stroke-width="2"
-            >
-              <path d="M23 6l-9.5 9.5-5-5L1 18" />
-              <path d="M17 6h6v6" />
-            </svg>
-          </div>
-          <div class="text">
-            <h4>Prévisions financières</h4>
-            <p>
-              Projetez votre solde dans le futur en tenant compte des dépenses, revenus et intérêts.
-            </p>
-          </div>
-        </div>
+          <figcaption>Estimation à partir des opérations renseignées.</figcaption>
+        </figure>
       </div>
     </section>
+
+    <div class="page-container reading-sections">
+      <section class="reading-section" aria-labelledby="why-title">
+        <div class="section-content">
+          <h2 id="why-title">Pourquoi utiliser Budgie pour gérer mon budget ?</h2>
+          <p>
+            Des charges élevées, des revenus variables ou des dépenses qui s’accumulent : plusieurs
+            raisons peuvent déséquilibrer un budget.
+          </p>
+          <p>
+            En regroupant vos revenus et vos dépenses, Budgie estime votre solde à la date choisie.
+            Vous pouvez ainsi voir ce qui se prépare et réfléchir aux ajustements possibles, selon
+            votre situation.
+          </p>
+
+          <div id="exemple" class="budget-example" tabindex="-1">
+            <div class="example-heading">
+              <p class="eyebrow">Données fictives</p>
+              <h3>Un ajustement, une autre prévision</h3>
+            </div>
+            <div class="budget-table-card">
+              <table class="budget-table">
+                <caption>Budget de décembre 2026</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Opération</th>
+                    <th scope="col">Montant</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row">Solde de départ</th>
+                    <td>100 €</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Salaire</th>
+                    <td>1 600 €</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Aide financière renseignée</th>
+                    <td>200 €</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Dépenses prévues</th>
+                    <td>1 950 €</td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <th scope="row">Solde estimé au 31 décembre</th>
+                    <td>−50 €</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+            <p class="expense-breakdown">
+              Les dépenses comprennent : loyer 750 €, courses 300 €, transport 100 €, énergie
+              100 €, crédit 300 €, sorties et achats plaisir 400 €.
+            </p>
+            <p>
+              Dans cet exemple, la personne choisit de ramener ses sorties et achats plaisir de
+              400 € à 250 €. Elle modifie cette dépense dans Budgie, puis actualise ses prévisions.
+            </p>
+            <div class="comparison" role="group" aria-label="Illustration avant et après modification">
+              <div class="comparison-card">
+                <p class="comparison-label">Avant modification</p>
+                <p class="comparison-amount amount-negative">−50 €</p>
+              </div>
+              <div class="comparison-card comparison-card--after">
+                <p class="comparison-label">Après modification</p>
+                <p class="comparison-amount amount-positive">100 €</p>
+              </div>
+            </div>
+            <p class="example-note">
+              Les prévisions restent des estimations fondées sur les informations saisies.
+            </p>
+          </div>
+
+          <p class="gentle-reminder">
+            Vos envies ont aussi leur place dans votre budget. L’objectif est de voir ce qu’elles
+            représentent et de choisir la place que vous souhaitez leur donner.
+          </p>
+        </div>
+      </section>
+
+      <section class="reading-section" aria-labelledby="start-title">
+        <div class="section-content">
+          <h2 id="start-title">Comment commencer avec Budgie ?</h2>
+          <p>Quelques étapes pour construire une première vision de votre budget :</p>
+          <ol class="getting-started" role="list">
+            <li>
+              <div class="step-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                  <rect x="3" y="5" width="18" height="14" rx="3" />
+                  <path d="M3 10h18M7 15h4" />
+                </svg>
+              </div>
+              <div>
+                <h3>Renseignez votre compte et son solde de départ.</h3>
+                <p>Un compte principal est créé à l’inscription.</p>
+              </div>
+            </li>
+            <li>
+              <div class="step-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                  <rect x="5" y="3" width="14" height="18" rx="2" />
+                  <path d="M9 8h6M9 12h6M9 16h3" />
+                </svg>
+              </div>
+              <div>
+                <h3>Ajoutez vos revenus et vos dépenses.</h3>
+                <p>
+                  Salaire, aides financières, loyer ou abonnements : indiquez les montants, les
+                  dates et les éventuelles récurrences.
+                </p>
+              </div>
+            </li>
+            <li>
+              <div class="step-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                  <rect x="3" y="5" width="18" height="16" rx="3" />
+                  <path d="M7 3v4M17 3v4M3 11h18M8 15h3M8 18h7" />
+                </svg>
+              </div>
+              <div>
+                <h3>Choisissez une date et consultez vos prévisions.</h3>
+                <p>Après un changement dans vos opérations, actualisez votre estimation.</p>
+              </div>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="reading-section origin-section" aria-labelledby="origin-title">
+        <div class="section-content">
+          <h2 id="origin-title">Pourquoi avoir créé Budgie ?</h2>
+          <p>
+            Beaucoup de personnes disent ne pas avoir reçu d’éducation financière et se retrouvent
+            à découvert avant la fin du mois. J’ai créé Budgie avec l’envie de les aider à mieux
+            comprendre leur budget et à voir plus clairement les conséquences de leurs choix.
+          </p>
+          <p>
+            Des lectures comme <cite>La Psychologie de l’argent</cite>,
+            <cite>Le Petit Livre pour investir avec bon sens</cite> et
+            <cite>L’Homme le plus riche de Babylone</cite> ont nourri ce projet, notamment autour de
+            l’épargne et du rapport à l’argent.
+          </p>
+          <p>
+            À terme, j’aimerais compléter Budgie avec des contenus d’éducation financière pour
+            rendre ces sujets plus accessibles.
+          </p>
+          <div class="closing-invitation">
+            <p>Commencez par faire le point sur votre budget.</p>
+            <RouterLink class="button-primary" to="/register">Créer mon compte</RouterLink>
+          </div>
+        </div>
+      </section>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { RouterLink } from 'vue-router';
-
-// --- LOGIC ---
-// const billing = ref('monthly');
-// const monthlyPrice = 4.99;
-// const yearlyDiscount = 0.20;
-
-// const displayedPriceAmount = computed(() => {
-//   if (billing.value === 'yearly') {
-//     // Calcul mensuel avec réduction pour affichage marketing "4,99€ / mois" ou équivalent
-//     // Ici, le code précédent affichait le prix annuel. Si tu veux afficher le prix MENSUEL équivalent :
-//     // return (monthlyPrice * (1 - yearlyDiscount)).toFixed(2).replace('.', ',') + ' €';
-
-//     // Si tu veux afficher le prix total annuel :
-//     const annualTotal = (monthlyPrice * 12 * (1 - yearlyDiscount)).toFixed(2);
-//     return annualTotal.replace('.', ',') + ' €';
-//   }
-//   return monthlyPrice.toString().replace('.', ',') + ' €';
-// });
-
-// const displayedPricePeriod = computed(() => {
-//   return billing.value === 'yearly' ? '/ an' : '/ mois';
-// });
 </script>
 
 <style scoped>
 .landing-page {
-  font-family: 'Inter', sans-serif;
-  color: #1f2937;
-  background-color: #ffffff;
+  --landing-purple: var(--primary, #6b21a8);
+  --landing-purple-hover: var(--primary-hover, #581c87);
+  --landing-ink: var(--text-main, #111827);
+  --landing-muted: #5b6170;
+  --landing-border: #e9e5ee;
+  color: var(--landing-ink);
+  background: #ffffff;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 1rem;
+  line-height: 1.65;
   min-height: 100vh;
+  overflow-wrap: break-word;
+}
+
+.landing-page *,
+.landing-page *::before,
+.landing-page *::after {
+  box-sizing: border-box;
+}
+
+.landing-page :where(h1, h2, h3, p, figure) {
+  margin: 0;
+}
+
+.landing-page a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.landing-page a:focus-visible,
+.budget-example:focus-visible,
+.hero:focus-visible {
+  outline: 3px solid var(--landing-purple);
+  outline-offset: 5px;
+  border-radius: 4px;
+}
+
+.page-container,
+.header-inner {
+  width: min(100% - 3rem, 75rem);
+  margin-inline: auto;
+}
+
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 1rem;
+  z-index: 30;
+  padding: 0.65rem 1rem;
+  background: #ffffff;
+  color: var(--landing-purple);
+  border: 1px solid var(--landing-purple);
+  border-radius: 8px;
+  transform: translateY(-200%);
+  font-weight: 600;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
 }
 
 .landing-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 5%;
-  background: white;
   position: sticky;
   top: 0;
-  z-index: 100;
-}
-.logo {
-  font-size: 22px;
-  font-weight: 800;
-  color: #6b21a8;
-}
-.desktop-nav a {
-  margin: 0 15px;
-  text-decoration: none;
-  color: #4b5563;
-  font-weight: 500;
-  font-size: 14px;
-  transition: color 0.2s;
-}
-.desktop-nav a:hover {
-  color: #6b21a8;
-}
-.auth-buttons {
-  display: flex;
-  gap: 10px;
+  z-index: 20;
+  background: #ffffff;
+  border-bottom: 1px solid var(--landing-border);
 }
 
-.btn-auth {
-  padding: 8px 18px;
-  border-radius: 50px;
-  font-size: 13px;
-  font-weight: 600;
+.header-inner {
+  min-height: 5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: var(--landing-purple);
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.05em;
   text-decoration: none;
-  transition: all 0.2s;
 }
-.btn-outline {
-  border: 1px solid #6b21a8;
-  color: #6b21a8;
+
+.login-link,
+.text-link {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  color: var(--landing-purple);
+  font-weight: 600;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.25em;
 }
-.btn-outline:hover {
-  background: #f3e8ff;
+
+.login-link {
+  padding: 0.5rem 0.75rem;
+  text-decoration: none;
+  border-radius: 8px;
 }
-.btn-solid {
-  background: #4a1d96;
-  color: white;
-  border: 1px solid #4a1d96;
-}
-.btn-solid:hover {
-  background: #3b0764;
+
+.login-link:hover {
+  background: #f5effb;
 }
 
 .hero {
-  background: linear-gradient(135deg, #c084fc 0%, #a855f7 50%, #c4b5fd 100%);
-  color: white;
-  padding: 80px 20px;
-  text-align: center;
+  background: linear-gradient(125deg, #ffffff 20%, #f6f1fc 100%);
+  scroll-margin-top: 5rem;
 }
-.hero-content {
-  max-width: 800px;
-  margin: 0 auto;
+
+.hero-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: clamp(2rem, 5vw, 5rem);
+  align-items: center;
+  padding-block: 6rem;
 }
+
+.welcome {
+  color: var(--landing-muted);
+  line-height: 1.55;
+}
+
 .hero h1 {
-  font-size: 48px;
+  max-width: 13em;
+  margin-top: 1.25rem;
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  font-weight: 750;
+  line-height: 1.13;
+  letter-spacing: -0.045em;
+}
+
+.hero h1 span {
+  color: var(--landing-purple);
+}
+
+.hero-description {
+  max-width: 32rem;
+  margin-top: 1.5rem;
+  color: var(--landing-muted);
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin-top: 1.75rem;
+}
+
+.button-primary {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 3.125rem;
+  max-width: 100%;
+  padding: 0.75rem 1.5rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: #ffffff;
+  background: var(--landing-purple);
+  font-size: 1rem;
+  font-weight: 650;
+  line-height: 1.4;
+  text-align: center;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgb(107 33 168 / 13%);
+  transition: background 160ms ease, box-shadow 160ms ease;
+}
+
+.button-primary:hover {
+  background: var(--landing-purple-hover);
+  box-shadow: 0 6px 16px rgb(107 33 168 / 20%);
+}
+
+.text-link:hover {
+  color: var(--landing-purple-hover);
+  text-decoration-thickness: 2px;
+}
+
+.manual-entry {
+  margin-top: 1rem;
+  color: var(--landing-muted);
+  font-size: 0.875rem;
+}
+
+.forecast-preview {
+  padding: 1.75rem;
+  border: 1px solid #7840b0;
+  border-radius: var(--radius-lg, 16px);
+  background: linear-gradient(135deg, #6b21a8 0%, #462084 100%);
+  color: #ffffff;
+  box-shadow: 0 16px 40px rgb(73 32 118 / 12%);
+}
+
+.preview-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  font-size: 0.875rem;
+  color: #f1e5ff;
+}
+
+.example-badge {
+  padding: 0.2rem 0.6rem;
+  border: 1px solid #ae82d4;
+  border-radius: 999px;
+  font-weight: 500;
+}
+
+.preview-balance {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-block: 2rem 1.5rem;
+}
+
+.preview-label {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.preview-date {
+  font-size: 0.875rem;
+  color: #f1e5ff;
+}
+
+.preview-amount {
+  font-size: 3.5rem;
   font-weight: 700;
-  margin-bottom: 20px;
   line-height: 1.1;
+  letter-spacing: -0.05em;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.forecast-preview figcaption {
+  padding-top: 1rem;
+  border-top: 1px solid #9865c4;
+  color: #f1e5ff;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.reading-sections {
+  max-width: 56rem;
+}
+
+.reading-section {
+  padding-block: 3rem;
+  border-bottom: 1px solid var(--landing-border);
+}
+
+.section-content {
+  min-width: 0;
+}
+
+.section-content > p,
+.budget-example > p {
+  max-width: 75ch;
+}
+
+.section-content h2 {
+  margin-bottom: 1.5rem;
+  font-size: clamp(1.75rem, 2.5vw, 2.125rem);
+  font-weight: 700;
+  line-height: 1.22;
+  letter-spacing: -0.035em;
+}
+
+.section-content > p + p {
+  margin-top: 1rem;
+}
+
+.section-content > p,
+.budget-example > p,
+.getting-started p {
+  color: var(--landing-muted);
+}
+
+.budget-example {
+  margin-top: 2.5rem;
+  scroll-margin-top: 6.5rem;
+}
+
+.eyebrow {
+  color: var(--landing-purple);
+  font-size: 0.875rem;
+  font-weight: 650;
+}
+
+.example-heading h3 {
+  margin-top: 0.35rem;
+  margin-bottom: 1.25rem;
+  font-size: 1.375rem;
+  font-weight: 650;
+  line-height: 1.35;
   letter-spacing: -0.02em;
 }
-.hero p {
-  font-size: 16px;
-  opacity: 0.9;
-  line-height: 1.5;
-  font-weight: 400;
+
+.budget-table-card {
+  overflow: hidden;
+  border: 1px solid var(--landing-border);
+  border-radius: var(--radius-lg, 16px);
+  background: #ffffff;
+  box-shadow: 0 3px 12px rgb(31 25 44 / 3%);
 }
 
-.why-section {
-  padding: 80px 20px;
-  text-align: center;
+.budget-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.budget-table caption {
+  padding: 1.125rem 1.25rem;
+  background: #f7f4fb;
+  color: var(--landing-purple);
+  font-weight: 650;
+  text-align: left;
+}
+
+.budget-table th,
+.budget-table td {
+  padding: 0.875rem 1.25rem;
+  text-align: left;
+  border-bottom: 1px solid #f0edf3;
+}
+
+.budget-table thead th {
+  color: var(--landing-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.budget-table tbody th {
+  font-weight: 450;
+}
+
+.budget-table td,
+.budget-table th:last-child {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.budget-table tfoot th,
+.budget-table tfoot td {
+  border-bottom: 0;
+  background: #f8f5fc;
+  font-weight: 650;
+}
+
+.budget-table tfoot td {
+  color: #b42332;
+}
+
+.budget-example > p {
+  margin-top: 1.25rem;
+}
+
+.expense-breakdown {
+  font-size: 1rem;
+}
+
+.comparison {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.comparison-card {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--landing-border);
+  border-radius: 12px;
   background: #ffffff;
 }
-.section-title {
-  color: #1f2937;
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 12px;
-}
-.section-subtitle {
-  color: #6b7280;
-  max-width: 700px;
-  margin: 0 auto 60px auto;
-  line-height: 1.5;
-  font-size: 14px;
+
+.comparison-card--after {
+  background: #f6f2fc;
+  border-color: #ded0ee;
 }
 
-.cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 30px;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-.feature-card {
-  background: white;
-  padding: 40px 24px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-  border: 1px solid #f3f4f6;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  transition: transform 0.2s;
-}
-.feature-card:hover {
-  transform: translateY(-5px);
-}
-.icon-illustration {
-  margin-bottom: 20px;
-}
-.feature-card h3 {
-  font-size: 18px;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 12px;
-}
-.feature-card p {
-  font-size: 13px;
-  color: #6b7280;
+.comparison-label {
+  color: var(--landing-muted);
+  font-size: 0.875rem;
   line-height: 1.5;
 }
 
-.pricing-section {
-  padding: 80px 20px;
-  background: #f9fafb;
-  text-align: center;
-}
-
-.pricing-toggle-wrapper {
-  position: relative;
-  display: inline-flex;
-  margin-bottom: 50px;
-  align-items: center;
-}
-.toggle-bg {
-  background: #e5e7eb;
-  border-radius: 50px;
-  padding: 4px;
-  display: flex;
-}
-.toggle-btn {
-  background: transparent;
-  border: none;
-  color: #4b5563;
-  padding: 8px 24px;
-  border-radius: 50px;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.toggle-btn.active {
-  background: #7c3aed;
-  color: white;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-.eco-badge {
-  position: absolute;
-  right: -70px;
-  top: -10px;
-  background: #7c3aed;
-  color: white;
-  font-size: 10px;
+.comparison-amount {
+  margin-top: 0.35rem;
+  font-size: 2rem;
   font-weight: 700;
-  padding: 4px 8px;
-  border-radius: 12px;
-  transform: rotate(5deg);
+  line-height: 1.25;
+  letter-spacing: -0.035em;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
-.pricing-grid {
-  display: flex;
-  justify-content: center;
-  gap: 30px;
-  flex-wrap: wrap;
-  max-width: 1000px;
-  margin: 0 auto;
+.amount-negative {
+  color: #b42332;
 }
-.price-card {
-  background: white;
-  width: 350px;
-  padding: 40px 32px;
-  border-radius: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  text-align: left;
+
+.amount-positive {
+  color: #08734e;
+}
+
+.example-note {
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.gentle-reminder {
+  margin-top: 2rem;
+  padding-left: 1.25rem;
+  border-left: 3px solid #c4a3e0;
+}
+
+.getting-started {
   display: flex;
   flex-direction: column;
-}
-.price-card.premium {
-  border: 2px solid #a78bfa; /* Bordure violette */
-  box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.1);
-}
-
-.price-card h3 {
-  font-size: 20px;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 8px;
-}
-.card-desc {
-  font-size: 13px;
-  color: #6b7280;
-  margin-bottom: 24px;
-  line-height: 1.4;
-  min-height: 40px;
-}
-
-.premium-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-.price-display {
-  text-align: right;
-  color: #7c3aed;
-}
-.price-display .amount {
-  font-size: 24px;
-  font-weight: 800;
-  display: block;
-}
-.price-display .period {
-  font-size: 12px;
-  font-weight: 500;
-  color: #6b7280;
-}
-
-.features-list {
-  list-style: none;
+  gap: 1rem;
   padding: 0;
-  margin: 0;
+  margin: 1.75rem 0 0;
+  list-style: none;
 }
-.features-list li {
+
+.getting-started li {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  color: #374151;
-  margin-bottom: 12px;
-}
-.features-list li.disabled {
-  color: #9ca3af;
-  text-decoration: line-through;
-  text-decoration-color: #e5e7eb;
-}
-
-.spacer {
-  flex: 1;
-}
-
-.btn-plan {
-  width: 100%;
-  padding: 12px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  margin-top: 24px;
-  border: none;
-  transition: all 0.2s;
-}
-.btn-plan.secondary {
-  background: #c4b5fd;
-  color: #4c1d95;
-}
-.btn-plan.secondary:hover {
-  background: #a78bfa;
-}
-.btn-plan.primary {
-  background: #c4b5fd;
-  color: #4c1d95;
-}
-.btn-plan.primary:hover {
-  background: #a78bfa;
-}
-
-.features-section {
-  padding: 80px 20px;
-  max-width: 1000px;
-  margin: 0 auto;
-  text-align: center;
-}
-.features-box-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 40px;
-  text-align: left;
-}
-.feature-item {
-  display: flex;
-  gap: 16px;
+  min-width: 0;
   align-items: flex-start;
+  gap: 1rem;
+  padding: 1.25rem;
+  border: 1px solid var(--landing-border);
+  border-radius: var(--radius-lg, 16px);
+  background: #ffffff;
+  box-shadow: 0 3px 12px rgb(31 25 44 / 3%);
 }
-.icon-box {
-  background: white;
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+
+.step-icon {
   display: flex;
+  flex: 0 0 2.5rem;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  flex-shrink: 0;
-}
-.feature-item h4 {
-  font-size: 16px;
-  font-weight: 700;
-  color: #1f2937;
-  margin: 0 0 6px 0;
-}
-.feature-item p {
-  font-size: 13px;
-  color: #6b7280;
-  line-height: 1.5;
-  margin: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 10px;
+  background: #f3eafa;
+  color: var(--landing-purple);
 }
 
-@media (max-width: 768px) {
-  .hero h1 {
-    font-size: 32px;
+.step-icon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.getting-started h3 {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+.origin-section {
+  border-bottom: 0;
+  padding-bottom: 4rem;
+}
+
+.origin-section cite {
+  font-style: italic;
+}
+
+.closing-invitation {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--landing-border);
+}
+
+.closing-invitation p {
+  margin-bottom: 1.25rem;
+  font-weight: 600;
+}
+
+@media (min-width: 1024px) {
+  .getting-started {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-  .pricing-grid {
+
+  .getting-started li {
     flex-direction: column;
-    align-items: center;
   }
-  .price-card {
+}
+
+@media (max-width: 800px) {
+  .hero-inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+    padding-block: 2rem 3rem;
+  }
+
+  .hero-copy {
+    max-width: 36rem;
+  }
+
+  .hero h1 {
+    max-width: 16em;
+    margin-top: 1rem;
+    font-size: 2.25rem;
+  }
+
+  .forecast-preview {
     width: 100%;
-    max-width: 350px;
+    max-width: 36rem;
   }
-  .features-box-grid {
-    grid-template-columns: 1fr;
+
+  .section-content h2 {
+    max-width: 22em;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-container,
+  .header-inner {
+    width: calc(100% - 2.5rem);
+  }
+
+  .header-inner {
+    min-height: 4rem;
+  }
+
+  .wordmark {
+    font-size: 1.5rem;
+  }
+
+  .hero {
+    scroll-margin-top: 4rem;
+  }
+
+  .hero-inner {
+    padding-top: 1.5rem;
+  }
+
+  .hero h1 {
+    margin-top: 0.875rem;
+    font-size: 2rem;
+    line-height: 1.15;
+  }
+
+  .hero-description {
+    margin-top: 1rem;
+    line-height: 1.6;
+  }
+
+  .hero-actions {
+    margin-top: 1.25rem;
+    column-gap: 1.25rem;
+  }
+
+  .button-primary {
+    padding-inline: 1.25rem;
+  }
+
+  .manual-entry {
+    margin-top: 0.75rem;
+  }
+
+  .forecast-preview {
+    padding: 1.25rem;
+  }
+
+  .preview-meta {
+    column-gap: 0.5rem;
+  }
+
+  .preview-balance {
+    margin-block: 1.25rem 1rem;
+    gap: 0.5rem;
+  }
+
+  .preview-amount {
+    font-size: 2.75rem;
+  }
+
+  .forecast-preview figcaption {
+    padding-top: 0.75rem;
+  }
+
+  .budget-table th,
+  .budget-table td,
+  .budget-table caption {
+    padding-inline: 1rem;
+  }
+
+  .getting-started li {
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+
+  .budget-example {
+    scroll-margin-top: 5rem;
+  }
+}
+
+@media (max-width: 359px) {
+  .hero-actions {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .comparison {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button-primary {
+    transition: none;
   }
 }
 </style>

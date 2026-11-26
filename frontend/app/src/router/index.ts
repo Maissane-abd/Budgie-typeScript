@@ -10,6 +10,7 @@ import Profile from '../views/Profiles.vue';
 import PrevisionsView from '../views/PrevisionsView.vue';
 import AppLayout from '@/components/layout/AppLayout.vue';
 import { installAuthGuard } from './authGuard';
+import { installPageMetadata } from './pageMetadata';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -79,5 +80,6 @@ const router = createRouter({
 });
 
 installAuthGuard(router);
+installPageMetadata(router);
 
 export default router;
