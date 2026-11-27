@@ -264,15 +264,18 @@ documentation reposent sur les fichiers du dépôt, sans audit du VPS.
 Le workflow [CI/CD Budgie](.github/workflows/deploy.yml) se déclenche sur les pushs
 vers `main`, les pull requests vers `main` ou `dev`, et manuellement.
 
-| Job         | Contrôles exécutés                                                                                      |
-| ----------- | ------------------------------------------------------------------------------------------------------- |
-| Backend     | Ubuntu 24.04, Node 22, `npm ci`, lint, `typecheck`, build.                                              |
-| Frontend    | Ubuntu 24.04, Node 22, `npm ci`, lint, build avec vérification des types et pré-rendu, `verify:public`. |
-| Déploiement | Après réussite des deux jobs, uniquement sur `main` hors événement pull request.                        |
+| Job         | Contrôles exécutés                                                                                                      |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Backend     | Ubuntu 24.04, Node 22, `npm ci`, lint, `npm test` (Vitest), `typecheck`, build.                                             |
+| Frontend    | Ubuntu 24.04, Node 22, `npm ci`, lint, `npm test` (Vitest), build avec vérification des types et pré-rendu, `verify:public`. |
+| Déploiement | Après réussite des deux jobs, uniquement sur `main` hors événement pull request.                                         |
 
-**Les tests Vitest ne sont pas exécutés par ce workflow**, même si les scripts
-existent. Aucun test d'intégration PostgreSQL ou parcours navigateur complet n'y
-est configuré.
+**Les suites Vitest backend et frontend sont exécutées par ce workflow**, notamment
+sur les pull requests vers `dev` et `main`. Elles couvrent des tests unitaires et
+de composants, dont certains contrôles de sécurité applicative. Aucun audit
+automatisé des dépendances ni analyse de sécurité dédiée n'est configuré. Aucun
+test d'intégration avec PostgreSQL réel ni parcours navigateur complet n'y est
+configuré ; la base et les appels API sont simulés dans les tests actuels.
 
 Le déploiement utilise les secrets GitHub `VPS_SSH_KEY`, `VPS_KNOWN_HOSTS` et
 `VPS_HOST`, puis se connecte en tant que `debian` dans
@@ -287,9 +290,6 @@ sur le VPS. Les écarts des Dockerfiles et des sondes de santé sont suivis dans
 [limites](docs/known-limitations.md). Le workflow ne prévoit pas de migration,
 de sauvegarde préalable ni de retour automatique à la version précédente.
 
-Le workflow documentaire [Vegapunk](.github/workflows/vegapunk-docs.md), distinct
-de la livraison, prévoit une PR de documentation en brouillon après fusion dans
-`dev` d'une PR qui ne touche pas exclusivement la documentation.
 
 ## Limites connues
 
@@ -302,8 +302,9 @@ de la livraison, prévoit une PR de documentation en brouillon après fusion dan
 - Prévisions avec intérêts annuels simplifiés, sans exceptions de transaction ni
   conversion de devises ; affichage des prévisions en euros. Les récurrences en
   fin de mois et les calculs monétaires en `Number` demandent des améliorations.
-- Couverture de tests partielle et tests absents de la CI ; sauvegarde et retour
-  arrière automatisés non fournis par le dépôt.
+- Couverture de tests partielle : aucun test d'intégration avec PostgreSQL réel ni
+  parcours navigateur complet ; sauvegarde et retour arrière automatisés non
+  fournis par le dépôt.
 
 Le document [Limites connues v2](docs/known-limitations.md) détaille les impacts,
 les sources et les précautions d'utilisation.
@@ -316,7 +317,8 @@ critères de validation, sans date de livraison engagée :
 - [ ] Rendre l'installation sur base neuve cohérente et supprimer les dépendances
       résiduelles aux abonnements dans l'authentification.
 - [ ] Aligner les Dockerfiles, Node.js, le démarrage Compose et les contrôles de santé.
-- [ ] Exécuter les tests en CI et ajouter un parcours d'intégration sur PostgreSQL.
+- [x] Exécuter les suites Vitest backend et frontend en CI.
+- [ ] Ajouter un parcours d'intégration sur PostgreSQL en CI.
 - [ ] Renforcer la validation, les contrôles d'accès testés et la gestion des sessions.
 - [ ] Fiabiliser les récurrences calendaires, les montants et le comportement des devises.
 - [ ] Mettre en place sauvegarde/restauration, migrations et procédure de retour arrière.
