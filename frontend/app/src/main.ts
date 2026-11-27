@@ -27,4 +27,5 @@ app.use(createPinia());
 app.use(router);
 app.use(Toast, toastOptions);
 
-app.mount('#app');
+// Preserve the pre-rendered homepage until the first route is ready.
+router.isReady().then(() => app.mount('#app'));

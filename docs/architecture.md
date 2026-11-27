@@ -1,332 +1,173 @@
-# Architecture logicielle — Budgie V1
-
-## 1. Présentation générale
-
-Budgie repose sur une architecture web **client-serveur**, organisée autour de trois composants principaux :
-
-- **Frontend :** application développée avec Vue 3, Vite et Pinia.
-- **Base de données :** PostgreSQL, utilisée pour conserver les utilisateurs, comptes financiers, transactions et règles de récurrence.
-
-Ces composants sont déployés dans des conteneurs Docker sur un VPS OVH fonctionnant sous Debian 12.
-
-Nginx assure la distribution de l'application frontend, le routage des requêtes API et la gestion des connexions HTTPS.
-
-Cette séparation permet de distinguer l'interface utilisateur, les traitements métier et la persistance des données.
-
-## 2. Organisation du frontend Vue.js
-
-Le frontend constitue la partie visible de Budgie. Il permet aux utilisateurs de gérer leurs comptes financiers, revenus, dépenses et prévisions depuis une interface web.
-
-### Technologies principales
-
-**Vue.js 3**
-
-Framework JavaScript utilisé pour construire une interface dynamique et réactive, organisée autour de composants réutilisables.
-
-**Vite**
-
-Outil de développement et de compilation permettant de lancer rapidement l'application localement et de générer les fichiers statiques optimisés pour la production.
-
-**Pinia**
-
-Bibliothèque de gestion d'état utilisée pour centraliser les données partagées entre les différentes parties de l'interface.
-
-**Vue Router**
-
-Gestionnaire de navigation côté client permettant de passer d'une vue à une autre sans rechargement complet de l'application.
-
-### Organisation fonctionnelle
-
-Le frontend s'articule autour de plusieurs responsabilités :
-
-| Élément        | Responsabilité                                     |
-| -------------- | -------------------------------------------------- |
-| Vues           | Représenter les principales pages de l'application |
-| Composants Vue | Afficher les éléments réutilisables de l'interface |
-| Stores Pinia   | Centraliser les états partagés                     |
-| Vue Router     | Gérer la navigation entre les vues                 |
-| Couche HTTP    | Communiquer avec l'API Express                     |
-
-Les principales fonctionnalités de l'interface concernent l'authentification, la gestion des comptes financiers, les revenus, les dépenses et les prévisions.
-
-Le frontend se concentre sur la présentation des informations et les interactions utilisateur. Les opérations nécessitant un accès aux données persistantes sont déléguées au backend.
-
-## 3. Rôle des composants Vue et des stores Pinia
-
-### Composants Vue
-
-Les composants Vue permettent de diviser l'interface en éléments indépendants et réutilisables.
-
-Un composant peut notamment être chargé d'afficher un formulaire, une carte de compte financier, un tableau ou un graphique.
-
-Les composants peuvent recevoir des données depuis leurs composants parents au moyen de propriétés (_props_) et communiquer des événements grâce au mécanisme `emit`.
-
-Cette approche favorise :
-
-- La réutilisation du code.
-- La maintenance de l'interface.
-- La séparation des responsabilités.
-- L'évolution indépendante des différentes fonctionnalités.
-
-### Stores Pinia
-
-Pinia sert à gérer les informations qui doivent être accessibles depuis plusieurs composants ou vues.
-
-Son utilisation permet d'éviter de transmettre systématiquement les mêmes données à travers plusieurs niveaux de composants.
-
-Un store peut contenir :
-
-- **State :** données réactives partagées.
-- **Getters :** valeurs calculées à partir de l'état.
-- **Actions :** méthodes permettant de modifier l'état ou d'effectuer des traitements asynchrones.
-
-Par exemple, un store consacré à l'authentification peut centraliser les informations de l'utilisateur connecté, tandis qu'un store financier peut faciliter le partage des données entre plusieurs vues.
-
-Pinia ne remplace cependant pas PostgreSQL : les données conservées dans les stores appartiennent à l'état de l'application côté client et ne constituent pas une source de persistance définitive.
-
-## 4. Organisation du backend Express.js
-
-Le backend de Budgie est développé avec **Node.js, Express 5 et TypeScript**.
-
-Il expose une API REST permettant au frontend d'effectuer des opérations sur les différentes ressources de l'application.
-
-### Point d'entrée de l'application
-
-Le fichier `backend/src/app.ts` constitue le point d'entrée du serveur.
-
-Il assure principalement :
-
-1. L'initialisation de l'application Express.
-2. La configuration des middlewares.
-3. L'activation du traitement des requêtes JSON.
-4. L'enregistrement des routeurs API.
-5. Le démarrage du serveur HTTP, sur le port 5001 par défaut.
-
-### Organisation des routes
-
-Les routes sont regroupées dans le répertoire `backend/src/routes/`, selon leur domaine fonctionnel.
-
-| Route principale  | Responsabilité                              |
-| ----------------- | ------------------------------------------- |
-| `/api/auth`       | Inscription, connexion et gestion du profil |
-| `/api/accounts`   | Gestion des comptes financiers              |
-| `/api/revenus`    | Gestion des revenus                         |
-| `/api/expenses`   | Gestion des dépenses                        |
-| `/api/previsions` | Calcul des prévisions financières           |
-| `/api/payments`   | Routes de paiement présentes dans le code   |
-| `/api`            | Inclut également le routeur webhook         |
-
-Les routes de paiement et le webhook subsistent dans le code, mais l'intégration Stripe n'est pas activée comme fonctionnalité commerciale de la V1 en production.
-
-### Traitements métier
-
-Le backend prend en charge les opérations qui ne doivent pas dépendre uniquement du navigateur :
-
-- Vérification de l'authentification.
-- Validation des données reçues.
-- Lecture et modification des données financières.
-- Application des règles d'accès aux ressources.
-- Gestion des revenus et dépenses ponctuels ou récurrents.
-- Calcul des soldes et prévisions financières.
-
-Dans la V1, plusieurs fichiers de routes regroupent directement la définition des endpoints et leur logique métier.
-
-Une séparation plus poussée entre routes, contrôleurs et services pourra être envisagée lors de futurs refactorings, sans constituer une caractéristique déjà implémentée de l'architecture actuelle.
-
-### Accès à PostgreSQL
-
-Le fichier `backend/src/models/db.ts` centralise la configuration de l'accès à PostgreSQL.
-
-Il utilise le module `pg` et un pool de connexions pour permettre au serveur d'exécuter ses requêtes SQL.
-
-Le backend utilise notamment des requêtes paramétrées, afin de séparer les valeurs utilisateur du texte SQL et de limiter les risques d'injection SQL.
-
-## 5. Fonctionnement de l'authentification JWT
-
-Budgie utilise une authentification reposant sur des **JSON Web Tokens (JWT)**.
-
-Ce mécanisme permet au backend d'identifier les utilisateurs lors de leurs requêtes vers les endpoints protégés.
-
-### Inscription
-
-Lorsqu'un utilisateur crée un compte :
-
-1. Le frontend transmet les informations d'inscription à `/api/auth/register`.
-2. Le backend vérifie les champs requis et l'unicité de l'adresse e-mail.
-3. Le mot de passe est haché avec `bcryptjs` avant son enregistrement.
-4. Le backend crée l'utilisateur dans PostgreSQL.
-5. Un compte financier principal est également créé.
-6. Le serveur génère un JWT et le renvoie au frontend.
-
-### Connexion
-
-Lorsqu'un utilisateur se connecte :
-
-1. Le frontend transmet son adresse e-mail et son mot de passe à `/api/auth/login`.
-2. Le backend recherche l'utilisateur dans PostgreSQL.
-3. `bcryptjs` compare le mot de passe fourni à son empreinte enregistrée.
-4. Si les identifiants sont valides, le backend génère un JWT.
-5. Le frontend reçoit les informations de l'utilisateur et son jeton d'authentification.
-
-### Structure et validation du JWT
-
-Dans la V1, le JWT contient notamment l'identifiant de l'utilisateur et son adresse e-mail.
-
-Il est signé avec une clé secrète définie par la variable d'environnement `JWT_SECRET`.
-
-La durée de validité actuellement définie dans le code est de **24 heures**.
-
-Pour accéder à une route protégée, le client transmet le JWT dans l'en-tête HTTP :
-
-`Authorization: Bearer <token>`
-
-Le middleware `requireAuth`, défini dans le module d'authentification, vérifie la signature et la validité du jeton.
-
-Lorsque l'authentification réussit, les informations d'identification sont associées à la requête afin de pouvoir être utilisées par les routes suivantes.
-
-En l'absence de jeton ou lorsqu'il est invalide, le backend renvoie une erreur HTTP `401 Unauthorized`.
-
-### Protection des données utilisateur
-
-L'authentification est complétée par des restrictions au niveau des requêtes SQL.
-
-Par exemple, les opérations sur les comptes financiers utilisent l'identifiant de l'utilisateur authentifié afin de sélectionner les comptes qui lui appartiennent.
-
-Cette vérification côté serveur est essentielle : masquer une ressource dans l'interface Vue ne suffit pas à en protéger l'accès.
-
-## 6. Communication entre le frontend et le backend
-
-La communication entre Vue.js et Express repose sur des **requêtes HTTP et des réponses JSON**.
-
-L'architecture suit un fonctionnement classique d'API REST.
-
-### Exemple : récupération des comptes financiers
-
-Lorsqu'un utilisateur consulte ses comptes :
-
-1. L'interface Vue déclenche une requête `GET /api/accounts`.
-2. Le client inclut le JWT dans l'en-tête `Authorization`.
-3. Nginx transmet la requête au backend Express.
-4. Le middleware `requireAuth` vérifie le JWT.
-5. Le backend récupère les comptes associés à l'utilisateur dans PostgreSQL.
-6. Express renvoie les résultats sous forme de JSON.
-7. Le frontend utilise ces données pour actualiser l'interface.
-
-### Répartition des responsabilités
-
-| Frontend Vue                | Backend Express            |
-| --------------------------- | -------------------------- |
-| Affiche les formulaires     | Valide les données reçues  |
-| Déclenche les requêtes HTTP | Traite les requêtes API    |
-| Présente les résultats      | Applique les règles métier |
-| Gère les interactions       | Contrôle les accès         |
-| Actualise l'interface       | Communique avec PostgreSQL |
-
-Cette séparation permet de maintenir une distinction claire entre les responsabilités de présentation et celles du serveur.
-
-Le navigateur ne dispose pas d'un accès direct à PostgreSQL.
-
-## 7. Rôle du reverse proxy Nginx
-
-Nginx constitue le point d'entrée web de Budgie en production.
-
-Dans la configuration Docker Compose actuelle, **Nginx s'exécute au sein du conteneur frontend**. Il assure à la fois la distribution des fichiers statiques et la transmission des appels API.
-
-### Distribution du frontend
-
-Lorsqu'un utilisateur consulte `https://monbudgie.fr`, Nginx sert les fichiers statiques de l'application Vue.
-
-La configuration utilise une règle de repli vers `index.html`, permettant à Vue Router de gérer les routes côté client.
-
-### Transmission des requêtes API
-
-Les requêtes dont le chemin commence par `/api` sont transmises au service backend Docker, accessible sous l'adresse interne :
-
-`http://backend:5001`
-
-Nginx fonctionne alors comme un reverse proxy : il reçoit la requête du navigateur et la transmet au service Express approprié.
-
-### Gestion du HTTPS
-
-Nginx utilise les certificats Let's Encrypt installés sur le serveur afin de fournir des connexions chiffrées en HTTPS.
-
-La configuration prévoit également :
-
-- La redirection HTTP vers HTTPS.
-- La redirection de `www.monbudgie.fr` vers `monbudgie.fr`.
-- La prise en charge des demandes de validation de certificats Let's Encrypt.
-- La transmission au backend des en-têtes utiles relatifs à la requête d'origine.
-
-La présence de Nginx permet ainsi d'exposer l'application sous un domaine unique, sans nécessiter l'exposition publique directe du port du backend en production.
-
-## 8. Justification des choix techniques
-
-### Pourquoi Vue.js 3 ?
-
-Vue.js permet de construire une interface réactive et organisée autour de composants.
-
-Son approche modulaire convient à Budgie, qui possède plusieurs domaines fonctionnels amenés à évoluer indépendamment.
-
-### Pourquoi Pinia ?
-
-Pinia simplifie la centralisation et le partage de l'état entre les composants Vue.
-
-Il offre une solution adaptée à une application de gestion financière où plusieurs vues peuvent manipuler des informations communes.
-
-### Pourquoi Express.js ?
-
-Express fournit une base légère pour développer une API REST avec Node.js.
-
-Il permet d'organiser les fonctionnalités sous forme de routeurs, d'utiliser des middlewares et de maîtriser directement les traitements côté serveur.
-
-### Pourquoi TypeScript ?
-
-TypeScript apporte un système de typage statique à JavaScript.
-
-Son utilisation contribue à mieux définir les structures de données, améliorer la lisibilité du code et détecter certaines erreurs avant l'exécution.
-
-### Pourquoi PostgreSQL ?
-
-Budgie manipule des données structurées et liées entre elles : utilisateurs, comptes, transactions et règles de récurrence.
-
-PostgreSQL est adapté à ce modèle relationnel et offre notamment :
-
-- La gestion des relations entre tables.
-- Des contraintes d'intégrité des données.
-- Le support des transactions SQL.
-- Des types numériques adaptés au stockage de montants financiers.
-- Des capacités d'interrogation et d'agrégation nécessaires aux fonctionnalités de prévision.
-
-### Pourquoi Docker Compose ?
-
-Docker Compose permet de définir et de lancer les services de l'application à partir de fichiers de configuration versionnés.
-
-Budgie utilise des services distincts pour le frontend, le backend et PostgreSQL.
-
-Cette approche facilite la gestion des dépendances, des réseaux, des volumes et des variables d'environnement.
-
-Le projet distingue la configuration principale `compose.yml` de la configuration adaptée à la production `compose.production.yml`.
-
-Cette dernière prévoit notamment un contrôle de disponibilité de PostgreSQL et évite d'exposer directement les ports de PostgreSQL et du backend.
-
-### Pourquoi Nginx ?
-
-Nginx centralise le trafic HTTP(S), sert les fichiers statiques et joue le rôle d'intermédiaire entre le navigateur et Express.
-
-Il permet également de gérer les certificats HTTPS et les redirections du domaine.
-
-Cette architecture évite de devoir exposer directement chaque service applicatif sur Internet.
-
-## 9. Synthèse
-
-L'architecture de Budgie V1 repose sur une séparation entre trois responsabilités :
-
-**Présentation :** Vue.js et Pinia assurent l'affichage de l'application et la gestion des interactions utilisateur.
-
-**Logique applicative :** Express et TypeScript prennent en charge l'API REST, l'authentification JWT et les traitements financiers.
-
-**Persistance :** PostgreSQL conserve les données et garantit leur organisation relationnelle.
-
-Docker Compose facilite l'exécution des différents services, tandis que Nginx gère l'accès web sécurisé à l'application.
-
-Cette organisation constitue une base technique évolutive pour Budgie V2, notamment pour les fonctionnalités de suivi d'investissements, l'amélioration des prévisions et l'enrichissement des outils de gestion financière.
+# Architecture logicielle — Budgie V2
+
+Cette description suit les fichiers versionnés au 26 novembre 2026. Elle décrit
+les composants existants et les écarts du dépôt, sans certifier l’état du VPS.
+Les procédures figurent dans le [guide d’installation](installation.md).
+
+## Vue d’ensemble
+
+Budgie comprend trois services Docker Compose : `frontend`, `backend` et `db`.
+Le navigateur exécute Vue ; Nginx, dans le service `frontend`, sert les fichiers
+statiques et transmet les requêtes `/api` au backend. Seule l’API accède à PostgreSQL.
+
+```mermaid
+flowchart LR
+    B["Navigateur : Vue 3 / TypeScript"]
+    N["frontend : Nginx + fichiers statiques"]
+    A["backend : Node.js / Express 5"]
+    D[("db : PostgreSQL 15")]
+    B -->|"HTTP local / HTTPS production"| N
+    N -->|"HTML, JavaScript et CSS"| B
+    N -->|"/api : HTTP vers backend:5001"| A
+    A -->|"SQL paramétré via pg"| D
+```
+
+La production est prévue sur un VPS avec certificats Let's Encrypt montés dans
+Nginx. Aucun serveur de rendu Vue à la demande, worker ou service de paiement
+n’est démarré par les fichiers Compose.
+
+## Frontend
+
+L’application se trouve dans [`frontend/app/`](../frontend/app/). Vite construit
+les ressources ; `vue-tsc` contrôle les composants TypeScript avant le build.
+
+| Module                             | Responsabilité                                                             |
+| ---------------------------------- | -------------------------------------------------------------------------- |
+| `src/main.ts`, `App.vue`           | Initialisation de Vue, Pinia, du routeur et des notifications.             |
+| `src/views/`                       | Pages comptes, revenus, dépenses, prévisions, profil et authentification.  |
+| `src/components/`                  | Formulaires, filtres, tableaux, graphiques et éléments de mise en page.    |
+| `src/stores/userStore.ts`          | État utilisateur en mémoire, informations de profil et déconnexion locale. |
+| `src/router/`                      | Routes publiques/privées, garde de session et métadonnées de page.         |
+| `src/config/api.ts`                | Base des appels Axios : `VITE_API_BASE`, avec `/api` par défaut.           |
+| `src/services/accounts.service.ts` | Appels de gestion des comptes ; d’autres vues appellent directement Axios. |
+| `src/content/legal.ts`             | Textes et statut de revue des trois pages légales.                         |
+
+Les pages privées sont `/accounts`, `/revenus`, `/depenses`, `/previsions` et
+`/profile`. `/login` et `/register` sont réservées aux visiteurs non connectés.
+La vue de réinitialisation existe mais sa route est commentée.
+
+### Pages publiques pré-rendues
+
+Après `vue-tsc` et `vite build`, `scripts/prerender-home.mjs` utilise
+`src/entry-prerender.ts` et les routes publiques pour produire du HTML à la
+construction, sans session ni appel API :
+
+- `dist/index.html` pour l’accueil `/` ;
+- un `index.html` dans chacun des répertoires `mentions-legales/`,
+  `politique-de-confidentialite/` et `conditions-utilisation/` ;
+- `dist/app.html`, coque Vue distincte pour l’authentification et l’espace privé.
+
+Nginx sert explicitement les quatre pages publiques et utilise `app.html` comme
+repli pour les autres routes. Le routeur prend ensuite la main dans le navigateur.
+Les métadonnées comprennent titre, description, URL canonique et Open Graph.
+L’accueil est indexable ; les pages légales en cours de revue, l’authentification
+et l’espace privé portent `noindex`. Le sitemap ne liste que l’accueil.
+`scripts/check-public-page.mjs` vérifie le HTML généré.
+
+## Backend et routes actives
+
+[`backend/src/app.ts`](../backend/src/app.ts) initialise Express, CORS et le
+traitement JSON, puis monte les routeurs ci-dessous. Le serveur écoute sur
+`PORT`, ou `5001` par défaut. Le code est compilé en JavaScript dans `backend/dist/`.
+
+| Préfixe monté     | Opérations                                                                     |
+| ----------------- | ------------------------------------------------------------------------------ |
+| `/api/auth`       | `POST /register`, `POST /login`, puis `GET`, `PUT`, `DELETE /me` authentifiés. |
+| `/api/accounts`   | Liste, création, modification et suppression des comptes de l’utilisateur.     |
+| `/api/revenus`    | CRUD des revenus, avec règles de récurrence.                                   |
+| `/api/expenses`   | CRUD des dépenses, avec règles de récurrence.                                  |
+| `/api/previsions` | `GET /` avec `target_date` facultatif pour les projections.                    |
+| `/health`         | Réponse `200 OK` du processus Express ; aucun contrôle SQL.                    |
+
+Les routes comptes, prévisions et authentification contiennent directement leur
+logique. Revenus et dépenses délèguent à `src/controllers/`.
+`src/middlewares/index.ts` centralise CORS, JSON et `requireAuth` ;
+`src/models/db.ts` fournit un pool `pg` partagé, avec dix connexions au maximum.
+Il n’existe pas de couche de services métier ni d’ORM dans ce parcours.
+
+Les fichiers de routes utilisateurs et exceptions ne sont pas montés dans
+`app.ts`. Aucun endpoint de paiement ou webhook Stripe n’y est enregistré.
+
+## Données et persistance
+
+[`db/init.sql`](../db/init.sql) crée l’extension `uuid-ossp` et cinq tables :
+
+| Table                    | Données et relations                                                     |
+| ------------------------ | ------------------------------------------------------------------------ |
+| `users`                  | Identité, e-mail unique et empreinte du mot de passe.                    |
+| `accounts`               | Propriétaire, date d’ouverture, devise, solde initial et taux.           |
+| `transactions`           | Revenus/dépenses rattachés à un compte, montant et date de début.        |
+| `recurrence_rules`       | Intervalle en jours, mois ou années et date de fin facultative.          |
+| `transaction_exceptions` | Exceptions prévues par le schéma, sans intégration dans le calcul actif. |
+
+Les clés étrangères utilisent la suppression en cascade : supprimer un utilisateur
+supprime ses comptes, opérations, règles et exceptions. Les montants sont stockés
+en `NUMERIC`. Les calculs applicatifs les convertissent ensuite en `Number` JavaScript.
+
+Le schéma et l’authentification présentent un écart : `queryUser`, utilisé à la
+connexion et pour le profil, joint `plans` et `subscriptions`, absentes d’`init.sql`.
+Une base neuve ne permet donc pas de valider tout le parcours de session actuel.
+Le script d’initialisation s’applique uniquement à un volume PostgreSQL vide ;
+aucun système de migration n’est fourni. Voir les [limites connues](known-limitations.md).
+
+## Authentification et autorisation
+
+À l’inscription, l’API valide la politique de mot de passe, le hache avec `bcryptjs`
+(coût 10), crée l’utilisateur et un compte principal, puis émet un JWT. La politique
+exige douze caractères, une majuscule, un chiffre et un caractère spécial, avec un
+maximum de 72 octets UTF-8. La connexion compare l’empreinte avant d’émettre un jeton.
+
+Le JWT contient l’identifiant utilisateur et son e-mail. `JWT_SECRET` est obligatoire
+au démarrage ; sa durée de validité est fixée à `1d` dans le code. Le frontend conserve
+le jeton sous `budgie_token` dans `localStorage` et l’envoie dans
+`Authorization: Bearer <token>`. Le store Pinia conserve le profil en mémoire.
+La garde du routeur recharge ce profil via `/api/auth/me` lorsque nécessaire.
+
+`requireAuth` vérifie le jeton ; les requêtes des routes financières actives limitent
+l’accès aux ressources de l’utilisateur authentifié. La déconnexion efface le jeton
+du navigateur ; aucun mécanisme serveur de révocation ou de renouvellement n’est fourni.
+
+## Moteur de soldes et de prévision
+
+[`calculateAccountForecast`](../backend/src/routes/previsions.ts) est utilisé par
+la route de prévision et par la présentation des comptes. Il part du solde initial,
+génère les occurrences ponctuelles et récurrentes et applique les événements dans
+l’ordre chronologique, sans enregistrer les soldes calculés en base.
+
+- `initial_balance` correspond au champ `accounts.balance` enregistré.
+- `current_balance` et le `balance` retourné par la route comptes incluent les
+  opérations échues jusqu’au jour courant et les intérêts déjà dus.
+- `forecast_12m` projette le compte à un an ; `/api/previsions` retourne une
+  projection à la date demandée, des détails mensuels et des totaux pour les comptes.
+
+Le taux annuel et le taux de taxation sont exprimés en pourcentage (`2.5` pour
+`2,5 %`). À chaque anniversaire de l’ouverture, le calcul ajoute
+`solde × taux annuel / 100 × (1 − taxation / 100)`, arrondi à deux décimales.
+Les opérations du même jour précèdent ce calcul. L’anniversaire du 29 février est
+ramené au 28 février les années non bissextiles.
+
+L’horizon est limité à cent ans à partir d’aujourd’hui. Les exceptions de transaction,
+les transferts internes et la conversion de devises ne sont pas intégrés au moteur.
+Les détails sur les dates passées et les fins de mois figurent dans les
+[limites connues](known-limitations.md).
+
+## Exécution locale et production
+
+| Configuration                            | Réseau, volumes et disponibilité                                                                                                                                                                                                                      |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `compose.yml`                            | Frontend `8080:80`, API `5001:5001`, PostgreSQL `5432:5432`. Volume nommé `db_data`, montage d’`init.sql`, code backend monté sur `/app` et volume anonyme `/app/node_modules`. Configuration Nginx HTTP locale montée en lecture seule.              |
+| `compose.yml` + `compose.production.yml` | Suppression des ports publics PostgreSQL/API et des montages backend. Ajout de `443:443`, montage Nginx HTTPS, webroot Certbot et certificats. `8080:80` reste hérité du fichier de base ; aucun `80:80` n’est déclaré. Redémarrage `unless-stopped`. |
+
+Les images applicatives utilisent Node 20 Alpine, tandis que la CI utilise Node 22.
+Le frontend final utilise Nginx Alpine. Les noms des Dockerfiles suivis sont en
+minuscules, en décalage avec les chemins attendus par Compose sur Linux.
+
+En production, PostgreSQL a une sonde `pg_isready` et le backend attend son état
+sain. Les sondes HTTP de l’API et du frontend utilisent `curl` ; leur disponibilité
+dans les images et l’appel HTTPS à `localhost` restent à corriger. Nginx renvoie
+directement `200` pour `/health` : cette sonde ne vérifie pas PostgreSQL.
+Ces points et l’absence de sauvegarde déclarée sont suivis dans les
+[limites connues](known-limitations.md) et la [roadmap v2.1](roadmap-v2.1.md).
+
+Le [README](../README.md) décrit les contrôles CI/CD et le
+[guide d’installation](installation.md) détaille les commandes et les prérequis.

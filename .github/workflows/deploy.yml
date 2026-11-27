@@ -79,6 +79,9 @@ jobs:
       - name: Build frontend
         run: npm run build
 
+      - name: Verify public HTML
+        run: npm run verify:public
+
   deploy:
     name: Deploy to VPS
     needs:

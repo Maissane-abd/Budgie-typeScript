@@ -8,9 +8,10 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc &&vite build",
+    "build": "vue-tsc && vite build && node scripts/prerender-home.mjs",
     "typecheck": "vue-tsc --noEmit",
     "preview": "vite preview",
+    "verify:public": "node scripts/check-public-page.mjs",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",

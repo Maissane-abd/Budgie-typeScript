@@ -2,6 +2,10 @@
 <template>
   <div class="register-page">
     <section class="auth-card">
+      <RouterLink class="auth-back-link" to="/">
+        <span aria-hidden="true">&larr;</span>
+        Retour à l’accueil
+      </RouterLink>
       <h1 class="auth-title">Inscription</h1>
       <p class="auth-subtitle">Crée ton compte Budgie pour suivre tes comptes et tes prévisions.</p>
 
@@ -64,7 +68,9 @@
         </div>
 
         <div>
-          <label for="register-password-confirm" class="auth-label">Confirmer le mot de passe</label>
+          <label for="register-password-confirm" class="auth-label"
+            >Confirmer le mot de passe</label
+          >
           <input
             id="register-password-confirm"
             v-model="passwordConfirm"
@@ -79,7 +85,8 @@
 
         <p id="register-password-help" class="auth-password-help auth-field-wide">
           {{ PASSWORD_POLICY_MESSAGE }}
-          Privilégiez une phrase de passe longue composée de plusieurs mots. Les espaces sont autorisés.
+          Privilégiez une phrase de passe longue composée de plusieurs mots. Les espaces sont
+          autorisés.
         </p>
 
         <p v-if="error" class="auth-error" role="alert">{{ error }}</p>
@@ -93,7 +100,6 @@
       <div class="auth-footer">
         Déjà inscrit ?
         <RouterLink class="auth-link" to="/login">Se connecter</RouterLink>
-        <p class="auth-terms">En créant un compte, vous acceptez les CGU.</p>
       </div>
     </section>
   </div>
@@ -106,7 +112,11 @@ import { ref } from 'vue';
 import axios from 'axios';
 import { RouterLink, useRouter } from 'vue-router';
 import { API_BASE } from '@/config/api';
-import { isValidPassword, PASSWORD_MIN_LENGTH, PASSWORD_POLICY_MESSAGE } from '@/utils/passwordPolicy';
+import {
+  isValidPassword,
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_POLICY_MESSAGE,
+} from '@/utils/passwordPolicy';
 
 const router = useRouter();
 
@@ -311,7 +321,22 @@ async function handleRegister() {
 
 .auth-terms {
   margin: 8px 0 0;
-  font-size: 11px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.auth-information {
+  margin: 0;
+  color: #4b5563;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.auth-information a,
+.auth-terms a {
+  color: var(--primary);
+  text-underline-offset: 0.2em;
 }
 
 .auth-link {
