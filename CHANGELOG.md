@@ -81,8 +81,6 @@ Aucun tag de version n’est présent dans le dépôt local ; les versions des f
   réussite des contrôles : vérification de la clé d’hôte, avance rapide Git,
   validation de Compose, démarrage avec attente des services puis contrôle HTTP
   de l’accueil public.
-- Agent de documentation Vegapunk configuré pour proposer des mises à jour par
-  pull request.
 
 ### Retraits et limites de cette version
 

@@ -287,9 +287,6 @@ sur le VPS. Les écarts des Dockerfiles et des sondes de santé sont suivis dans
 [limites](docs/known-limitations.md). Le workflow ne prévoit pas de migration,
 de sauvegarde préalable ni de retour automatique à la version précédente.
 
-Le workflow documentaire [Vegapunk](.github/workflows/vegapunk-docs.md), distinct
-de la livraison, prévoit une PR de documentation en brouillon après fusion dans
-`dev` d'une PR qui ne touche pas exclusivement la documentation.
 
 ## Limites connues
 
